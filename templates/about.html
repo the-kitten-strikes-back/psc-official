@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC | About Us</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Orbitron';
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #111, #222);
+            color: white;
+            transition: background 4s ease-in-out;
+            font-family: 'Orbitron';
+        }
+
+        /* When clicked, this fades smoothly */
+        body.fade-in {
+            background: linear-gradient(135deg, #6600ff, #ff0077, #ffbb00);
+            background-size: 300% 300%;
+            animation: gradientShift 8s ease-in-out forwards;
+        }
+
+        /* Subtle movement for the gradient */
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .about-container {
+            background: rgba(0, 0, 0, 0.65);
+            padding: 40px 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px #000000b9;
+            width: 100%;
+            max-width: 800px;
+            backdrop-filter: blur(4px);
+            transition: opacity 2s ease;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            width: 100px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #09ff00;
+            font-size: 36px;
+            text-shadow: 0 0 10px #09ff00, 0 0 25px #00ffcc;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            text-align: center;
+            color: #ba19eb;
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #ba19eb;
+        }
+
+        .about-content {
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+
+        .about-section {
+            margin-bottom: 30px;
+        }
+
+        .about-section h2 {
+            color: #09ff00;
+            font-size: 22px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px #09ff00;
+        }
+
+        .about-section p {
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .highlight {
+            color: #ba19eb;
+            font-weight: 600;
+        }
+
+        .mission-statement {
+            background: linear-gradient(135deg, rgba(9, 255, 0, 0.1), rgba(186, 25, 235, 0.1));
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #09ff00;
+            margin: 20px 0;
+        }
+
+        .mission-statement h3 {
+            color: #ff0077;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        /* Footer with links */
+        .footer {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px 20px;
+            border-top: 2px solid #09ff00;
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            text-align: center;
+            color: #09ff00;
+            margin: 0 0 30px 0;
+            font-size: 20px;
+            text-shadow: 0 0 10px #09ff00;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .footer-link {
+            background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+            color: #ba19eb;
+            padding: 14px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1.5px solid #ba19eb;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .footer-link:hover {
+            background: linear-gradient(135deg, #ba19eb, #9c27b0);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(186, 25, 235, 0.4);
+            border-color: #ff0077;
+        }
+
+        @media (max-width: 768px) {
+            .about-container {
+                max-width: 90%;
+                padding: 30px 40px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .company-name {
+                font-size: 20px;
+            }
+
+            .footer-links {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-container {
+                max-width: calc(100% - 20px);
+                padding: 25px 30px;
+            }
+
+            .footer {
+                padding: 30px 15px;
+            }
+
+            .footer-links {
+                grid-template-columns: 1fr;
+            }
+
+            .mission-statement {
+                padding: 15px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+        </div>
+        <div class="about-container">
+            <h1>About Us</h1>
+            <div class="company-name">P<sup>en</sup>S<sup>tealing</sup>C<sup>ompany</sup></div>
+
+            <div class="about-content">
+                <div class="mission-statement">
+                    <h3>Our Mission</h3>
+                    <p>To revolutionize the stationary industry through innovation, creativity, and a commitment to excellence in pen technology and distribution.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Who We Are</h2>
+                    <p>The <span class="highlight">It all started in 2025, when our founders had a dream.</span> The class 8B was the birthplace of this idea, where creativity and innovation merged to form the foundation of what would become the Pen Stealing Company.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Our Story</h2>
+                    <p>Founded by a group of innovative students, PSC began as a simple idea: to create the ultimate writing experience. Through dedication, creativity, and a passion for excellence, we've grown from a small classroom initiative into a leading name in the stationary industry.</p>
+                    <p>Our journey has been marked by continuous innovation, strategic partnerships(like our latest one with the Balochistan Pencil Mafia), and an unwavering commitment. Today, PSC stands as a testament to what can be achieved through vision, hard work, <b>and a love for the pen.</b></p>
+                </div>
+
+                <div class="about-section">
+                    <h2>What We Do</h2>
+                    <p>At PSC, we specialize in:</p>
+                    <ul>
+                        <li><span class="highlight">Premium Pen Loaning</span> - Providing high-quality pens for loan from our diverse collection</li>
+                        <li><span class="highlight">Classification and Categorization</span> - Organizing and managing our product inventory</li>
+                        <li><span class="highlight">Systematic Collection of Pens</span> - We have a vast collection of 200+ pens in our (highly secure :D) storage facilities.</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h2>Our Values</h2>
+                    <p><span class="highlight">Resilience:</span> Constantly pushing boundaries to make the company better.</p>
+                    <p><span class="highlight">Quality:</span> The PSC way is to never compromise on excellence.</p>                </div>
+            </div>
+                        <p> So What Are You Waiting For? <br>
+    <a href="/register">Get a PSC membership today</a> and experience the future of writing!</a> </p>
+        </div>
+    </div>
+
+    </p>
+    <div class="footer">
+        <div class="footer-content">
+            <h2 class="footer-title">Explore</h2>
+            <div class="footer-links">
+                <a href="/" class="footer-link">Home</a>
+                <a href="/login" class="footer-link">Login</a>
+                <a href="/register" class="footer-link">Sign Up</a>
+                <a href="/partnerships" class="footer-link">Partnerships</a>
+                <a href="/contact" class="footer-link">Contact Us</a>
+                <a href="/donate" class="footer-link">Donate a Pen</a>
+                <a href="/loan" class="footer-link">Loan a Pen</a>
+                <a href="/stocks" class="footer-link">Invest in PSC</a>
+                <a href="/admin" class="footer-link">Admin Page</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.body.addEventListener("click", () => {
+                document.body.classList.add("fade-in");
+            });
+        });
+    </script>
+</body>
+</html>

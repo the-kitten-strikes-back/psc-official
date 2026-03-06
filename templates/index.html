@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSC Official</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Orbitron';
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #111, #222);
+      color: white;
+      transition: background 4s ease-in-out;
+      font-family: 'Orbitron';
+    }
+
+    /* When clicked, this fades smoothly */
+    body.fade-in {
+      background: linear-gradient(135deg, #6600ff, #ff0077, #ffbb00);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease-in-out forwards;
+    }
+
+    /* Subtle movement for the gradient */
+    @keyframes gradientShift {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.65);
+      padding: 40px 50px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px #000000b9;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      backdrop-filter: blur(4px);
+      transition: opacity 2s ease;
+    }
+
+    h1 {
+      font-size: 48px;
+      color: #09ff00;
+      text-shadow: 0 0 10px #09ff00, 0 0 25px #00ffcc;
+      margin: 20px 0 10px 0;
+    }
+
+    h3 {
+      color: #ba19eb;
+      margin: 0 0 30px 0;
+      font-size: 18px;
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background-color: #f44336;
+      color: white;
+      padding: 11px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.4s ease;
+      display: inline-block;
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'Orbitron';
+    }
+
+    .btn:hover {
+      background-color: red;
+      transform: scale(1.08);
+      box-shadow: 0 0 15px #ff0040;
+    }
+
+    /* Footer with links */
+    .footer {
+      background: rgba(0, 0, 0, 0.85);
+      padding: 40px 20px;
+      border-top: 2px solid #09ff00;
+      box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-title {
+      text-align: center;
+      color: #09ff00;
+      margin: 0 0 30px 0;
+      font-size: 20px;
+      text-shadow: 0 0 10px #09ff00;
+    }
+
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .footer-link {
+      background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+      color: #ba19eb;
+      padding: 14px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: 1.5px solid #ba19eb;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .footer-link:hover {
+      background: linear-gradient(135deg, #ba19eb, #9c27b0);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(186, 25, 235, 0.4);
+      border-color: #ff0077;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 36px;
+      }
+
+      .container {
+        max-width: 350px;
+        padding: 30px 40px;
+      }
+
+      .footer-links {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        max-width: calc(100% - 20px);
+        padding: 25px 30px;
+      }
+
+      .footer {
+        padding: 30px 15px;
+      }
+
+      .footer-links {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="main-content">
+    <img src="static/logo.png" alt="logo" style="width: 100px; margin-bottom: 20px;">
+    <h1>PSC</h1>
+    <h3>The official website</h3>
+    <div class="container">
+      <div class="auth-buttons">
+        <a href="/login" class="btn">LOGIN</a>
+        <a href="/register" class="btn">SIGN UP</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-content">
+      <h2 class="footer-title">Explore</h2>
+      <div class="footer-links">
+        <a href="/about" class="footer-link">About Us</a>
+        <a href="/partnerships" class="footer-link">Partnerships</a>
+        <a href="/contact" class="footer-link">Contact Us</a>
+        <a href="/donate" class="footer-link">Donate a Pen</a>
+        <a href="/loan" class="footer-link">Loan a top-class Pen</a>
+        <a href="/stocks" class="footer-link">Invest in PSC</a>
+        <a href="/admin" class="footer-link">Admin Page</a>
+        <a href="/gallery" class="footer-link">Gallery Of Pens</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.body.addEventListener("click", () => {
+        document.body.classList.add("fade-in");
+      });
+    });
+  </script>
+</body>
+</html>
