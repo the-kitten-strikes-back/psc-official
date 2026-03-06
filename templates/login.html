@@ -5,92 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PSC | Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Orbitron';
-        }
-        body {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background: #48ff00;
-            padding: 40px 50px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px #000000b9;
-            width: 360px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #ba19eb;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        input {
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            outline: none;
-        }
-        input:focus {
-            border-color: #0072ff;
-            border-radius: 5;
-            border-style: dashed ;
-            box-shadow: 0 0 5px rgb(0, 115, 255);
-        }
-        button {
-            background-color: #ffffff;
-            color: rgb(245, 11, 31);
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #005fcc;
-        }
-        .login-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-        .login-link a {
-            color: #ffe600;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-        label {
-            color: #000000;
-            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-
-    <div class="login-container">
-        <h2>PSC STRIKES BACK.</h2>
-        <form method="POST" action="{{ url_for('login') }}">
-            <input type="text" id="username" name="username" placeholder="Username" required>
-            <input type="password" id="password" name="password" placeholder="Password" required>
-            <button type="submit">Sign Up</button>
-        </form>
-
+    <div class="main-content">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+        </div>
+        <div class="login-container">
+            <h2>PSC STRIKES BACK.</h2>
+            <form method="POST" action="{{ url_for('login') }}">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                <button type="submit">Login</button>
+            </form>
+            <div class="login-link">
+                <p>Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a></p>
+            </div>
+        </div>
     </div>
 
+    <div class="footer">
+        <div class="footer-content">
+            <h2 class="footer-title">Explore</h2>
+            <div class="footer-links">
+                <a href="/" class="footer-link">Home</a>
+                <a href="/about" class="footer-link">About Us</a>
+                <a href="/partnerships" class="footer-link">Partnerships</a>
+                <a href="/contact" class="footer-link">Contact Us</a>
+                <a href="/donate" class="footer-link">Donate a Pen</a>
+                <a href="/loan" class="footer-link">Loan a Pen</a>
+                <a href="/stocks" class="footer-link">Invest in PSC</a>
+                <a href="/admin" class="footer-link">Admin Page</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.body.addEventListener("click", () => {
+                document.body.classList.add("fade-in");
+            });
+        });
+    </script>
 </body>
 </html>
