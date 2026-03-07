@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partnerships - PSC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .partnerships-hero {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(51, 102, 204, 0.05));
+            border: 2px solid #0066cc;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .partnerships-hero h1 {
+            color: #0066cc;
+            margin: 0 0 20px 0;
+            font-size: 2.5rem;
+        }
+        .partnerships-hero p {
+            color: #64748b;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .partners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .partner-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .partner-card:hover {
+            border-color: #0066cc;
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.15);
+            transform: translateY(-5px);
+        }
+        .partner-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0066cc, #3366cc);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .partner-card h3 {
+            color: #1e293b;
+            margin: 0 0 15px 0;
+        }
+        .partner-card p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+        .partnership-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        .partnership-type {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(34, 197, 94, 0.05));
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+        .partnership-type h3 {
+            color: #10b981;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .partnership-type p {
+            color: #64748b;
+            margin: 0;
+        }
+        .cta-section {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(51, 102, 204, 0.05));
+            border: 2px solid #0066cc;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin: 60px 0;
+        }
+        .cta-section h2 {
+            color: #0066cc;
+            margin: 0 0 20px 0;
+        }
+        .cta-section p {
+            color: #64748b;
+            margin: 0 0 30px 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 102, 204, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+                    PSC
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('loan') }}">Loan</a></li>
+                    <li><a href="{{ url_for('donate') }}">Donate</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-section">
+            <div class="partnerships-hero">
+                <h1>Our Partnerships</h1>
+                <p>The PSC is allied with multiple organizations, the most successful of all being JulianCO, the jewel trading card game.</p>
+            </div>
+
+            <h2 style="text-align: center; margin-bottom: 40px;">Our Partner Organizations</h2>
+            <div class="partners-grid">
+                <div class="partner-card">
+                    <div class="partner-logo">1</div>
+                    <h3>JulianCO 💎</h3>
+                    <p>The PSC has collaborated with JulianCO as two emerging companies. As part of the sponsorship, we created a JulianCO Trading Cards game, which has been made into an online app as well. JulianCO is a fun, engaging game in which players are dealt packs of jewels. There are multiple rounds with...unexpected challenges and twists. So why wait? The Dealer's open. #PlayJulianCO</p>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-logo">2</div>
+                    <h3>Balochistan Penil Mafia</h3>
+                    <p>The PSC has made many succesful trades with this enterprising organization that has risen up the ranks of indie pen collectors. We give it our full support and alliance, offering a generous amount of 20% of our pencil income as investment to this company. <br> Note: The region "Balochistan" was used purely for naming purposes and does not have any relation to the company's actual HQ location(s), interests, and views. <br>
+✏️✏️✏️✏️✏️✏️✏️✏️✏️✏️✏️</p>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-logo">3</div>
+                    <h3>Flyer101. Fly. Fight. Win</h3>
+                    <p>This Dogfighting game was made by the developers of the PSC and we hope you give it a try. Available on <a href="https://github.com/the-kitten-strikes-back/flyer101"> GitHub.</a> =✪=</p>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-logo">D</div>
+                    <h3>Atomic</h3>
+                    <p>A largely scientific(wait! don't run away!) nuclear reaction simulator, We (the developers of this page) aspire to boost scientific on this new front. Also - it has a really cool galaxy simulator that's <i>very</i> satisfying to watch.</p>
+                </div>
+            </div>
+
+            <h2 style="text-align: center; margin: 60px 0 40px 0;">Types of Partnerships</h2>
+            <div class="partnership-types">
+                <div class="partnership-type">
+                    <h3>Strategic Alliances</h3>
+                    <p>We do many trades with various indie stationary companies and societies such as the Balochistan Pencil Mafia(see above). This trade and exchange of ideas - especially in the Monthly Pen Conference(MPC), helps the PSC support grassroots pen collection and increases the overall stability of the pen economy(see Invest in PSC below).</p>
+                </div>
+                <div class="partnership-type">
+                    <h3>Technology Partners</h3>
+                    <p>None(yet...)</p>
+                </div>
+                <div class="partnership-type">
+                    <h3>Community Partners</h3>
+                    <p>None(as of now...)</p>
+                </div>
+                <div class="partnership-type">
+                    <h3>Educational Partners</h3>
+                    <p>The PSC actually is working on an Future Employee Training program. Slots will be available in the near future.</p>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <h2>Interested in Partnering with Us?</h2>
+                <p>Don't be afraid to Reach out!
+                The PSC is<i> always </i> interested to help.</p>
+                <a href="mailto:PSC.Official@outlook.com" class="cta-btn">Contact Us</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h2 class="footer-title">Quick Links</h2>
+            <div class="footer-links">
+                <a href="{{ url_for('home') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('loan') }}" class="footer-link">Loan a Pen</a>
+                <a href="{{ url_for('donate') }}" class="footer-link">Donate a Pen</a>
+                <a href="{{ url_for('about') }}" class="footer-link">About Us</a>
+            </div>
+            <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: #94a3b8;">
+                <p>&copy; 2024 Pen Stealing Company. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

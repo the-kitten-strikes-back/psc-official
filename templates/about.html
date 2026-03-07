@@ -8,6 +8,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+<form action="{{ url_for('about') }}" method="POST" id="myForm">
+    <input type="hidden" name="choice" value="option1" id="hiddenInput">
+
+
+</form>
+
+<script>
+function submitForm() {
+    document.getElementById("myForm").submit();
+}
+</script>
     <div class="main-content">
         <div class="logo">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
@@ -28,7 +39,7 @@
                 </div>
 
                 <div class="about-section">
-                    <h2>Our Story</h2>
+                        <h2 onclick="submitForm()">Our Story</h2>
                     <p>Founded by a group of innovative students, PSC began as a simple idea: to create the ultimate writing experience. Through dedication, creativity, and a passion for excellence, we've grown from a small classroom initiative into a leading name in the stationary industry.</p>
                     <p>Our journey has been marked by continuous innovation, strategic partnerships(like our latest one with the Balochistan Pencil Mafia), and an unwavering commitment. Today, PSC stands as a testament to what can be achieved through vision, hard work, <b>and a love for the pen.</b></p>
                 </div>

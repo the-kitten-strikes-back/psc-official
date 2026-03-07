@@ -4,50 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PSC | Sign Up</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="main-content">
-        <div class="logo">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
-        </div>
-        <div class="signup-container">
-            <h2>P<sup>en</sup>S<sup>tealing</sup>C<sup>ompany</sup></h2>
-            <form method="POST" action="{{ url_for('register') }}">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+                    PSC
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+    <main>
+        <div class="main-content" style="min-height: auto; padding: 80px 20px; background: linear-gradient(135deg, #f8fafc, #e2e8f0);">
+            <div class="signup-container">
+                <h1 style="font-size: 2rem; margin-bottom: 10px;">Join PSC</h1>
+                <p style="color: #64748b; margin-bottom: 30px; font-size: 16px;">Create your account and start the pen adventure</p>
+                {% if error %}
+                <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 12px; padding: 16px; margin-bottom: 24px; color: #991b1b; font-weight: 500;">
+                    ⚠️ {{ error }}
+                </div>
+                {% endif %}
+                <form method="POST" action="{{ url_for('register') }}">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Choose your username" required>
 
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" placeholder="Enter your email" required>
-                
-                <label for="dob">Date of Birth</label>
-                <input type="date" name="date" id="dob" required>
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" placeholder="Enter your email" required>
 
-                <button type="submit">Sign Up</button>
-            </form>
-            <div class="login-link">
-                <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                    
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" name="date" id="dob" required>
+
+                    <button type="submit" style="margin-top: 20px;">Create Account</button>
+                </form>
+                <div class="login-link">
+                    <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div class="footer">
+    <footer>
         <div class="footer-content">
             <h2 class="footer-title">Explore</h2>
             <div class="footer-links">
                 <a href="/" class="footer-link">Home</a>
                 <a href="/about" class="footer-link">About Us</a>
-                <a href="/partnerships" class="footer-link">Partnerships</a>
-                <a href="/contact" class="footer-link">Contact Us</a>
-                <a href="/donate" class="footer-link">Donate a Pen</a>
                 <a href="/loan" class="footer-link">Loan a Pen</a>
-                <a href="/stocks" class="footer-link">Invest in PSC</a>
-                <a href="/admin" class="footer-link">Admin Page</a>
+                <a href="/donate" class="footer-link">Donate a Pen</a>
+                <a href="/admin" class="footer-link">Admin Portal</a>
             </div>
+            <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: #94a3b8;">
+                <p>&copy; 2024 Pen Stealing Company. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
         </div>
     </div>
 

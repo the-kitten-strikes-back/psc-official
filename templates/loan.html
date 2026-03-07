@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan a Pen - PSC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .pens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .pen-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .pen-card:hover {
+            border-color: #0066cc;
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.15);
+            transform: translateY(-5px);
+        }
+        .pen-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #0066cc, #3366cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .pen-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .pen-image.no-image {
+            background: linear-gradient(135deg, #0066cc, #3366cc);
+        }
+        .pen-card-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .pen-card h3 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 1.25rem;
+        }
+        .pen-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+            padding: 15px 0;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .meta-item {
+            font-size: 13px;
+            color: #64748b;
+        }
+        .meta-item strong {
+            display: block;
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        .ink-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .pen-description {
+            color: #64748b;
+            font-size: 14px;
+            margin: 15px 0;
+            flex: 1;
+        }
+        .prs-rating {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .prs-rating strong {
+            color: #10b981;
+            font-size: 16px;
+        }
+        .prs-label {
+            color: #059669;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .loan-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .loan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 102, 204, 0.3);
+        }
+        .loan-btn:active {
+            transform: translateY(0);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .empty-state p {
+            font-size: 18px;
+        }
+        .error-message {
+            background: #fee2e2;
+            border: 2px solid #fecaca;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+                    PSC
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('loan') }}" class="active">Loan</a></li>
+                    <li><a href="{{ url_for('donate') }}">Donate</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-section">
+            <h1>Find & Loan a Pen 📖</h1>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px;">Explore our collection of available pens and loan one for your needs.</p>
+
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+
+            {% if pens %}
+            <div class="pens-grid">
+                {% for pen in pens %}
+                <div class="pen-card">
+                    <div class="pen-image {% if not pen.picture %}no-image{% endif %}">
+                        {% if pen.picture %}
+                            <img src="{{ url_for('static', filename='pens/' + pen.picture) }}" alt="{{ pen.name }}">
+                        {% else %}
+                            ✏️
+                        {% endif %}
+                    </div>
+                    <div class="pen-card-content">
+                        <h3>{{ pen.name }}</h3>
+                        
+                        <div class="pen-meta">
+                            <div class="meta-item">
+                                <strong>Ink Level</strong>
+                                {{ pen.ink_level }}%
+                            </div>
+                            <div class="meta-item">
+                                <strong>Class</strong>
+                                {{ pen.class_ }}
+                            </div>
+                            <div class="meta-item">
+                                <strong>Ink Color</strong>
+                                <span class="ink-color" style="background-color: {{ pen.ink_color }};"></span>
+                                <span style="text-transform: capitalize;">{{ pen.ink_color.replace('#', '').lower() }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <strong>Quality</strong>
+                                {% if pen.prs >= 4 %}★★★★★{% elif pen.prs >= 3 %}★★★★☆{% elif pen.prs >= 2 %}★★★☆☆{% elif pen.prs >= 1 %}★★☆☆☆{% else %}★☆☆☆☆{% endif %}
+                            </div>
+                        </div>
+
+                        <p class="pen-description">{{ pen.description }}</p>
+
+                        <div class="prs-rating">
+                            <div class="prs-label">Pen Rating Score</div>
+                            <strong>{{ "%.1f" | format(pen.prs) }}/5</strong>
+                        </div>
+
+                        <form method="POST" style="margin-top: auto;">
+                            <input type="hidden" name="pen_id" value="{{ pen.id }}">
+                            <button type="submit" class="loan-btn">Loan This Pen</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.5 6.253 2 10.753 2 16.5S6.5 26.747 12 26.747s10-4.5 10-10.247S17.5 6.253 12 6.253z" />
+                </svg>
+                <p>No pens available for loaning at the moment. Please check back soon!</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h2 class="footer-title">Quick Links</h2>
+            <div class="footer-links">
+                <a href="{{ url_for('home') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('loan') }}" class="footer-link">Loan a Pen</a>
+                <a href="{{ url_for('donate') }}" class="footer-link">Donate a Pen</a>
+                <a href="{{ url_for('about') }}" class="footer-link">About Us</a>
+            </div>
+            <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: #94a3b8;">
+                <p>&copy; 2024 Pen Stealing Company. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Loan - PSC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .return-container {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        .pen-details {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(51, 102, 204, 0.05));
+            border: 2px solid #0066cc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .pen-details h3 {
+            color: #0066cc;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .pen-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            resize: vertical;
+            min-height: 140px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        .review-help {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        .submit-btn, .cancel-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 102, 204, 0.3);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        .cancel-btn {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+        .cancel-btn:hover {
+            background: #cbd5e1;
+        }
+        .rating-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(34, 197, 94, 0.05));
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .rating-section h4 {
+            color: #10b981;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .star-rating {
+            display: flex;
+            gap: 10px;
+            font-size: 2rem;
+        }
+        .star-rating span {
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+        .star-rating span:hover,
+        .star-rating span.active {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+                    PSC
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('loan') }}">Loan</a></li>
+                    <li><a href="{{ url_for('donate') }}">Donate</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-section">
+            <h1>Return a Pen 📤</h1>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px; text-align: center;">Thank you for borrowing from our community! Please return your pen and share your experience.</p>
+
+            <div class="return-container">
+                <div class="pen-details">
+                    <h3>📖 Returning Pen</h3>
+                    <p class="pen-name">{{ loan.pen.name }}</p>
+                </div>
+
+                <form method="POST">
+                    <div class="rating-section">
+                        <h4>✨ How Was This Pen?</h4>
+                        <p style="color: #64748b; font-size: 14px; margin: 0 0 15px 0;">Your review helps the community understand pen quality.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="review">Your Review (Optional)</label>
+                        <textarea 
+                            id="review" 
+                            name="review" 
+                            placeholder="Share your experience with this pen. How was the writing experience? Any feedback for the owner?"></textarea>
+                        <p class="review-help">💡 Helpful reviews include: writing comfort, ink consistency, durability, and overall impressions.</p>
+                    </div>
+
+                    <div class="button-group">
+                        <a href="{{ url_for('dashboard') }}" class="cancel-btn">← Cancel</a>
+                        <button type="submit" class="submit-btn">✓ Return & Submit</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h2 class="footer-title">Quick Links</h2>
+            <div class="footer-links">
+                <a href="{{ url_for('home') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('loan') }}" class="footer-link">Loan a Pen</a>
+                <a href="{{ url_for('donate') }}" class="footer-link">Donate a Pen</a>
+                <a href="{{ url_for('dashboard') }}" class="footer-link">Dashboard</a>
+            </div>
+            <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: #94a3b8;">
+                <p>&copy; 2024 Pen Stealing Company. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
