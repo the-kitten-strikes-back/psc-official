@@ -7,3 +7,4 @@ WTForms==3.2.1
 textblob==0.18.0
 gunicorn==23.0.0
 setuptools>=70.0.0
+psycopg2-binary==2.9.9
