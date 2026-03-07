@@ -6,3 +6,4 @@ SQLAlchemy==2.0.48
 WTForms==3.2.1
 textblob==0.18.0
 gunicorn==20.1.0
+setuptools>=70.0.0
