@@ -8,6 +8,9 @@ from werkzeug.utils import secure_filename
 import datetime
 import os
 from textblob import TextBlob
+import base64
+import hashlib
+import hmac
 app = Flask(__name__)
 db_uri = "postgresql+psycopg2://database_k306_user:tlPqDUbqa9LffCdK5QcqkqTjQDEOqAtT@dpg-d6onjpq4d50c73blir8g-a/database_k306"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
@@ -20,6 +23,24 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "1024supersecretkey!1024")
 app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "static/pens")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+ADMIN_PASSWORD_HASH = os.environ.get(
+    "ADMIN_PASSWORD_HASH",
+    "pbkdf2_sha256$260000$lKdhg0yOV8ER1s97dEwNBA==$FeNnrhuGx6wqKkXwnMiJoN3wrrvOlrbqPGBXOvvr3gk=",
+)
+
+
+def verify_admin_password(password: str) -> bool:
+    try:
+        algo, iterations_s, salt_b64, hash_b64 = ADMIN_PASSWORD_HASH.split("$", 3)
+        if algo != "pbkdf2_sha256":
+            return False
+        iterations = int(iterations_s)
+        salt = base64.b64decode(salt_b64)
+        expected = base64.b64decode(hash_b64)
+        candidate = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, iterations)
+        return hmac.compare_digest(candidate, expected)
+    except Exception:
+        return False
 
 # Create upload folder if it doesn't exist
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
@@ -137,9 +158,7 @@ def about():
 
         password = request.form.get("admin_password")
 
-        ADMIN_PASSWORD = "psc_founder_2025"
-
-        if password == ADMIN_PASSWORD:
+        if verify_admin_password(password):
             current_user.is_admin = True
             db.session.commit()
 
