@@ -1,93 +1,399 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSC | About Us</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-<form action="{{ url_for('about') }}" method="POST" id="myForm">
-    <input type="hidden" name="choice" value="option1" id="hiddenInput">
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSC | About Us</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+<style>
+
+/* TERMINAL STYLE */
+
+#terminal{
+display:none;
+background:black;
+color:#00ff66;
+font-family:monospace;
+padding:20px;
+margin:40px auto;
+width:650px;
+border-radius:8px;
+text-align:left;
+box-shadow:0 0 20px #00ff66;
+overflow:hidden;
+position:relative;
+}
+
+/* scanlines */
+
+#terminal::after{
+content:"";
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(
+rgba(0,255,100,0.05) 50%,
+transparent 50%
+);
+background-size:100% 4px;
+pointer-events:none;
+}
+
+/* blinking cursor */
+
+.cursor{
+display:inline-block;
+width:10px;
+height:16px;
+background:#00ff66;
+margin-left:4px;
+animation:blink 1s infinite;
+}
+
+@keyframes blink{
+0%{opacity:1}
+50%{opacity:0}
+100%{opacity:1}
+}
+
+/* glitch animation */
+
+.glitch{
+animation:glitch 0.25s 6;
+}
+
+@keyframes glitch{
+0%{transform:translate(0)}
+25%{transform:translate(2px,-2px)}
+50%{transform:translate(-2px,2px)}
+75%{transform:translate(2px,1px)}
+100%{transform:translate(0)}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="main-content">
+
+<div class="logo">
+<a href="{{ url_for('home') }}">
+<img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+</a>
+</div>
+
+<div class="about-container">
+
+<h1>About Us</h1>
+
+<div class="company-name">
+P<sup>en</sup>S<sup>torage</sup>C<sup>ompany</sup>
+</div>
+
+<div class="about-content">
+
+<div class="mission-statement">
+<h3>Our Mission</h3>
+<p>
+To revolutionize the stationary industry through innovation,
+creativity, and a commitment to excellence in pen technology
+and distribution.
+</p>
+</div>
+
+<div class="about-section">
+<h2>Who We Are</h2>
+
+<p>
+<span class="highlight">It all started in 2025, when our founders had a dream.</span>
+The class 8B was the birthplace of this idea, where creativity
+and innovation merged to form the foundation of what would
+become the Pen Stealing Company.
+</p>
+
+</div>
+
+<div class="about-section">
+
+<h2>Our Story</h2>
+
+<p>
+Founded by a group of innovative students, PSC began as a simple
+idea: to create the ultimate writing experience.
+</p>
+
+<p>
+Our journey has been marked by continuous innovation,
+strategic partnerships (like our latest one with the
+Balochistan Pencil Mafia), and an unwavering commitment.
+</p>
+
+</div>
+
+<div class="about-section">
+
+<h2>What We Do</h2>
+
+<p>At PSC, we specialize in:</p>
+
+<ul>
+
+<li>
+<span class="highlight">Premium Pen Loaning</span> —
+Providing high-quality pens for loan.
+</li>
+
+<li>
+<span class="highlight">Classification and Categorization</span> —
+Organizing and managing our inventory.
+</li>
+
+<li>
+<span class="highlight">Systematic Collection of Pens</span> —
+Over 200+ pens in secure storage.
+</li>
+
+</ul>
+
+</div>
+
+<div class="about-section">
+
+<h2>Our Values</h2>
+
+<p><span class="highlight">Resilience:</span> Constant improvement.</p>
+<p><span class="highlight">Quality:</span> Never compromise.</p>
+
+</div>
+
+</div>
+
+<p>
+So What Are You Waiting For? <br>
+<a href="/register">Get a PSC membership today</a>
+and experience the future of writing!
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- SECRET TERMINAL -->
+
+<div id="terminal">
+
+<pre id="terminalText"></pre>
+
+<span class="cursor"></span>
+
+</div>
+
+
+
+<!-- HIDDEN ADMIN PANEL -->
+
+<div id="adminArea" style="display:none;text-align:center;margin-top:30px">
+
+<p style="font-family:Orbitron;color:#ff4444">
+⚠ PSC Founder Access Detected
+</p>
+
+<p style="font-family:Orbitron">
+Welcome Founder.<br>
+Pen Stealing Company Admin Console Unlocked.
+</p>
+
+<form action="{{ url_for('about') }}" method="POST">
+
+<input
+type="password"
+name="admin_password"
+placeholder="Enter PSC Admin Code"
+required
+>
+
+<br><br>
+
+<button type="submit">
+Unlock PSC Admin
+</button>
 
 </form>
 
+</div>
+
+
+
+<div class="footer">
+
+<div class="footer-content">
+
+<h2 class="footer-title">Explore</h2>
+
+<div class="footer-links">
+
+<a href="/" class="footer-link">Home</a>
+<a href="/login" class="footer-link">Login</a>
+<a href="/register" class="footer-link">Sign Up</a>
+<a href="/partnerships" class="footer-link">Partnerships</a>
+<a href="/contact" class="footer-link">Contact Us</a>
+<a href="/donate" class="footer-link">Donate a Pen</a>
+<a href="/loan" class="footer-link">Loan a Pen</a>
+<a href="/stocks" class="footer-link">Invest in PSC</a>
+<a href="/admin" class="footer-link">Admin Page</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+
 <script>
-function submitForm() {
-    document.getElementById("myForm").submit();
+
+/* fade effect */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+document.body.addEventListener("click", () => {
+document.body.classList.add("fade-in")
+})
+
+})
+
+
+
+/* SECRET COMBO */
+
+const secretCode = ["p","s","c","a","d","m","i","n"]
+
+let userInput = []
+
+document.addEventListener("keydown", function(e){
+
+userInput.push(e.key.toLowerCase())
+
+if(userInput.length > secretCode.length){
+userInput.shift()
 }
+
+if(JSON.stringify(userInput) === JSON.stringify(secretCode)){
+unlockPSC()
+userInput=[]
+}
+
+})
+
+
+
+/* TERMINAL BOOT */
+
+function unlockPSC(){
+
+const terminal = document.getElementById("terminal")
+const text = document.getElementById("terminalText")
+
+terminal.style.display="block"
+
+const lines=[
+
+"> PSC Secure System v2.5",
+"> Initializing Founder Console...",
+"> Loading Pen Database...",
+"> Checking Vault Security...",
+"> Accessing Trimax Incident Logs...",
+"> Authenticating Founder...",
+"> ACCESS GRANTED"
+
+]
+
+let lineIndex=0
+let charIndex=0
+
+function type(){
+
+if(lineIndex>=lines.length){
+
+terminal.classList.add("glitch")
+
+setTimeout(()=>{
+document.getElementById("adminArea").style.display="block"
+},600)
+
+return
+
+}
+
+let line=lines[lineIndex]
+
+text.innerHTML+=line.charAt(charIndex)
+
+charIndex++
+
+if(charIndex<line.length){
+
+setTimeout(type,30)
+
+}else{
+
+text.innerHTML+="\n"
+
+lineIndex++
+
+charIndex=0
+
+setTimeout(type,400)
+
+}
+
+}
+
+type()
+
+console.log(`
+PSC Founder Console
+-------------------
+Secret combo detected.
+Admin terminal unlocked.
+`)
+
+}
+
+
+
+/* CONSOLE EASTER EGG */
+
+function psc(){
+
+console.log(`
+██████╗ ███████╗ ██████╗
+██╔══██╗██╔════╝██╔════╝
+██████╔╝███████╗██║
+██╔═══╝ ╚════██║██║
+██║     ███████║╚██████╗
+╚═╝     ╚══════╝ ╚═════╝
+
+Pen Stealing Company
+Founder Console
+`)
+
+console.log("Tip: try typing the founder combo on the page.")
+
+}
+
 </script>
-    <div class="main-content">
-        <div class="logo">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
-        </div>
-        <div class="about-container">
-            <h1>About Us</h1>
-            <div class="company-name">P<sup>en</sup>S<sup>tealing</sup>C<sup>ompany</sup></div>
 
-            <div class="about-content">
-                <div class="mission-statement">
-                    <h3>Our Mission</h3>
-                    <p>To revolutionize the stationary industry through innovation, creativity, and a commitment to excellence in pen technology and distribution.</p>
-                </div>
-
-                <div class="about-section">
-                    <h2>Who We Are</h2>
-                    <p>The <span class="highlight">It all started in 2025, when our founders had a dream.</span> The class 8B was the birthplace of this idea, where creativity and innovation merged to form the foundation of what would become the Pen Stealing Company.</p>
-                </div>
-
-                <div class="about-section">
-                        <h2 onclick="submitForm()">Our Story</h2>
-                    <p>Founded by a group of innovative students, PSC began as a simple idea: to create the ultimate writing experience. Through dedication, creativity, and a passion for excellence, we've grown from a small classroom initiative into a leading name in the stationary industry.</p>
-                    <p>Our journey has been marked by continuous innovation, strategic partnerships(like our latest one with the Balochistan Pencil Mafia), and an unwavering commitment. Today, PSC stands as a testament to what can be achieved through vision, hard work, <b>and a love for the pen.</b></p>
-                </div>
-
-                <div class="about-section">
-                    <h2>What We Do</h2>
-                    <p>At PSC, we specialize in:</p>
-                    <ul>
-                        <li><span class="highlight">Premium Pen Loaning</span> - Providing high-quality pens for loan from our diverse collection</li>
-                        <li><span class="highlight">Classification and Categorization</span> - Organizing and managing our product inventory</li>
-                        <li><span class="highlight">Systematic Collection of Pens</span> - We have a vast collection of 200+ pens in our (highly secure :D) storage facilities.</li>
-                    </ul>
-                </div>
-
-                <div class="about-section">
-                    <h2>Our Values</h2>
-                    <p><span class="highlight">Resilience:</span> Constantly pushing boundaries to make the company better.</p>
-                    <p><span class="highlight">Quality:</span> The PSC way is to never compromise on excellence.</p>                </div>
-            </div>
-                        <p> So What Are You Waiting For? <br>
-    <a href="/register">Get a PSC membership today</a> and experience the future of writing!</a> </p>
-        </div>
-    </div>
-
-    </p>
-    <div class="footer">
-        <div class="footer-content">
-            <h2 class="footer-title">Explore</h2>
-            <div class="footer-links">
-                <a href="/" class="footer-link">Home</a>
-                <a href="/login" class="footer-link">Login</a>
-                <a href="/register" class="footer-link">Sign Up</a>
-                <a href="/partnerships" class="footer-link">Partnerships</a>
-                <a href="/contact" class="footer-link">Contact Us</a>
-                <a href="/donate" class="footer-link">Donate a Pen</a>
-                <a href="/loan" class="footer-link">Loan a Pen</a>
-                <a href="/stocks" class="footer-link">Invest in PSC</a>
-                <a href="/admin" class="footer-link">Admin Page</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            document.body.addEventListener("click", () => {
-                document.body.classList.add("fade-in");
-            });
-        });
-    </script>
 </body>
 </html>

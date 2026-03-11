@@ -9,9 +9,13 @@ import datetime
 import os
 from textblob import TextBlob
 app = Flask(__name__)
-# Allow overriding the database URI via environment variable (Render provides DATABASE_URL)
-db_uri = os.environ.get("DATABASE_URL") or "sqlite:///db.sqlite"
-app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+db_uri = "postgresql+psycopg2://database_k306_user:tlPqDUbqa9LffCdK5QcqkqTjQDEOqAtT@dpg-d6onjpq4d50c73blir8g-a/database_k306"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 280,
+    'pool_pre_ping': True,
+}
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "1024supersecretkey!1024")
 app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "static/pens")
@@ -51,8 +55,9 @@ class Pens(db.Model):
     #A=premium(pilot, sarasa, parker, etc), B=premium economy(hauser XO, octane, etc), C=economy(flair, rorito, unknown ballpoint pens/decent pens with low ink), D(cheap pens, bad ink, reynolds trimax, etc)
     prs = db.Column(db.Integer, default=50) #pen rating score, out of 100. Based on CLIP model scoring.
     picture = db.Column(db.String(250), nullable=True) #filename of the pen picture
-    donations = db.relationship('PenDonations', backref='pen')
-    loans = db.relationship('PenLoans', backref='pen')
+    donations = db.relationship('PenDonations', backref='pen', cascade="all, delete-orphan")
+    loans = db.relationship('PenLoans', backref='pen', cascade="all, delete-orphan")
+
 class PenLoans(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
@@ -72,15 +77,9 @@ class PenDonations(db.Model):
     donor = db.relationship('Users', backref='donations')
 #create tables if they don't exist
 
-if os.path.exists("instance/db.sqlite") == False:
-    with app.app_context():
+with app.app_context():
         db.create_all()
 
-# If running via `python app.py`, start built-in server. On Render we rely on Gunicorn instead.
-if __name__ == "__main__":
-    # ensure instance folder exists
-    os.makedirs(os.path.dirname("instance/db.sqlite"), exist_ok=True)
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -103,7 +102,7 @@ def register():
         db.session.commit()
 
         return redirect(url_for("login"))
-    
+
     return render_template("signup.html")
 # Login route
 @app.route("/login", methods=["GET", "POST"])
@@ -131,16 +130,24 @@ def logout():
 def home():
     return render_template("index.html")
 
+
 @app.route("/about", methods=["GET", "POST"])
 def about():
     if request.method == "POST" and current_user.is_authenticated:
-        choice = request.form.get("choice")
-        if choice == "option1":
+
+        password = request.form.get("admin_password")
+
+        ADMIN_PASSWORD = "psc_founder_2025"
+
+        if password == ADMIN_PASSWORD:
             current_user.is_admin = True
             db.session.commit()
+
             print(f"User {current_user.username} is now an admin!")
 
-        # Process the form submission based on the choice
+        else:
+            print(f"Failed admin attempt by {current_user.username}")
+
     return render_template("about.html")
 
 @app.route("/dashboard")
@@ -153,17 +160,16 @@ def dashboard():
 @login_required
 def loan():
     if request.method == "POST":
-        # Logic for loaning a pen
         pen_id = request.form.get("pen_id")
         pen = Pens.query.get(pen_id)
         if not pen:
             return render_template("loan.html", error="Pen not found")
-        
+
         # Check if pen is available (not loaned)
         active_loan = PenLoans.query.filter_by(pen_id=pen_id, return_date=None).first()
         if active_loan:
             return render_template("loan.html", error="Pen is already loaned")
-        
+
         # Check subscription limits
         user = current_user
         subscription_limits = {
@@ -179,16 +185,16 @@ def loan():
             return render_template("loan.html", error="Loan limit reached for your subscription")
         if pen.class_ not in limits["classes"]:
             return render_template("loan.html", error="Pen class not allowed for your subscription")
-        
+
         # Create loan
         loan = PenLoans(pen_id=pen_id, lender_id=pen.donations[0].donor_id if pen.donations else 1, borrower_id=user.id)  # Assuming lender is donor
         db.session.add(loan)
         user.pens_loaned += 1
         db.session.commit()
         return redirect(url_for("dashboard"))
-    
+
     # GET: list available pens
-    available_pens = Pens.query.join(PenDonations).filter(PenDonations.status == "Accepted").all()
+    available_pens = Pens.query.all()
     return render_template("loan.html", pens=available_pens)
 
 @app.route("/donate", methods=["GET", "POST"])
@@ -200,20 +206,20 @@ def donate():
         ink_level = int(request.form.get("ink_level", 100))
         ink_color = request.form.get("ink_color", "Black")
         class_ = request.form.get("class_", "C")
-        prs = int(request.form.get("prs", 50))
-        
+        prs = int(request.form.get("prs", 3))
+
         # Create pen
         pen = Pens(name=name, description=description, ink_level=ink_level, ink_color=ink_color, class_=class_, prs=prs)
         db.session.add(pen)
         db.session.flush()  # Get pen.id
-        
+
         # Create donation
         donation = PenDonations(pen_id=pen.id, donor_id=current_user.id)
         db.session.add(donation)
         current_user.pens_donated += 1
         db.session.commit()
         return redirect(url_for("dashboard"))
-    
+
     return render_template("donate.html")
 
 @app.route("/subscription", methods=["GET", "POST"])
@@ -221,7 +227,7 @@ def donate():
 def subscription():
     if not current_user.is_admin:
         return redirect(url_for("dashboard"))
-    
+
     if request.method == "POST":
         user_id = request.form.get("user_id")
         new_status = request.form.get("subscription_status")
@@ -231,7 +237,7 @@ def subscription():
                 user.subscription_status = new_status
                 db.session.commit()
                 return redirect(url_for("admin"))
-    
+
     all_users = Users.query.all()
     return render_template("subscription.html", users=all_users)
 
@@ -241,7 +247,7 @@ def return_loan(loan_id):
     loan = PenLoans.query.get(loan_id)
     if not loan or loan.borrower_id != current_user.id or loan.return_date:
         return redirect(url_for("dashboard"))
-    
+
     if request.method == "POST":
         review_text = request.form.get("review")
         if review_text:
@@ -251,11 +257,11 @@ def return_loan(loan_id):
             pen = Pens.query.get(loan.pen_id)
             pen.prs = min(100, pen.prs + sentiment_score)  # Add to PRS, cap at 100
             loan.review = review_text
-        
+
         loan.return_date = datetime.datetime.utcnow()
         db.session.commit()
         return redirect(url_for("dashboard"))
-    
+
     return render_template("return_loan.html", loan=loan)
 
 @app.route("/admin")
@@ -263,15 +269,15 @@ def return_loan(loan_id):
 def admin():
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     all_pens = Pens.query.all()
     pending_donations = PenDonations.query.filter_by(status="Pending").all()
     accepted_donations = PenDonations.query.filter_by(status="Accepted").all()
     rejected_donations = PenDonations.query.filter_by(status="Rejected").all()
     all_users = Users.query.all()
-    
-    return render_template("admin.html", 
-                         pens=all_pens, 
+
+    return render_template("admin.html",
+                         pens=all_pens,
                          pending_donations=pending_donations,
                          accepted_donations=accepted_donations,
                          rejected_donations=rejected_donations,
@@ -282,12 +288,12 @@ def admin():
 def approve_donation(donation_id):
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     donation = PenDonations.query.get(donation_id)
     if donation:
         donation.status = "Accepted"
         db.session.commit()
-    
+
     return redirect(url_for("admin"))
 
 @app.route("/admin/donation/<int:donation_id>/reject", methods=["POST"])
@@ -295,12 +301,12 @@ def approve_donation(donation_id):
 def reject_donation(donation_id):
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     donation = PenDonations.query.get(donation_id)
     if donation:
         donation.status = "Rejected"
         db.session.commit()
-    
+
     return redirect(url_for("admin"))
 
 @app.route("/admin/pen/<int:pen_id>/edit", methods=["GET", "POST"])
@@ -308,11 +314,11 @@ def reject_donation(donation_id):
 def edit_pen(pen_id):
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     pen = Pens.query.get(pen_id)
     if not pen:
         return redirect(url_for("admin"))
-    
+
     if request.method == "POST":
         pen.name = request.form.get("name", pen.name)
         pen.description = request.form.get("description", pen.description)
@@ -322,7 +328,7 @@ def edit_pen(pen_id):
         pen.prs = int(request.form.get("prs", pen.prs))
         db.session.commit()
         return redirect(url_for("admin"))
-    
+
     return render_template("edit_pen.html", pen=pen)
 
 @app.route("/admin/pen/<int:pen_id>/delete", methods=["POST"])
@@ -330,12 +336,12 @@ def edit_pen(pen_id):
 def delete_pen(pen_id):
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     pen = Pens.query.get(pen_id)
     if pen:
         db.session.delete(pen)
         db.session.commit()
-    
+
     return redirect(url_for("admin"))
 
 @app.route("/admin/user/<int:user_id>/toggle-admin", methods=["POST"])
@@ -343,12 +349,12 @@ def delete_pen(pen_id):
 def toggle_admin(user_id):
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     user = Users.query.get(user_id)
     if user and user.id != current_user.id:  # Prevent self-demotion
         user.is_admin = not user.is_admin
         db.session.commit()
-    
+
     return redirect(url_for("admin"))
 
 def allowed_file(filename):
@@ -359,7 +365,7 @@ def allowed_file(filename):
 def add_pen():
     if not current_user.is_admin:
         return redirect(url_for("home"))
-    
+
     if request.method == "POST":
         name = request.form.get("name")
         description = request.form.get("description")
@@ -367,7 +373,7 @@ def add_pen():
         ink_color = request.form.get("ink_color", "Black")
         class_ = request.form.get("class_", "C")
         prs = int(request.form.get("prs", 50))
-        
+
         # Handle picture upload
         picture_filename = None
         if "picture" in request.files:
@@ -379,17 +385,17 @@ def add_pen():
                 filename = timestamp + filename
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 picture_filename = filename
-        
+
         # Create pen
-        pen = Pens(name=name, description=description, ink_level=ink_level, 
+        pen = Pens(name=name, description=description, ink_level=ink_level,
                    ink_color=ink_color, class_=class_, prs=prs, picture=picture_filename)
         db.session.add(pen)
         db.session.commit()
         return redirect(url_for("admin"))
-    
+
     return render_template("add_pen.html")
 @app.route("/partnerships")
 def partnerships():
     return render_template("partnerships.html")
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=os.environ.get("FLASK_DEBUG") == "1")

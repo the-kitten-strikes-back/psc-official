@@ -218,7 +218,7 @@
                             <div class="form-group">
                                 <label for="prs">Pen Rating Score (PRS)</label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="number" id="prs" name="prs" min="0" max="5" step="0.1" value="3" style="flex: 1;">
+                                    <input type="number" id="prs" name="prs" min="0" max="100" step="1" value="50" style="flex: 1;">
                                     <span style="color: #64748b; font-weight: 600;">/5</span>
                                 </div>
                             </div>
@@ -241,7 +241,7 @@
                 <a href="{{ url_for('about') }}" class="footer-link">About Us</a>
             </div>
             <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: #94a3b8;">
-                <p>&copy; 2024 Pen Stealing Company. All rights reserved.</p>
+                <p>&copy; 2024 Pen Storage Company. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -249,7 +249,7 @@
     <script>
         const colorInput = document.getElementById('ink_color');
         const colorPicker = document.getElementById('ink_color_picker');
-        
+
         colorInput.addEventListener('change', function() {
             try {
                 colorPicker.value = this.value;
@@ -257,7 +257,7 @@
                 // Invalid color value
             }
         });
-        
+
         colorPicker.addEventListener('change', function() {
             colorInput.value = this.value;
         });
