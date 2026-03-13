@@ -8,25 +8,153 @@
 <title>PSC | About Us</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
 <style>
+
+/* FUTURISTIC GLOBAL THEME */
+
+:root{
+--ink:#e8f6ff;
+--muted:#a7bdd1;
+--neon:#32f5ff;
+--neon-soft:#7cf9ff;
+--neon-warm:#ff7bf5;
+--danger:#ff3b5c;
+--panel:rgba(9,20,36,0.78);
+--panel-strong:rgba(6,14,26,0.92);
+--glass:rgba(255,255,255,0.06);
+--line:rgba(124,249,255,0.25);
+--shadow:0 30px 60px rgba(0,0,0,0.45);
+}
+
+body{
+background:
+radial-gradient(1200px 700px at 15% -10%, rgba(50,245,255,0.22), transparent 60%),
+radial-gradient(900px 500px at 85% 0%, rgba(255,123,245,0.18), transparent 55%),
+linear-gradient(180deg, #050912 0%, #070f1f 40%, #060b16 100%);
+color:var(--ink);
+font-family:"Space Grotesk", sans-serif;
+letter-spacing:0.2px;
+min-height:100vh;
+position:relative;
+overflow-x:hidden;
+}
+
+body::before{
+content:"";
+position:fixed;
+inset:-20%;
+background:
+linear-gradient(transparent 78%, rgba(50,245,255,0.06) 79%, transparent 81%),
+linear-gradient(90deg, transparent 78%, rgba(50,245,255,0.05) 79%, transparent 81%);
+background-size:60px 60px;
+opacity:0.45;
+filter:blur(0.2px);
+pointer-events:none;
+z-index:0;
+animation:grid-drift 14s linear infinite;
+}
+
+body::after{
+content:"";
+position:fixed;
+inset:0;
+background:
+radial-gradient(circle at 30% 20%, rgba(50,245,255,0.2), transparent 40%),
+radial-gradient(circle at 75% 15%, rgba(255,123,245,0.2), transparent 45%);
+opacity:0.6;
+mix-blend-mode:screen;
+pointer-events:none;
+z-index:0;
+}
+
+@keyframes grid-drift{
+0%{transform:translateY(0)}
+100%{transform:translateY(40px)}
+}
+
+.main-content{
+position:relative;
+z-index:1;
+}
+
+.about-container{
+background:var(--panel);
+border:1px solid var(--line);
+box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+backdrop-filter:blur(12px);
+border-radius:18px;
+padding:44px 40px;
+position:relative;
+overflow:hidden;
+}
+
+.about-container::before{
+content:"";
+position:absolute;
+inset:0;
+background:linear-gradient(120deg, rgba(50,245,255,0.06), rgba(255,123,245,0.03), transparent 60%);
+pointer-events:none;
+}
+
+h1, h2, h3{
+font-family:"Orbitron", sans-serif;
+letter-spacing:1px;
+}
+
+.highlight{
+color:var(--neon);
+text-shadow:0 0 12px rgba(50,245,255,0.5);
+}
+
+.company-name{
+color:var(--neon-soft);
+text-shadow:0 0 18px rgba(124,249,255,0.5);
+}
+
+.about-section{
+background:rgba(8,18,32,0.6);
+border:1px solid rgba(124,249,255,0.18);
+border-radius:14px;
+padding:18px 22px;
+box-shadow:inset 0 0 20px rgba(50,245,255,0.08);
+}
+
+.about-section + .about-section{
+margin-top:18px;
+}
+
+ul li{
+margin-bottom:10px;
+}
+
+a{
+color:var(--neon-soft);
+text-decoration:none;
+}
+
+a:hover{
+color:var(--neon);
+}
 
 /* TERMINAL STYLE */
 
 #terminal{
 display:none;
-background:black;
-color:#00ff66;
-font-family:monospace;
-padding:20px;
-margin:40px auto;
-width:650px;
-border-radius:8px;
+background:var(--panel-strong);
+color:var(--neon);
+font-family:"Share Tech Mono", monospace;
+padding:24px;
+margin:50px auto 30px;
+width:min(760px, 90vw);
+border-radius:16px;
 text-align:left;
-box-shadow:0 0 20px #00ff66;
+box-shadow:0 0 25px rgba(50,245,255,0.25), 0 0 70px rgba(50,245,255,0.2);
 overflow:hidden;
 position:relative;
+border:1px solid rgba(50,245,255,0.35);
 }
 
 /* scanlines */
@@ -39,7 +167,7 @@ left:0;
 width:100%;
 height:100%;
 background:linear-gradient(
-rgba(0,255,100,0.05) 50%,
+rgba(50,245,255,0.08) 50%,
 transparent 50%
 );
 background-size:100% 4px;
@@ -52,7 +180,7 @@ pointer-events:none;
 display:inline-block;
 width:10px;
 height:16px;
-background:#00ff66;
+background:var(--neon);
 margin-left:4px;
 animation:blink 1s infinite;
 }
@@ -77,11 +205,133 @@ animation:glitch 0.25s 6;
 100%{transform:translate(0)}
 }
 
+/* ADMIN PANEL */
+
+#adminArea{
+display:none;
+text-align:center;
+margin:40px auto 60px;
+width:min(760px, 90vw);
+background:var(--panel);
+border:1px solid rgba(255,59,92,0.45);
+border-radius:18px;
+padding:28px;
+box-shadow:0 0 30px rgba(255,59,92,0.2), var(--shadow);
+position:relative;
+overflow:hidden;
+}
+
+#adminArea::before{
+content:"";
+position:absolute;
+inset:0;
+background:
+radial-gradient(circle at 10% 20%, rgba(255,59,92,0.18), transparent 45%),
+radial-gradient(circle at 90% 15%, rgba(50,245,255,0.18), transparent 50%);
+opacity:0.6;
+pointer-events:none;
+}
+
+#adminArea p{
+position:relative;
+z-index:1;
+}
+
+#adminArea form{
+position:relative;
+z-index:1;
+margin-top:18px;
+}
+
+#adminArea input{
+width:min(420px, 90%);
+background:rgba(3,10,20,0.85);
+border:1px solid rgba(124,249,255,0.45);
+color:var(--ink);
+padding:12px 16px;
+border-radius:10px;
+font-size:15px;
+outline:none;
+box-shadow:inset 0 0 14px rgba(50,245,255,0.2);
+}
+
+#adminArea input:focus{
+border-color:var(--neon);
+box-shadow:0 0 14px rgba(50,245,255,0.45);
+}
+
+#adminArea button{
+margin-top:18px;
+padding:12px 26px;
+border-radius:999px;
+border:1px solid rgba(50,245,255,0.6);
+background:linear-gradient(120deg, rgba(50,245,255,0.2), rgba(255,123,245,0.25));
+color:var(--ink);
+font-family:"Orbitron", sans-serif;
+letter-spacing:1px;
+cursor:pointer;
+transition:transform 0.2s ease, box-shadow 0.2s ease;
+box-shadow:0 0 20px rgba(50,245,255,0.3);
+}
+
+#adminArea button:hover{
+transform:translateY(-2px);
+box-shadow:0 0 26px rgba(50,245,255,0.5);
+}
+
+/* FOUNDER MODE */
+
+.founder-overlay{
+position:fixed;
+inset:0;
+background:
+linear-gradient(180deg, rgba(5,9,18,0.2) 0%, rgba(3,7,16,0.65) 65%, rgba(3,7,16,0.85) 100%),
+radial-gradient(circle at 20% 30%, rgba(50,245,255,0.18), transparent 50%),
+radial-gradient(circle at 80% 20%, rgba(255,123,245,0.22), transparent 55%);
+opacity:0;
+pointer-events:none;
+z-index:2;
+transition:opacity 0.6s ease;
+}
+
+.founder-scan{
+position:fixed;
+inset:-20% 0;
+background:linear-gradient(transparent 0%, rgba(50,245,255,0.18) 50%, transparent 100%);
+opacity:0;
+pointer-events:none;
+z-index:2;
+animation:scan 5s linear infinite;
+transition:opacity 0.6s ease;
+}
+
+@keyframes scan{
+0%{transform:translateY(-120%)}
+100%{transform:translateY(120%)}
+}
+
+body.founder-mode .founder-overlay,
+body.founder-mode .founder-scan{
+opacity:1;
+}
+
+body.founder-mode .about-container{
+box-shadow:0 0 30px rgba(50,245,255,0.35), 0 0 90px rgba(255,123,245,0.25);
+border-color:rgba(50,245,255,0.4);
+}
+
+body.founder-mode .logo img{
+filter:drop-shadow(0 0 16px rgba(50,245,255,0.45));
+}
+
 </style>
 
 </head>
 
 <body>
+
+<div class="founder-overlay" aria-hidden="true"></div>
+<div class="founder-scan" aria-hidden="true"></div>
 
 <div class="main-content">
 
@@ -203,7 +453,7 @@ and experience the future of writing!
 
 <!-- HIDDEN ADMIN PANEL -->
 
-<div id="adminArea" style="display:none;text-align:center;margin-top:30px">
+<div id="adminArea">
 
 <p style="font-family:Orbitron;color:#ff4444">
 ⚠ PSC Founder Access Detected
@@ -306,6 +556,7 @@ const terminal = document.getElementById("terminal")
 const text = document.getElementById("terminalText")
 
 terminal.style.display="block"
+document.body.classList.add("founder-mode")
 
 const lines=[
 
