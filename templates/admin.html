@@ -4,20 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - PSC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
+        :root{
+            --ink:#e8f6ff;
+            --muted:#9bb0c5;
+            --neon:#34f5ff;
+            --neon-soft:#7cf9ff;
+            --panel:rgba(9,20,36,0.78);
+            --panel-strong:rgba(6,14,26,0.92);
+            --line:rgba(124,249,255,0.25);
+            --shadow:0 30px 60px rgba(0,0,0,0.45);
+        }
+
+        body{
+            background:
+                radial-gradient(1200px 700px at 15% -10%, rgba(50,245,255,0.22), transparent 60%),
+                radial-gradient(900px 500px at 85% 0%, rgba(255,123,245,0.18), transparent 55%),
+                linear-gradient(180deg, #050912 0%, #070f1f 40%, #060b16 100%);
+            color:var(--ink);
+            font-family:"Space Grotesk", sans-serif;
+            letter-spacing:0.2px;
+        }
+
+        body::before{
+            content:"";
+            position:fixed;
+            inset:-20%;
+            background:
+                linear-gradient(transparent 78%, rgba(50,245,255,0.06) 79%, transparent 81%),
+                linear-gradient(90deg, transparent 78%, rgba(50,245,255,0.05) 79%, transparent 81%);
+            background-size:60px 60px;
+            opacity:0.45;
+            filter:blur(0.2px);
+            pointer-events:none;
+            z-index:0;
+            animation:grid-drift 14s linear infinite;
+        }
+
+        @keyframes grid-drift{
+            0%{transform:translateY(0)}
+            100%{transform:translateY(40px)}
+        }
+
+        header, main, footer{
+            position:relative;
+            z-index:1;
+        }
+
+        nav{
+            background:rgba(7,15,27,0.7);
+            border-bottom:1px solid var(--line);
+            backdrop-filter:blur(10px);
+        }
+
+        .logo{
+            font-family:"Orbitron", sans-serif;
+            letter-spacing:1px;
+        }
+
+        .nav-links a{
+            color:var(--ink);
+        }
+
+        .nav-links a:hover{
+            color:var(--neon);
+        }
+
+        .footer-link{
+            color:var(--neon-soft);
+        }
+
+        .footer-link:hover{
+            color:var(--neon);
+        }
+
+        footer{
+            background: rgba(6,14,26,0.9);
+            border-top: 1px solid var(--line);
+        }
+
+        .footer-title{
+            font-family:"Orbitron", sans-serif;
+            letter-spacing:0.6px;
+        }
+
+        .footer-content, footer p{
+            color:var(--muted);
+        }
+
         .admin-header {
-            background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(51, 102, 204, 0.05));
-            border: 2px solid #0066cc;
-            border-radius: 12px;
-            padding: 30px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 32px;
             margin-bottom: 40px;
+            box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+            backdrop-filter: blur(12px);
         }
         .admin-header h1 {
             margin: 0 0 10px 0;
+            font-family:"Orbitron", sans-serif;
+            letter-spacing:1px;
         }
         .admin-header p {
-            color: #64748b;
+            color: var(--muted);
             margin: 0;
         }
         .admin-actions {
@@ -31,8 +123,8 @@
             align-items: center;
             gap: 8px;
             padding: 12px 24px;
-            background: linear-gradient(135deg, #0066cc, #0052a3);
-            color: white;
+            background: linear-gradient(120deg, rgba(50,245,255,0.25), rgba(255,123,245,0.25));
+            color: var(--ink);
             text-decoration: none;
             border-radius: 8px;
             font-weight: 600;
@@ -40,12 +132,13 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
-            border: none;
+            border: 1px solid rgba(50,245,255,0.5);
             cursor: pointer;
+            box-shadow: 0 0 20px rgba(50,245,255,0.25);
         }
         .admin-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 102, 204, 0.3);
+            box-shadow: 0 10px 24px rgba(50,245,255,0.4);
         }
         .section-header {
             display: flex;
@@ -53,17 +146,19 @@
             align-items: center;
             margin: 40px 0 25px 0;
             padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 1px solid rgba(124,249,255,0.25);
         }
         .section-header h2 {
             margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-family:"Orbitron", sans-serif;
+            letter-spacing:0.6px;
         }
         .count-badge {
-            background: linear-gradient(135deg, #0066cc, #0052a3);
-            color: white;
+            background: linear-gradient(135deg, rgba(50,245,255,0.35), rgba(255,123,245,0.35));
+            color: var(--ink);
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
@@ -76,28 +171,29 @@
             margin: 20px 0;
         }
         .item-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            background: rgba(7,15,28,0.85);
+            border: 1px solid rgba(124,249,255,0.2);
+            border-radius: 14px;
             padding: 20px;
             transition: all 0.3s ease;
+            box-shadow: inset 0 0 20px rgba(50,245,255,0.05);
         }
         .item-card:hover {
-            border-color: #0066cc;
-            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.1);
+            border-color: rgba(50,245,255,0.6);
+            box-shadow: 0 10px 26px rgba(50,245,255,0.2);
         }
         .item-card h4 {
             margin: 0 0 10px 0;
-            color: #1e293b;
+            color: var(--ink);
             font-size: 16px;
         }
         .item-card .donor {
-            color: #0066cc;
+            color: var(--neon-soft);
             font-weight: 600;
             font-size: 13px;
         }
         .item-details {
-            color: #64748b;
+            color: var(--muted);
             font-size: 13px;
             margin: 10px 0;
             line-height: 1.6;
@@ -108,16 +204,16 @@
             gap: 10px;
             margin: 15px 0;
             padding: 12px 0;
-            border-top: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
+            border-top: 1px solid rgba(124,249,255,0.18);
+            border-bottom: 1px solid rgba(124,249,255,0.18);
         }
         .meta-item {
             font-size: 12px;
-            color: #64748b;
+            color: var(--muted);
         }
         .meta-item strong {
             display: block;
-            color: #1e293b;
+            color: var(--ink);
             font-weight: 600;
             margin-bottom: 2px;
         }
@@ -149,40 +245,45 @@
             justify-content: center;
         }
         .approve-btn {
-            background: #dcfce7;
-            color: #166534;
+            background: rgba(34,197,94,0.15);
+            color: #9dffbf;
+            border: 1px solid rgba(34,197,94,0.4);
         }
         .approve-btn:hover {
-            background: #bbf7d0;
+            background: rgba(34,197,94,0.25);
         }
         .reject-btn {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(239,68,68,0.15);
+            color: #ff9aa8;
+            border: 1px solid rgba(239,68,68,0.4);
         }
         .reject-btn:hover {
-            background: #fecaca;
+            background: rgba(239,68,68,0.25);
         }
         .edit-btn {
-            background: linear-gradient(135deg, #0066cc, #0052a3);
-            color: white;
+            background: linear-gradient(135deg, rgba(50,245,255,0.3), rgba(255,123,245,0.3));
+            color: var(--ink);
+            border: 1px solid rgba(50,245,255,0.45);
         }
         .edit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 102, 204, 0.2);
+            box-shadow: 0 4px 12px rgba(50,245,255,0.35);
         }
         .delete-btn {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(239,68,68,0.18);
+            color: #ff9aa8;
+            border: 1px solid rgba(239,68,68,0.45);
         }
         .delete-btn:hover {
-            background: #fecaca;
+            background: rgba(239,68,68,0.3);
         }
         .toggle-admin-btn {
-            background: #f3e8ff;
-            color: #6b21a8;
+            background: rgba(168,85,247,0.18);
+            color: #e4c1ff;
+            border: 1px solid rgba(168,85,247,0.4);
         }
         .toggle-admin-btn:hover {
-            background: #e9d5ff;
+            background: rgba(168,85,247,0.3);
         }
         .status-badge {
             display: inline-block;
@@ -195,28 +296,28 @@
             margin-top: 8px;
         }
         .status-pending {
-            background: #fef3c7;
-            color: #92400e;
+            background: rgba(245,158,11,0.2);
+            color: #ffd59e;
         }
         .status-accepted {
-            background: #dcfce7;
-            color: #166534;
+            background: rgba(34,197,94,0.2);
+            color: #baffd4;
         }
         .status-rejected {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(239,68,68,0.2);
+            color: #ffb0bb;
         }
         .status-admin {
-            background: #f3e8ff;
-            color: #6b21a8;
+            background: rgba(168,85,247,0.25);
+            color: #e8cfff;
         }
         .empty-message {
             text-align: center;
             padding: 40px;
-            color: #94a3b8;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 2px dashed #cbd5e1;
+            color: var(--muted);
+            background: rgba(7,15,28,0.6);
+            border-radius: 12px;
+            border: 1px dashed rgba(124,249,255,0.25);
         }
     </style>
 </head>
