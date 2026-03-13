@@ -157,6 +157,7 @@
                                 <small> • Returned on {{ loan.return_date.strftime('%B %d, %Y') }}</small>
                                 {% if loan.review %}<small> • Your review: "{{ loan.review }}"</small>{% endif %}
                             {% else %}
+                                <small> • Due by {{ loan.due_date.strftime('%B %d, %Y') }}</small>
                                 <span class="status-badge status-pending">Active</span>
                             {% endif %}
                         </div>

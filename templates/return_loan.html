@@ -168,6 +168,7 @@
                 <div class="pen-details">
                     <h3>📖 Returning Pen</h3>
                     <p class="pen-name">{{ loan.pen.name }}</p>
+                    <p style="color: #64748b; margin-top: 6px;">Due by {{ loan.due_date.strftime('%B %d, %Y') }}</p>
                 </div>
 
                 <form method="POST">

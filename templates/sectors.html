@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSC | Sector Access</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#e8f6ff;
+      --muted:#9bb0c5;
+      --neon:#34f5ff;
+      --panel:rgba(9,20,36,0.78);
+      --line:rgba(124,249,255,0.25);
+      --shadow:0 30px 60px rgba(0,0,0,0.45);
+    }
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(50,245,255,0.22), transparent 60%),
+        radial-gradient(900px 500px at 85% 0%, rgba(255,123,245,0.18), transparent 55%),
+        linear-gradient(180deg, #050912 0%, #070f1f 40%, #060b16 100%);
+      color:var(--ink);
+      font-family:"Space Grotesk", sans-serif;
+      letter-spacing:0.2px;
+      min-height:100vh;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-20%;
+      background:
+        linear-gradient(transparent 78%, rgba(50,245,255,0.06) 79%, transparent 81%),
+        linear-gradient(90deg, transparent 78%, rgba(50,245,255,0.05) 79%, transparent 81%);
+      background-size:60px 60px;
+      opacity:0.45;
+      filter:blur(0.2px);
+      pointer-events:none;
+      z-index:0;
+      animation:grid-drift 14s linear infinite;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(50,245,255,0.2), transparent 40%),
+        radial-gradient(circle at 75% 15%, rgba(255,123,245,0.2), transparent 45%);
+      opacity:0.6;
+      mix-blend-mode:screen;
+      pointer-events:none;
+      z-index:0;
+    }
+    @keyframes grid-drift{
+      0%{transform:translateY(0)}
+      100%{transform:translateY(40px)}
+    }
+    .hero{
+      padding:60px 24px 20px;
+      text-align:center;
+      position:relative;
+      z-index:1;
+    }
+    .hero h1{
+      margin:0 0 10px;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:1px;
+    }
+    .hero p{
+      color:var(--muted);
+      margin:0;
+    }
+    .grid{
+      max-width:1100px;
+      margin:30px auto 80px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+      gap:18px;
+      padding:0 24px;
+      position:relative;
+      z-index:1;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:22px;
+      box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+      text-decoration:none;
+      color:var(--ink);
+      position:relative;
+      overflow:hidden;
+      transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg, rgba(50,245,255,0.08), transparent 60%);
+      opacity:0.6;
+      pointer-events:none;
+    }
+    .card:hover{
+      transform:translateY(-4px);
+      border-color:rgba(124,249,255,0.55);
+      box-shadow:0 14px 30px rgba(50,245,255,0.2);
+    }
+    .card h2{
+      margin:0 0 6px;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:0.6px;
+    }
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+    .badge{
+      display:inline-block;
+      margin-top:14px;
+      padding:6px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--neon);
+      font-size:12px;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>PSC Sector Access</h1>
+    <p>Select a sector to unlock its specialized console.</p>
+  </div>
+  <div class="grid">
+    {% for key, sector in sectors.items() %}
+      <a class="card" href="{{ url_for('sector_page', sector=key) }}">
+        <h2>{{ sector.name }}</h2>
+        <p>{{ sector.full }}</p>
+        <p style="margin-top:10px;">{{ sector.summary }}</p>
+        <span class="badge">Enter Console</span>
+      </a>
+    {% endfor %}
+  </div>
+</body>
+</html>

@@ -1,6 +1,4 @@
-
-
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +9,7 @@ from textblob import TextBlob
 import base64
 import hashlib
 import hmac
+from functools import wraps
 app = Flask(__name__)
 db_uri = "postgresql+psycopg2://database_k306_user:tlPqDUbqa9LffCdK5QcqkqTjQDEOqAtT@dpg-d6onjpq4d50c73blir8g-a/database_k306"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
@@ -28,6 +27,62 @@ ADMIN_PASSWORD_HASH = os.environ.get(
     "pbkdf2_sha256$260000$lKdhg0yOV8ER1s97dEwNBA==$FeNnrhuGx6wqKkXwnMiJoN3wrrvOlrbqPGBXOvvr3gk=",
 )
 
+SECTOR_PASSWORD_HASHES = {
+    "sodac": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SODAC",
+        "pbkdf2_sha256$260000$E0jS2I856uwT6nJ2SSERDg==$EaLeMSyZbBfs9s9qM2VlZhBpGhgWRiiFRO0xLfLLM8M=",
+    ),
+    "sobab": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SOBAB",
+        "pbkdf2_sha256$260000$DYnPxO/8p8OPldXffHUAFg==$LS5Aud3yDPgpWIWFtdpLhhJY3l8apQxWRwgx8I/Hp1Q=",
+    ),
+    "sorasr": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SORASR",
+        "pbkdf2_sha256$260000$Khnd9VBSzU+Tp2+mSg9HJA==$PDkrCB6IAR33UK/6BYgCyyxkO0MArm1G+wqhuJs+Pl8=",
+    ),
+    "socac": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SOCAC",
+        "pbkdf2_sha256$260000$hTKSsgsr1AV52FlcOAbR4g==$mq6H5K97bJjIaPCXkb3lzK+UOv8LVNtUfw22wm/bciE=",
+    ),
+    "sosas": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SOSAS",
+        "pbkdf2_sha256$260000$tqgId5Rqpqzwuw1YPFx9mA==$WWeN75bkUI2X5KrAGip4l+jvU0Yao9lc3R8H/aRh030=",
+    ),
+}
+
+SECTOR_CONFIG = {
+    "sodac": {
+        "name": "SoDAC",
+        "full": "Sector of Data and Classification",
+        "summary": "Sort pens and determine value through flowcharts, algorithms, and classification.",
+        "accent": "#34f5ff",
+    },
+    "sobab": {
+        "name": "SoBAB",
+        "full": "Sector of Brand and Business",
+        "summary": "Promote the PSC brand through automated campaigns, propaganda, and outreach.",
+        "accent": "#ff7bf5",
+    },
+    "sorasr": {
+        "name": "SoRASR",
+        "full": "Sector of Operations and Scrap Repairs",
+        "summary": "Assemble parts into hybrid models and fulfill missing parts requests.",
+        "accent": "#ffb347",
+    },
+    "socac": {
+        "name": "SoCAC",
+        "full": "Sector of Collection and Compilation",
+        "summary": "Locate pens and add them to the database; manage intake and approvals.",
+        "accent": "#7cf9ff",
+    },
+    "sosas": {
+        "name": "SoSAS",
+        "full": "Sector of Security and Secrets",
+        "summary": "Handle sensitive relations and maintain PSC security.",
+        "accent": "#ff3b5c",
+    },
+}
+
 
 def verify_admin_password(password: str) -> bool:
     try:
@@ -41,6 +96,38 @@ def verify_admin_password(password: str) -> bool:
         return hmac.compare_digest(candidate, expected)
     except Exception:
         return False
+
+def verify_sector_password(sector: str, password: str) -> bool:
+    stored = SECTOR_PASSWORD_HASHES.get(sector)
+    if not stored:
+        return False
+    try:
+        algo, iterations_s, salt_b64, hash_b64 = stored.split("$", 3)
+        if algo != "pbkdf2_sha256":
+            return False
+        iterations = int(iterations_s)
+        salt = base64.b64decode(salt_b64)
+        expected = base64.b64decode(hash_b64)
+        candidate = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, iterations)
+        return hmac.compare_digest(candidate, expected)
+    except Exception:
+        return False
+
+def sector_session_key(sector: str) -> str:
+    return f"sector_authed_{sector}"
+
+def is_sector_authed(sector: str) -> bool:
+    return session.get(sector_session_key(sector)) is True
+
+def require_sector(sector: str):
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            if not is_sector_authed(sector):
+                return redirect(url_for("sector_page", sector=sector))
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
 
 # Create upload folder if it doesn't exist
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
@@ -89,6 +176,10 @@ class PenLoans(db.Model):
     review = db.Column(db.String(500), nullable=True)#use textblob sentiment analysis to generate a score out of 100, which will be added to the pen's PRS.
     borrower = db.relationship('Users', backref='borrowed_loans', foreign_keys=[borrower_id])
     lender = db.relationship('Users', backref='lent_loans', foreign_keys=[lender_id])
+
+    @property
+    def due_date(self):
+        return self.loan_date + datetime.timedelta(days=7)
 class PenDonations(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
@@ -96,6 +187,34 @@ class PenDonations(db.Model):
     donation_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     status = db.Column(db.String(50), default="Pending") #Pending, Accepted, Rejected. Pending means the pen is waiting to be approved by an admin, accepted means the pen is approved and added to the inventory, rejected means the pen is rejected and won't be added to the inventory.
     donor = db.relationship('Users', backref='donations')
+
+class BrandCampaign(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    channel = db.Column(db.String(50), default="Email")
+    audience = db.Column(db.String(120), default="All")
+    message = db.Column(db.String(800), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    status = db.Column(db.String(50), default="Queued")
+
+class RepairTicket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
+    issue = db.Column(db.String(400), nullable=False)
+    status = db.Column(db.String(50), default="Open")
+    notes = db.Column(db.String(500), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    pen = db.relationship('Pens', backref='repair_tickets')
+
+class SectorAccessLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sector = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(200), nullable=True)
+    accessed_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user = db.relationship('Users', backref='sector_access_logs')
 #create tables if they don't exist
 
 with app.app_context():
@@ -168,6 +287,104 @@ def about():
             print(f"Failed admin attempt by {current_user.username}")
 
     return render_template("about.html")
+
+@app.route("/sectors")
+def sectors():
+    return render_template("sectors.html", sectors=SECTOR_CONFIG)
+
+@app.route("/sector/<sector>", methods=["GET", "POST"])
+def sector_page(sector):
+    if sector not in SECTOR_CONFIG:
+        return redirect(url_for("sectors"))
+
+    error = None
+    authed = is_sector_authed(sector)
+
+    if request.method == "POST" and not authed:
+        password = request.form.get("sector_password", "")
+        if verify_sector_password(sector, password):
+            session[sector_session_key(sector)] = True
+            authed = True
+        else:
+            error = "Invalid sector password."
+
+    if authed:
+        log = SectorAccessLog(
+            sector=sector,
+            user_id=current_user.id if current_user.is_authenticated else None,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent", "")[:200],
+        )
+        db.session.add(log)
+        db.session.commit()
+
+    if sector == "socac":
+        pending = PenDonations.query.filter_by(status="Pending").all()
+        accepted = PenDonations.query.filter_by(status="Accepted").all()
+        rejected = PenDonations.query.filter_by(status="Rejected").all()
+        pens = Pens.query.all()
+        return render_template(
+            "sector_socac.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            pending_donations=pending,
+            accepted_donations=accepted,
+            rejected_donations=rejected,
+            pens=pens,
+        )
+
+    if sector == "sodac":
+        pens = Pens.query.all()
+        return render_template(
+            "sector_sodac.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            pens=pens,
+        )
+
+    if sector == "sobab":
+        campaigns = BrandCampaign.query.order_by(BrandCampaign.created_at.desc()).all()
+        return render_template(
+            "sector_sobab.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            campaigns=campaigns,
+        )
+
+    if sector == "sorasr":
+        tickets = RepairTicket.query.order_by(RepairTicket.created_at.desc()).all()
+        pens = Pens.query.all()
+        return render_template(
+            "sector_sorasr.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            tickets=tickets,
+            pens=pens,
+        )
+
+    if sector == "sosas":
+        users = Users.query.all()
+        logs = SectorAccessLog.query.order_by(SectorAccessLog.accessed_at.desc()).limit(200).all()
+        return render_template(
+            "sector_sosas.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            users=users,
+            logs=logs,
+        )
+
+    return redirect(url_for("sectors"))
+
+@app.route("/sector/<sector>/lock", methods=["POST"])
+def sector_lock(sector):
+    if sector in SECTOR_CONFIG:
+        session.pop(sector_session_key(sector), None)
+    return redirect(url_for("sector_page", sector=sector))
 
 @app.route("/dashboard")
 @login_required
@@ -244,8 +461,8 @@ def donate():
 @app.route("/subscription", methods=["GET", "POST"])
 @login_required
 def subscription():
-    if not current_user.is_admin:
-        return redirect(url_for("dashboard"))
+    if not is_sector_authed("sobab"):
+        return redirect(url_for("sector_page", sector="sobab"))
 
     if request.method == "POST":
         user_id = request.form.get("user_id")
@@ -283,60 +500,112 @@ def return_loan(loan_id):
 
     return render_template("return_loan.html", loan=loan)
 
+@app.route("/sector/sodac/pen/<int:pen_id>/update", methods=["POST"])
+@login_required
+@require_sector("sodac")
+def sector_update_pen(pen_id):
+    pen = Pens.query.get(pen_id)
+    if not pen:
+        return redirect(url_for("sector_page", sector="sodac"))
+
+    pen.name = request.form.get("name", pen.name)
+    pen.description = request.form.get("description", pen.description)
+    pen.ink_level = int(request.form.get("ink_level", pen.ink_level))
+    pen.ink_color = request.form.get("ink_color", pen.ink_color)
+    pen.class_ = request.form.get("class_", pen.class_)
+    pen.prs = int(request.form.get("prs", pen.prs))
+    db.session.commit()
+    return redirect(url_for("sector_page", sector="sodac"))
+
+@app.route("/sector/sobab/campaigns", methods=["POST"])
+@login_required
+@require_sector("sobab")
+def sector_create_campaign():
+    title = request.form.get("title", "").strip()
+    channel = request.form.get("channel", "Email")
+    audience = request.form.get("audience", "All")
+    message = request.form.get("message", "").strip()
+    if title and message:
+        campaign = BrandCampaign(title=title, channel=channel, audience=audience, message=message)
+        db.session.add(campaign)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sobab"))
+
+@app.route("/sector/sorasr/repairs", methods=["POST"])
+@login_required
+@require_sector("sorasr")
+def sector_create_repair():
+    pen_id = request.form.get("pen_id")
+    issue = request.form.get("issue", "").strip()
+    if pen_id and issue:
+        ticket = RepairTicket(pen_id=int(pen_id), issue=issue)
+        db.session.add(ticket)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sorasr"))
+
+@app.route("/sector/sorasr/repairs/<int:ticket_id>/resolve", methods=["POST"])
+@login_required
+@require_sector("sorasr")
+def sector_resolve_repair(ticket_id):
+    ticket = RepairTicket.query.get(ticket_id)
+    if ticket:
+        ticket.status = "Resolved"
+        ticket.notes = request.form.get("notes", ticket.notes)
+        ticket.resolved_at = datetime.datetime.utcnow()
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sorasr"))
+
+@app.route("/sector/sosas/user/<int:user_id>/status", methods=["POST"])
+@login_required
+@require_sector("sosas")
+def sector_update_user_status(user_id):
+    user = Users.query.get(user_id)
+    if user:
+        status = request.form.get("criminal_status", user.criminal_status)
+        user.criminal_status = status
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sosas"))
+
 @app.route("/admin")
 @login_required
 def admin():
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
-
-    all_pens = Pens.query.all()
-    pending_donations = PenDonations.query.filter_by(status="Pending").all()
-    accepted_donations = PenDonations.query.filter_by(status="Accepted").all()
-    rejected_donations = PenDonations.query.filter_by(status="Rejected").all()
-    all_users = Users.query.all()
-
-    return render_template("admin.html",
-                         pens=all_pens,
-                         pending_donations=pending_donations,
-                         accepted_donations=accepted_donations,
-                         rejected_donations=rejected_donations,
-                         users=all_users)
+    return redirect(url_for("sectors"))
 
 @app.route("/admin/donation/<int:donation_id>/approve", methods=["POST"])
 @login_required
 def approve_donation(donation_id):
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
+    if not is_sector_authed("socac"):
+        return redirect(url_for("sector_page", sector="socac"))
 
     donation = PenDonations.query.get(donation_id)
     if donation:
         donation.status = "Accepted"
         db.session.commit()
 
-    return redirect(url_for("admin"))
+    return redirect(url_for("sector_page", sector="socac"))
 
 @app.route("/admin/donation/<int:donation_id>/reject", methods=["POST"])
 @login_required
 def reject_donation(donation_id):
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
+    if not is_sector_authed("socac"):
+        return redirect(url_for("sector_page", sector="socac"))
 
     donation = PenDonations.query.get(donation_id)
     if donation:
         donation.status = "Rejected"
         db.session.commit()
 
-    return redirect(url_for("admin"))
+    return redirect(url_for("sector_page", sector="socac"))
 
 @app.route("/admin/pen/<int:pen_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_pen(pen_id):
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
+    if not is_sector_authed("sodac"):
+        return redirect(url_for("sector_page", sector="sodac"))
 
     pen = Pens.query.get(pen_id)
     if not pen:
-        return redirect(url_for("admin"))
+        return redirect(url_for("sector_page", sector="sodac"))
 
     if request.method == "POST":
         pen.name = request.form.get("name", pen.name)
@@ -346,35 +615,35 @@ def edit_pen(pen_id):
         pen.class_ = request.form.get("class_", pen.class_)
         pen.prs = int(request.form.get("prs", pen.prs))
         db.session.commit()
-        return redirect(url_for("admin"))
+        return redirect(url_for("sector_page", sector="sodac"))
 
     return render_template("edit_pen.html", pen=pen)
 
 @app.route("/admin/pen/<int:pen_id>/delete", methods=["POST"])
 @login_required
 def delete_pen(pen_id):
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
+    if not is_sector_authed("sosas"):
+        return redirect(url_for("sector_page", sector="sosas"))
 
     pen = Pens.query.get(pen_id)
     if pen:
         db.session.delete(pen)
         db.session.commit()
 
-    return redirect(url_for("admin"))
+    return redirect(url_for("sector_page", sector="sosas"))
 
 @app.route("/admin/user/<int:user_id>/toggle-admin", methods=["POST"])
 @login_required
 def toggle_admin(user_id):
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
+    if not is_sector_authed("sosas"):
+        return redirect(url_for("sector_page", sector="sosas"))
 
     user = Users.query.get(user_id)
     if user and user.id != current_user.id:  # Prevent self-demotion
         user.is_admin = not user.is_admin
         db.session.commit()
 
-    return redirect(url_for("admin"))
+    return redirect(url_for("sector_page", sector="sosas"))
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -382,8 +651,8 @@ def allowed_file(filename):
 @app.route("/admin/add-pen", methods=["GET", "POST"])
 @login_required
 def add_pen():
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
+    if not is_sector_authed("socac"):
+        return redirect(url_for("sector_page", sector="socac"))
 
     if request.method == "POST":
         name = request.form.get("name")
@@ -410,7 +679,7 @@ def add_pen():
                    ink_color=ink_color, class_=class_, prs=prs, picture=picture_filename)
         db.session.add(pen)
         db.session.commit()
-        return redirect(url_for("admin"))
+        return redirect(url_for("sector_page", sector="socac"))
 
     return render_template("add_pen.html")
 @app.route("/partnerships")

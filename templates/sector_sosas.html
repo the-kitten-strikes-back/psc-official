@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ config.name }} | PSC Sector Console</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#ffe8ee;
+      --muted:#d7a7b4;
+      --accent:{{ config.accent }};
+      --panel:rgba(26,8,14,0.82);
+      --line:rgba(255,59,92,0.35);
+      --shadow:0 30px 60px rgba(0,0,0,0.45);
+    }
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(255,59,92,0.22), transparent 60%),
+        radial-gradient(900px 500px at 85% 0%, rgba(255,120,150,0.2), transparent 55%),
+        linear-gradient(180deg, #1a060c 0%, #240a12 40%, #140409 100%);
+      color:var(--ink);
+      font-family:"Space Grotesk", sans-serif;
+      letter-spacing:0.2px;
+      min-height:100vh;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-20%;
+      background:
+        linear-gradient(transparent 78%, rgba(255,59,92,0.08) 79%, transparent 81%),
+        linear-gradient(90deg, transparent 78%, rgba(255,59,92,0.05) 79%, transparent 81%);
+      background-size:60px 60px;
+      opacity:0.45;
+      filter:blur(0.2px);
+      pointer-events:none;
+      z-index:0;
+      animation:grid-drift 14s linear infinite;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,59,92,0.2), transparent 40%),
+        radial-gradient(circle at 80% 15%, rgba(255,120,150,0.2), transparent 45%);
+      opacity:0.6;
+      mix-blend-mode:screen;
+      pointer-events:none;
+      z-index:0;
+    }
+    @keyframes grid-drift{
+      0%{transform:translateY(0)}
+      100%{transform:translateY(40px)}
+    }
+    header{
+      padding:28px 32px;
+      border-bottom:1px solid var(--line);
+      background:rgba(26,8,14,0.9);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      position:sticky;
+      top:0;
+      z-index:2;
+      backdrop-filter:blur(10px);
+    }
+    h1{
+      margin:0;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:1px;
+    }
+    .subtitle{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 18px;
+      border-radius:999px;
+      border:1px solid rgba(255,59,92,0.6);
+      background:rgba(255,59,92,0.18);
+      color:var(--ink);
+      text-decoration:none;
+      font-weight:600;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+      font-size:12px;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 24px rgba(255,59,92,0.35);
+    }
+    .layout{
+      max-width:1100px;
+      margin:30px auto 80px;
+      padding:0 24px;
+      position:relative;
+      z-index:1;
+    }
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:24px;
+      box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+      position:relative;
+      overflow:hidden;
+      backdrop-filter:blur(12px);
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg, rgba(255,59,92,0.12), transparent 60%);
+      opacity:0.7;
+      pointer-events:none;
+    }
+    .panel + .panel{
+      margin-top:20px;
+    }
+    .panel h2{
+      margin:0 0 14px;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:0.6px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+      gap:16px;
+    }
+    .card{
+      background:rgba(30,10,16,0.85);
+      border:1px solid rgba(255,59,92,0.25);
+      border-radius:14px;
+      padding:18px;
+      box-shadow:inset 0 0 20px rgba(255,59,92,0.08);
+      transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(255,59,92,0.6);
+      box-shadow:0 12px 26px rgba(255,59,92,0.22);
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+    select{
+      width:100%;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid rgba(255,59,92,0.4);
+      background:rgba(18,6,10,0.85);
+      color:var(--ink);
+      font-size:13px;
+      transition:border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    select:focus, input:focus{
+      outline:none;
+      border-color:rgba(255,59,92,0.7);
+      box-shadow:0 0 14px rgba(255,59,92,0.35);
+    }
+    .save-btn{
+      margin-top:12px;
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid rgba(255,59,92,0.5);
+      background:rgba(255,59,92,0.2);
+      color:var(--ink);
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+      background:rgba(20,8,12,0.6);
+      border-radius:12px;
+      overflow:hidden;
+    }
+    th, td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,59,92,0.2);
+      text-align:left;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+    }
+    .login{
+      max-width:480px;
+      margin:80px auto;
+      text-align:center;
+    }
+    input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:rgba(3,10,20,0.85);
+      color:var(--ink);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>{{ config.name }}</h1>
+      <div class="subtitle">{{ config.full }} — {{ config.summary }}</div>
+    </div>
+    <form method="POST" action="{{ url_for('sector_lock', sector='sosas') }}">
+      <button class="btn" type="submit">Lock Sector</button>
+    </form>
+  </header>
+
+  {% if not authed %}
+  <div class="panel login">
+    <h2>Sector Authentication</h2>
+    <p class="muted">Enter the SoSAS password to access security controls.</p>
+    {% if error %}<p style="color:#ff9aa8;">{{ error }}</p>{% endif %}
+    <form method="POST">
+      <input type="password" name="sector_password" placeholder="SoSAS Access Code" required>
+      <button class="btn" type="submit">Unlock Console</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="layout">
+    <div class="panel">
+      <h2>Security Status</h2>
+      <div class="grid">
+        {% for user in users %}
+        <div class="card">
+          <strong>{{ user.username }}</strong>
+          <div class="muted">{{ user.email }}</div>
+          <form method="POST" action="{{ url_for('sector_update_user_status', user_id=user.id) }}">
+            <label>Security Status</label>
+            <select name="criminal_status">
+              <option value="Clean" {% if user.criminal_status == "Clean" %}selected{% endif %}>Clean</option>
+              <option value="Watch" {% if user.criminal_status == "Watch" %}selected{% endif %}>Watch</option>
+              <option value="Flagged" {% if user.criminal_status == "Flagged" %}selected{% endif %}>Flagged</option>
+              <option value="Banned" {% if user.criminal_status == "Banned" %}selected{% endif %}>Banned</option>
+            </select>
+            <button class="save-btn" type="submit">Update Status</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Sector Access Log</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Sector</th>
+            <th>User</th>
+            <th>IP</th>
+            <th>Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in logs %}
+          <tr>
+            <td>{{ entry.accessed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ entry.sector }}</td>
+            <td>{% if entry.user %}{{ entry.user.username }}{% else %}Unknown{% endif %}</td>
+            <td>{{ entry.ip_address }}</td>
+            <td>{{ entry.user_agent }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</body>
+</html>
