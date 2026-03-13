@@ -10,6 +10,8 @@ import base64
 import hashlib
 import hmac
 from functools import wraps
+import smtplib
+from email.message import EmailMessage
 app = Flask(__name__)
 db_uri = "postgresql+psycopg2://database_k306_user:tlPqDUbqa9LffCdK5QcqkqTjQDEOqAtT@dpg-d6onjpq4d50c73blir8g-a/database_k306"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
@@ -82,6 +84,24 @@ SECTOR_CONFIG = {
         "accent": "#ff3b5c",
     },
 }
+
+EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "PSC.Official@outlook.com")
+EMAIL_PASSWORD = os.environ.get("PSC_EMAIL_PASSWORD", "")
+EMAIL_SMTP_HOST = os.environ.get("PSC_EMAIL_SMTP_HOST", "smtp.office365.com")
+EMAIL_SMTP_PORT = int(os.environ.get("PSC_EMAIL_SMTP_PORT", "587"))
+
+def send_sector_email(to_address: str, subject: str, body: str) -> None:
+    if not EMAIL_PASSWORD:
+        return
+    msg = EmailMessage()
+    msg["From"] = EMAIL_FROM
+    msg["To"] = to_address
+    msg["Subject"] = subject
+    msg.set_content(body)
+    with smtplib.SMTP(EMAIL_SMTP_HOST, EMAIL_SMTP_PORT) as server:
+        server.starttls()
+        server.login(EMAIL_FROM, EMAIL_PASSWORD)
+        server.send_message(msg)
 
 
 def verify_admin_password(password: str) -> bool:
@@ -207,6 +227,34 @@ class RepairTicket(db.Model):
     resolved_at = db.Column(db.DateTime, nullable=True)
     pen = db.relationship('Pens', backref='repair_tickets')
 
+class OperationLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=True)
+    operation_name = db.Column(db.String(200), nullable=False)
+    materials = db.Column(db.String(500), default="")
+    result = db.Column(db.String(500), default="")
+    errors = db.Column(db.String(500), default="")
+    start_state = db.Column(db.String(500), default="")
+    end_state = db.Column(db.String(500), default="")
+    tools_used = db.Column(db.String(300), default="")
+    time_spent_minutes = db.Column(db.Integer, default=0)
+    risk_level = db.Column(db.String(50), default="Low")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    operator = db.Column(db.String(120), default="")
+    pen = db.relationship('Pens', backref='operation_logs')
+
+class CriminalRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(200), nullable=False)
+    alias = db.Column(db.String(200), default="")
+    risk_level = db.Column(db.String(50), default="Low")
+    last_known_location = db.Column(db.String(200), default="")
+    incident_summary = db.Column(db.String(800), default="")
+    description = db.Column(db.String(800), default="")
+    tags = db.Column(db.String(200), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 class SectorAccessLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sector = db.Column(db.String(20), nullable=False)
@@ -289,11 +337,17 @@ def about():
     return render_template("about.html")
 
 @app.route("/sectors")
+@login_required
 def sectors():
+    if not current_user.is_admin:
+        return render_template("access_denied.html"), 403
     return render_template("sectors.html", sectors=SECTOR_CONFIG)
 
 @app.route("/sector/<sector>", methods=["GET", "POST"])
+@login_required
 def sector_page(sector):
+    if not current_user.is_admin:
+        return render_template("access_denied.html"), 403
     if sector not in SECTOR_CONFIG:
         return redirect(url_for("sectors"))
 
@@ -346,16 +400,19 @@ def sector_page(sector):
 
     if sector == "sobab":
         campaigns = BrandCampaign.query.order_by(BrandCampaign.created_at.desc()).all()
+        users = Users.query.all()
         return render_template(
             "sector_sobab.html",
             config=SECTOR_CONFIG[sector],
             authed=authed,
             error=error,
             campaigns=campaigns,
+            users=users,
         )
 
     if sector == "sorasr":
         tickets = RepairTicket.query.order_by(RepairTicket.created_at.desc()).all()
+        logs = OperationLog.query.order_by(OperationLog.created_at.desc()).all()
         pens = Pens.query.all()
         return render_template(
             "sector_sorasr.html",
@@ -363,11 +420,13 @@ def sector_page(sector):
             authed=authed,
             error=error,
             tickets=tickets,
+            logs=logs,
             pens=pens,
         )
 
     if sector == "sosas":
         users = Users.query.all()
+        records = CriminalRecord.query.order_by(CriminalRecord.updated_at.desc()).all()
         logs = SectorAccessLog.query.order_by(SectorAccessLog.accessed_at.desc()).limit(200).all()
         return render_template(
             "sector_sosas.html",
@@ -375,13 +434,17 @@ def sector_page(sector):
             authed=authed,
             error=error,
             users=users,
+            records=records,
             logs=logs,
         )
 
     return redirect(url_for("sectors"))
 
 @app.route("/sector/<sector>/lock", methods=["POST"])
+@login_required
 def sector_lock(sector):
+    if not current_user.is_admin:
+        return render_template("access_denied.html"), 403
     if sector in SECTOR_CONFIG:
         session.pop(sector_session_key(sector), None)
     return redirect(url_for("sector_page", sector=sector))
@@ -531,6 +594,23 @@ def sector_create_campaign():
         db.session.commit()
     return redirect(url_for("sector_page", sector="sobab"))
 
+@app.route("/sector/sobab/send-email", methods=["POST"])
+@login_required
+@require_sector("sobab")
+def sector_send_email():
+    subject = request.form.get("subject", "").strip()
+    body = request.form.get("body", "").strip()
+    recipient = request.form.get("recipient", "").strip()
+    send_all = request.form.get("send_all") == "on"
+    if subject and body:
+        if send_all:
+            for user in Users.query.all():
+                if user.email:
+                    send_sector_email(user.email, subject, body)
+        elif recipient:
+            send_sector_email(recipient, subject, body)
+    return redirect(url_for("sector_page", sector="sobab"))
+
 @app.route("/sector/sorasr/repairs", methods=["POST"])
 @login_required
 @require_sector("sorasr")
@@ -540,6 +620,39 @@ def sector_create_repair():
     if pen_id and issue:
         ticket = RepairTicket(pen_id=int(pen_id), issue=issue)
         db.session.add(ticket)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sorasr"))
+
+@app.route("/sector/sorasr/operations", methods=["POST"])
+@login_required
+@require_sector("sorasr")
+def sector_create_operation():
+    pen_id = request.form.get("pen_id")
+    operation_name = request.form.get("operation_name", "").strip()
+    materials = request.form.get("materials", "").strip()
+    result = request.form.get("result", "").strip()
+    errors = request.form.get("errors", "").strip()
+    start_state = request.form.get("start_state", "").strip()
+    end_state = request.form.get("end_state", "").strip()
+    tools_used = request.form.get("tools_used", "").strip()
+    time_spent_minutes = int(request.form.get("time_spent_minutes") or 0)
+    risk_level = request.form.get("risk_level", "Low")
+    operator = request.form.get("operator", current_user.username if current_user.is_authenticated else "")
+    if operation_name:
+        log = OperationLog(
+            pen_id=int(pen_id) if pen_id else None,
+            operation_name=operation_name,
+            materials=materials,
+            result=result,
+            errors=errors,
+            start_state=start_state,
+            end_state=end_state,
+            tools_used=tools_used,
+            time_spent_minutes=time_spent_minutes,
+            risk_level=risk_level,
+            operator=operator,
+        )
+        db.session.add(log)
         db.session.commit()
     return redirect(url_for("sector_page", sector="sorasr"))
 
@@ -554,6 +667,48 @@ def sector_resolve_repair(ticket_id):
         ticket.resolved_at = datetime.datetime.utcnow()
         db.session.commit()
     return redirect(url_for("sector_page", sector="sorasr"))
+
+@app.route("/sector/sosas/records", methods=["POST"])
+@login_required
+@require_sector("sosas")
+def sector_create_criminal_record():
+    full_name = request.form.get("full_name", "").strip()
+    alias = request.form.get("alias", "").strip()
+    risk_level = request.form.get("risk_level", "Low")
+    last_known_location = request.form.get("last_known_location", "").strip()
+    incident_summary = request.form.get("incident_summary", "").strip()
+    description = request.form.get("description", "").strip()
+    tags = request.form.get("tags", "").strip()
+    if full_name:
+        record = CriminalRecord(
+            full_name=full_name,
+            alias=alias,
+            risk_level=risk_level,
+            last_known_location=last_known_location,
+            incident_summary=incident_summary,
+            description=description,
+            tags=tags,
+        )
+        db.session.add(record)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sosas"))
+
+@app.route("/sector/sosas/records/<int:record_id>/update", methods=["POST"])
+@login_required
+@require_sector("sosas")
+def sector_update_criminal_record(record_id):
+    record = CriminalRecord.query.get(record_id)
+    if record:
+        record.full_name = request.form.get("full_name", record.full_name).strip()
+        record.alias = request.form.get("alias", record.alias).strip()
+        record.risk_level = request.form.get("risk_level", record.risk_level)
+        record.last_known_location = request.form.get("last_known_location", record.last_known_location).strip()
+        record.incident_summary = request.form.get("incident_summary", record.incident_summary).strip()
+        record.description = request.form.get("description", record.description).strip()
+        record.tags = request.form.get("tags", record.tags).strip()
+        record.updated_at = datetime.datetime.utcnow()
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sosas"))
 
 @app.route("/sector/sosas/user/<int:user_id>/status", methods=["POST"])
 @login_required

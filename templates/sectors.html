@@ -9,17 +9,14 @@
     :root{
       --ink:#e8f6ff;
       --muted:#9bb0c5;
-      --neon:#34f5ff;
+      --neon:#cfe0f2;
       --panel:rgba(9,20,36,0.78);
       --line:rgba(124,249,255,0.25);
       --shadow:0 30px 60px rgba(0,0,0,0.45);
     }
     body{
       margin:0;
-      background:
-        radial-gradient(1200px 700px at 15% -10%, rgba(50,245,255,0.22), transparent 60%),
-        radial-gradient(900px 500px at 85% 0%, rgba(255,123,245,0.18), transparent 55%),
-        linear-gradient(180deg, #050912 0%, #070f1f 40%, #060b16 100%);
+      background:linear-gradient(180deg, #0d1119 0%, #0c1018 100%);
       color:var(--ink);
       font-family:"Space Grotesk", sans-serif;
       letter-spacing:0.2px;
@@ -27,35 +24,15 @@
       position:relative;
       overflow-x:hidden;
     }
-    body::before{
-      content:"";
-      position:fixed;
-      inset:-20%;
-      background:
-        linear-gradient(transparent 78%, rgba(50,245,255,0.06) 79%, transparent 81%),
-        linear-gradient(90deg, transparent 78%, rgba(50,245,255,0.05) 79%, transparent 81%);
-      background-size:60px 60px;
-      opacity:0.45;
-      filter:blur(0.2px);
-      pointer-events:none;
-      z-index:0;
-      animation:grid-drift 14s linear infinite;
-    }
+    body::before,
     body::after{
       content:"";
       position:fixed;
       inset:0;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(50,245,255,0.2), transparent 40%),
-        radial-gradient(circle at 75% 15%, rgba(255,123,245,0.2), transparent 45%);
-      opacity:0.6;
-      mix-blend-mode:screen;
+      background:radial-gradient(circle at 20% 10%, rgba(80,120,180,0.18), transparent 45%);
+      opacity:0.35;
       pointer-events:none;
       z-index:0;
-    }
-    @keyframes grid-drift{
-      0%{transform:translateY(0)}
-      100%{transform:translateY(40px)}
     }
     .hero{
       padding:60px 24px 20px;
@@ -104,8 +81,8 @@
     }
     .card:hover{
       transform:translateY(-4px);
-      border-color:rgba(124,249,255,0.55);
-      box-shadow:0 14px 30px rgba(50,245,255,0.2);
+      border-color:rgba(120,150,200,0.45);
+      box-shadow:0 14px 30px rgba(30,40,60,0.35);
     }
     .card h2{
       margin:0 0 6px;
@@ -123,8 +100,8 @@
       margin-top:14px;
       padding:6px 12px;
       border-radius:999px;
-      border:1px solid var(--line);
-      color:var(--neon);
+      border:1px solid rgba(120,150,200,0.3);
+      color:#cfe0f2;
       font-size:12px;
       letter-spacing:0.8px;
       text-transform:uppercase;
