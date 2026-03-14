@@ -6,272 +6,212 @@
   <title>PSC | Pen Storage Company</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0b0f16;
-      --bg-2:#0f172a;
-      --ink:#e6eef6;
-      --muted:#93a4b8;
-      --accent:#3bb7ff;
-      --accent-2:#7df1ff;
-      --gold:#ffb347;
-      --panel:rgba(16,22,34,0.82);
-      --border:rgba(148,163,184,0.2);
-      --shadow:0 30px 70px rgba(5,10,20,0.55);
+      --cream:#f6f7f2;
+      --ink:#1f2933;
+      --muted:#6b7c8f;
+      --mint:#2bb673;
+      --mint-dark:#219d61;
+      --sky:#6bb7ff;
+      --gold:#f4b740;
+      --card:#ffffff;
+      --border:#e2e8f0;
+      --shadow:0 20px 40px rgba(31,41,51,0.12);
     }
-
     *{box-sizing:border-box;}
     body{
       margin:0;
-      background:radial-gradient(900px 500px at 10% 5%, rgba(59,183,255,0.15), transparent 60%),
-                 radial-gradient(700px 400px at 90% 10%, rgba(125,241,255,0.12), transparent 55%),
-                 linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      background:radial-gradient(circle at 15% 5%, rgba(107,183,255,0.12), transparent 45%),
+                 radial-gradient(circle at 90% 10%, rgba(43,182,115,0.1), transparent 40%),
+                 var(--cream);
       color:var(--ink);
-      font-family:"Space Grotesk", sans-serif;
-      letter-spacing:0.2px;
-      min-height:100vh;
-      overflow-x:hidden;
+      font-family:"Plus Jakarta Sans", sans-serif;
+      letter-spacing:0.1px;
     }
-
-    .halo{
-      position:absolute;
-      width:520px;
-      height:520px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(59,183,255,0.18), transparent 65%);
-      filter:blur(0.5px);
-      z-index:0;
-      top:-140px;
-      left:-80px;
-    }
-
-    .ring{
-      position:absolute;
-      width:420px;
-      height:420px;
-      border:1px solid rgba(125,241,255,0.18);
-      border-radius:50%;
-      top:220px;
-      right:-140px;
-      z-index:0;
-    }
-
     header{
       position:sticky;
       top:0;
-      z-index:5;
-      background:rgba(10,14,22,0.7);
-      backdrop-filter:blur(12px);
-      border-bottom:1px solid rgba(148,163,184,0.12);
+      z-index:10;
+      background:rgba(246,247,242,0.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
     }
-
     .nav{
       max-width:1200px;
       margin:0 auto;
-      padding:16px 24px;
+      padding:18px 24px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:20px;
+      gap:16px;
     }
-
     .brand{
       display:flex;
       align-items:center;
       gap:12px;
-      font-family:"Orbitron", sans-serif;
-      letter-spacing:1px;
-      text-transform:uppercase;
     }
-
     .brand-mark{
-      width:38px;
-      height:38px;
+      width:40px;
+      height:40px;
       border-radius:12px;
       display:grid;
       place-items:center;
-      background:linear-gradient(135deg, rgba(59,183,255,0.2), rgba(125,241,255,0.2));
-      border:1px solid rgba(125,241,255,0.4);
       font-weight:700;
-      color:var(--accent-2);
+      color:#0b3d2a;
+      background:linear-gradient(135deg, rgba(43,182,115,0.25), rgba(107,183,255,0.25));
+      border:1px solid rgba(43,182,115,0.3);
     }
-
+    .brand-title{
+      font-family:"DM Serif Display", serif;
+      font-size:20px;
+    }
     .nav-links{
       display:flex;
-      gap:22px;
+      gap:20px;
       align-items:center;
       flex-wrap:wrap;
     }
-
     .nav-links a{
       color:var(--muted);
       text-decoration:none;
       font-weight:600;
       font-size:14px;
-      transition:color 0.2s ease;
     }
     .nav-links a:hover{color:var(--ink);}
 
     .hero{
-      position:relative;
-      z-index:1;
       max-width:1200px;
       margin:0 auto;
-      padding:80px 24px 40px;
+      padding:70px 24px 30px;
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
       gap:32px;
       align-items:center;
     }
-
-    .hero-card{
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:22px;
-      padding:28px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(12px);
-    }
-
     h1{
+      margin:0 0 8px;
+      font-family:"DM Serif Display", serif;
       font-size:48px;
-      margin:0 0 10px;
-      font-family:"Orbitron", sans-serif;
-      letter-spacing:1px;
     }
-
     .typing-container{
       display:inline-block;
       position:relative;
     }
-
     .typewriter-text,
     .typing-text{
-      background:linear-gradient(90deg, var(--accent), var(--accent-2));
+      background:linear-gradient(90deg, #1b8f5a, #4f98ff);
       -webkit-background-clip:text;
       background-clip:text;
       color:transparent;
       font-weight:700;
       display:inline-block;
     }
-
     .typing-text::after{
       content:"";
       display:inline-block;
       width:6px;
       height:1.1em;
-      background:var(--accent-2);
+      background:#4f98ff;
       margin-left:6px;
       animation:caretBlink 0.9s infinite;
       border-radius:2px;
     }
-
     @keyframes caretBlink{
       0%,100%{opacity:1}
       50%{opacity:0}
     }
-
     .hero-sub{
       color:var(--muted);
       font-size:16px;
       line-height:1.7;
-      margin:18px 0 0;
+      margin:16px 0 0;
     }
-
     .hero-actions{
       display:flex;
       gap:14px;
       flex-wrap:wrap;
-      margin-top:26px;
+      margin-top:24px;
     }
-
     .btn-cta{
       display:inline-flex;
       align-items:center;
       justify-content:center;
       padding:12px 22px;
-      border-radius:999px;
+      border-radius:14px;
       font-weight:700;
       text-decoration:none;
       border:1px solid transparent;
-      letter-spacing:0.4px;
+      letter-spacing:0.3px;
       font-size:13px;
       transition:transform 0.2s ease, box-shadow 0.2s ease;
     }
-
     .btn-primary{
-      background:linear-gradient(135deg, #10b981, #059669);
-      color:#081219;
-      box-shadow:0 12px 30px rgba(16,185,129,0.3);
+      background:linear-gradient(135deg, var(--mint), var(--mint-dark));
+      color:#0b1a12;
+      box-shadow:0 14px 30px rgba(43,182,115,0.3);
     }
-
     .btn-secondary{
-      background:rgba(255,255,255,0.08);
+      background:#fff;
       color:var(--ink);
-      border-color:rgba(148,163,184,0.35);
+      border-color:var(--border);
     }
-
     .btn-cta:hover{transform:translateY(-2px);}
+
+    .hero-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:26px;
+      box-shadow:var(--shadow);
+    }
 
     .metrics{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
       gap:12px;
-      margin-top:26px;
+      margin-top:24px;
     }
-
     .metric{
-      background:rgba(15,23,42,0.7);
-      border:1px solid rgba(59,183,255,0.2);
+      border:1px dashed rgba(107,183,255,0.3);
       border-radius:14px;
-      padding:14px;
+      padding:12px;
+      background:rgba(107,183,255,0.08);
     }
-
     .metric strong{
       display:block;
       font-size:20px;
-      color:var(--accent-2);
+      color:#1b8f5a;
     }
 
     .section{
       max-width:1200px;
       margin:0 auto;
-      padding:60px 24px;
-      position:relative;
-      z-index:1;
+      padding:50px 24px;
     }
-
     .section-title{
-      font-size:30px;
-      margin:0 0 20px;
-      font-family:"Orbitron", sans-serif;
-      letter-spacing:0.6px;
+      font-family:"DM Serif Display", serif;
+      font-size:28px;
+      margin:0 0 12px;
     }
-
     .muted{color:var(--muted);}
 
     .feature-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
       gap:18px;
-      margin-top:26px;
+      margin-top:20px;
     }
-
     .feature-card{
-      background:rgba(15,23,42,0.7);
-      border:1px solid rgba(148,163,184,0.2);
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:16px;
-      padding:20px;
-      transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      padding:18px;
+      box-shadow:0 12px 24px rgba(31,41,51,0.08);
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
     }
-
-    .feature-card:hover{
-      transform:translateY(-6px);
-      border-color:rgba(125,241,255,0.4);
-      box-shadow:0 18px 40px rgba(5,10,20,0.4);
-    }
-
+    .feature-card:hover{transform:translateY(-6px);box-shadow:0 18px 36px rgba(31,41,51,0.12);}
     .feature-tag{
       display:inline-block;
       font-size:11px;
@@ -279,74 +219,66 @@
       text-transform:uppercase;
       padding:4px 10px;
       border-radius:999px;
-      border:1px solid rgba(125,241,255,0.4);
-      color:var(--accent-2);
+      background:rgba(43,182,115,0.12);
+      color:#1b8f5a;
+      font-weight:600;
       margin-bottom:10px;
     }
 
     .tiers{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-      gap:18px;
-      margin-top:24px;
+      gap:16px;
+      margin-top:20px;
     }
-
     .tier{
       border-radius:18px;
-      padding:20px;
-      border:1px solid rgba(148,163,184,0.2);
-      background:rgba(15,23,42,0.55);
+      padding:18px;
+      border:1px solid var(--border);
+      background:#fff;
     }
-
-    .tier h4{
-      margin:0 0 8px;
-    }
-
-    .tier strong{color:var(--gold);}
 
     .cta{
-      background:linear-gradient(135deg, rgba(59,183,255,0.16), rgba(125,241,255,0.16));
-      border:1px solid rgba(125,241,255,0.35);
-      border-radius:24px;
-      padding:30px;
+      background:linear-gradient(135deg, rgba(107,183,255,0.16), rgba(43,182,115,0.14));
+      border:1px solid rgba(107,183,255,0.3);
+      border-radius:22px;
+      padding:26px;
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:14px;
       align-items:flex-start;
     }
 
     footer{
-      border-top:1px solid rgba(148,163,184,0.12);
-      padding:40px 24px 60px;
+      border-top:1px solid var(--border);
+      padding:36px 24px 60px;
       color:var(--muted);
+      background:#f9faf7;
     }
-
     .footer-links{
       display:flex;
       flex-wrap:wrap;
       gap:16px;
       margin-top:12px;
     }
-
     .footer-links a{color:var(--muted);text-decoration:none;}
     .footer-links a:hover{color:var(--ink);}
 
-    @media (max-width: 768px){
-      h1{font-size:36px;}
-      .hero{padding-top:60px;}
+    @media (max-width:768px){
+      h1{font-size:38px;}
       .nav-links{gap:14px;}
     }
   </style>
 </head>
 <body>
-  <div class="halo"></div>
-  <div class="ring"></div>
-
   <header>
     <div class="nav">
       <div class="brand">
         <div class="brand-mark">PSC</div>
-        <span>Pen Storage Company</span>
+        <div>
+          <div class="brand-title">Pen Storage Company</div>
+          <div class="muted" style="font-size:12px;">Premium pens, trusted by collectors</div>
+        </div>
       </div>
       <div class="nav-links">
         <a href="/about">About</a>
@@ -361,7 +293,7 @@
     <div>
       <h1>PSC</h1>
       <h2 class="typing-container">The Ultimate <span class="typing-text"></span></h2>
-      <p class="hero-sub">Borrow premium writing instruments, explore legendary pens, and contribute to a secure, curated archive trusted by collectors.</p>
+      <p class="hero-sub">Borrow premium writing instruments, explore legendary pens, and contribute to a secure archive built for pen lovers.</p>
       <div class="hero-actions">
         <a href="/register" class="btn-cta btn-primary">Get Started</a>
         <a href="/loan" class="btn-cta btn-secondary">Browse Collection</a>
@@ -369,46 +301,46 @@
       <div class="metrics">
         <div class="metric"><strong>200+</strong><span class="muted">Pens in storage</span></div>
         <div class="metric"><strong>500+</strong><span class="muted">Loans completed</span></div>
-        <div class="metric"><strong>Top Rated</strong><span class="muted">Community PRS</span></div>
+        <div class="metric"><strong>PRS</strong><span class="muted">Community rating</span></div>
       </div>
     </div>
     <div class="hero-card">
       <h3 style="margin:0 0 8px;">Member Access</h3>
-      <p class="muted" style="margin:0;">Create a PSC account to unlock pen loans, donation tracking, and exclusive tiers.</p>
+      <p class="muted" style="margin:0;">Join PSC to track loans, donate pens, and unlock tier benefits.</p>
       <div class="hero-actions">
         <a href="/login" class="btn-cta btn-secondary">Login</a>
         <a href="/register" class="btn-cta btn-primary">Join PSC</a>
       </div>
       <div class="metrics">
         <div class="metric"><strong>7 Days</strong><span class="muted">Standard loan term</span></div>
-        <div class="metric"><strong>PRS</strong><span class="muted">Pen Rating Score</span></div>
+        <div class="metric"><strong>A–D</strong><span class="muted">Pen classes</span></div>
       </div>
     </div>
   </section>
 
   <section class="section">
     <h3 class="section-title">Why PSC</h3>
-    <p class="muted">Everything you need to build a legendary writing rotation — with transparent history and membership perks.</p>
+    <p class="muted">Everything you need to build a legendary writing rotation — with clear history and honest reviews.</p>
     <div class="feature-grid">
       <div class="feature-card">
         <span class="feature-tag">Collection</span>
         <h4>Premium Curation</h4>
-        <p class="muted">From premium to everyday essentials, each pen is tracked and maintained.</p>
+        <p class="muted">Every pen is cataloged with class, ink, and rating details.</p>
       </div>
       <div class="feature-card">
         <span class="feature-tag">Membership</span>
         <h4>Tiered Access</h4>
-        <p class="muted">Upgrade your tier to access higher-class pens and more simultaneous loans.</p>
+        <p class="muted">Upgrade your tier to access higher-class pens and more loans.</p>
       </div>
       <div class="feature-card">
         <span class="feature-tag">Community</span>
         <h4>Trusted Reviews</h4>
-        <p class="muted">PRS ratings and reviews help the community discover their perfect match.</p>
+        <p class="muted">PRS ratings help members find the right pen for every task.</p>
       </div>
       <div class="feature-card">
         <span class="feature-tag">Security</span>
         <h4>Verified History</h4>
-        <p class="muted">Loan and donation trails keep the archive transparent and safe.</p>
+        <p class="muted">Donation and loan trails keep the archive transparent.</p>
       </div>
     </div>
   </section>
