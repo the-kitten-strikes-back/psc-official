@@ -868,7 +868,7 @@ def return_loan(loan_id):
         if review_text:
             # Use TextBlob for sentiment
             blob = TextBlob(review_text)
-            sentiment_score = (blob.sentiment.polarity + 1) * 50  # Scale to 0-100
+            sentiment_score = blob.sentiment.polarity  # -1 to 1
             pen = Pens.query.get(loan.pen_id)
             pen.prs = (sentiment_score + 1) * 50
             loan.review = review_text
