@@ -102,7 +102,7 @@ EMAIL_PASSWORD = os.environ.get("PSC_EMAIL_PASSWORD", "")
 EMAIL_SMTP_HOST = os.environ.get("PSC_EMAIL_SMTP_HOST", "smtp.office365.com")
 EMAIL_SMTP_PORT = int(os.environ.get("PSC_EMAIL_SMTP_PORT", "587"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 PSC_SYSTEM_PROMPT = (
     "You are PSC Assistant, the official chatbot for the Pen Storage Company (PSC). "
     "PSC helps members loan premium pens, donate pens, and manage their writing life through a secure catalog. "
@@ -133,7 +133,7 @@ PSC_SYSTEM_PROMPT = (
 
 CHAT_RATE_LIMIT_PER_MIN = 15
 CHAT_MODEL_LIMITS = [
-    ("gemini-3.1-flash-lite", 500),
+    ("gemini-3.1-flash-lite-preview", 500),
 ]
 CHAT_LIMITS = {}
 
