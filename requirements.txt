@@ -4,4 +4,4 @@ Flask-Login
 Flask-SQLAlchemy
 psycopg2-binary
 textblob
-google-generativeai
+google-genai

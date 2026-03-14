@@ -12,7 +12,8 @@ import hmac
 from functools import wraps
 import smtplib
 from email.message import EmailMessage
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 app = Flask(__name__)
 db_uri = "postgresql://database_2fuy_user:JE01RUdze7ABr6h0WhpArvwvqmH2ojee@dpg-d6q3rgsr85hc73bsi5mg-a/database_2fuy"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
@@ -152,27 +153,30 @@ def send_sector_email(to_address: str, subject: str, body: str) -> None:
 def call_gemini(messages, model_name) -> str:
     if not GEMINI_API_KEY:
         return "Chatbot is not configured. Please set GEMINI_API_KEY."
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel(
-        model_name,
-        system_instruction=PSC_SYSTEM_PROMPT,
-    )
-    history = []
-    for item in messages:
-        role = item.get("role")
-        text = item.get("content")
-        if role in ("user", "assistant") and text:
-            history.append({"role": role, "parts": [text]})
     try:
-        chat = model.start_chat(history=history)
-        last_user = ""
-        for item in reversed(messages):
-            if item.get("role") == "user" and item.get("content"):
-                last_user = item["content"]
-                break
-        if not last_user:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        contents = []
+        for item in messages:
+            role = item.get("role")
+            text = item.get("content")
+            if role in ("user", "assistant") and text:
+                contents.append(
+                    {
+                        "role": "user" if role == "user" else "model",
+                        "parts": [{"text": text}],
+                    }
+                )
+        if not contents:
             return "Please enter a message."
-        response = chat.send_message(last_user)
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=PSC_SYSTEM_PROMPT,
+                temperature=0.7,
+                max_output_tokens=600,
+            ),
+        )
         return (response.text or "").strip()
     except Exception:
         return "Chatbot is temporarily unavailable."
