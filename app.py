@@ -446,6 +446,12 @@ class SectorAccessLog(db.Model):
     user_agent = db.Column(db.String(200), nullable=True)
     accessed_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user = db.relationship('Users', backref='sector_access_logs')
+
+class EmployeeAward(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    employee = db.relationship('Users')
 #create tables if they don't exist
 
 with app.app_context():
@@ -729,7 +735,42 @@ def chat():
 def dashboard():
     user_loans = PenLoans.query.filter_by(borrower_id=current_user.id).all()
     user_donations = PenDonations.query.filter_by(donor_id=current_user.id).all()
-    return render_template("dashboard.html", loans=user_loans, donations=user_donations)
+    all_users = Users.query.order_by(Users.username.asc()).all()
+    top_donors = (
+        Users.query.order_by(Users.pens_donated.desc(), Users.username.asc())
+        .limit(5)
+        .all()
+    )
+    award = EmployeeAward.query.first()
+    employee_of_month = award.employee if award and award.employee else None
+    first_user = Users.query.order_by(Users.id.asc()).first()
+    can_set_employee = first_user and current_user.id == first_user.id
+    return render_template(
+        "dashboard.html",
+        loans=user_loans,
+        donations=user_donations,
+        top_donors=top_donors,
+        employee_of_month=employee_of_month,
+        can_set_employee=can_set_employee,
+        users=all_users,
+    )
+
+@app.route("/employee-of-month", methods=["POST"])
+@login_required
+def set_employee_of_month():
+    first_user = Users.query.order_by(Users.id.asc()).first()
+    if not first_user or current_user.id != first_user.id:
+        return redirect(url_for("dashboard"))
+    employee_id = request.form.get("employee_id")
+    employee = Users.query.get(employee_id) if employee_id else None
+    award = EmployeeAward.query.first()
+    if not award:
+        award = EmployeeAward()
+        db.session.add(award)
+    award.employee_user_id = employee.id if employee else None
+    award.updated_at = datetime.datetime.utcnow()
+    db.session.commit()
+    return redirect(url_for("dashboard"))
 @app.route("/loan", methods=["GET", "POST"])
 @login_required
 def loan():
