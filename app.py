@@ -32,27 +32,27 @@ ADMIN_PASSWORD_HASH = os.environ.get(
 SECTOR_PASSWORD_HASHES = {
     "sodac": os.environ.get(
         "SECTOR_PASSWORD_HASH_SODAC",
-        "pbkdf2_sha256$260000$E0jS2I856uwT6nJ2SSERDg==$EaLeMSyZbBfs9s9qM2VlZhBpGhgWRiiFRO0xLfLLM8M=",
+        "pbkdf2_sha256$260000$BvgIxB53DYOn6UZ25Ih1sA==$Z7qvna2deoNgfCOrJ8PAUlnHZJB8flpBgzG1YDiEk74=",
     ),
     "sobab": os.environ.get(
         "SECTOR_PASSWORD_HASH_SOBAB",
-        "pbkdf2_sha256$260000$DYnPxO/8p8OPldXffHUAFg==$LS5Aud3yDPgpWIWFtdpLhhJY3l8apQxWRwgx8I/Hp1Q=",
+        "pbkdf2_sha256$260000$FD39N3c40ZdBHGcWKWWofQ==$WQr7XqIA7tyVGPkEsmKxjzW+d17iOV5Sq1qhrN/A8t8=",
     ),
     "sorasr": os.environ.get(
         "SECTOR_PASSWORD_HASH_SORASR",
-        "pbkdf2_sha256$260000$Khnd9VBSzU+Tp2+mSg9HJA==$PDkrCB6IAR33UK/6BYgCyyxkO0MArm1G+wqhuJs+Pl8=",
+        "pbkdf2_sha256$260000$gty0WXIzb5khlonAh60vyw==$kU1zJWNTe0vN0Ue4DtmvJ7lWlKhjiMDMfWkv/K8JM9E=",
     ),
     "socac": os.environ.get(
         "SECTOR_PASSWORD_HASH_SOCAC",
-        "pbkdf2_sha256$260000$hTKSsgsr1AV52FlcOAbR4g==$mq6H5K97bJjIaPCXkb3lzK+UOv8LVNtUfw22wm/bciE=",
+        "pbkdf2_sha256$260000$cBBsdrWKfTI8CW4GyKE7cw==$bNpB/rWmUkJym8k1zPX0XGzbi4Sdr1qQfq7iLHwU1Cw=",
     ),
     "sosas": os.environ.get(
         "SECTOR_PASSWORD_HASH_SOSAS",
-        "pbkdf2_sha256$260000$tqgId5Rqpqzwuw1YPFx9mA==$WWeN75bkUI2X5KrAGip4l+jvU0Yao9lc3R8H/aRh030=",
+        "pbkdf2_sha256$260000$4JswsskIJaCLJNq9ESOifg==$F8XVDnGmQtf0HUPnIpzJsuvttZa23UBck9wuOqh5Whw=",
     ),
     "soarc": os.environ.get(
         "SECTOR_PASSWORD_HASH_SOARC",
-        "pbkdf2_sha256$260000$+XJLG1/W4FEJEuyuxyA7yA==$uRiInq1OBPmPZU+MTHp2UBcPLLoz9mxI5AashoOwViY=",
+        "pbkdf2_sha256$260000$KKXaX43aY8GEmxvpzdz/mw==$4MbBjXEEjaiHNjiZL0/mM+BQ4P5jli+5nLpajVM8TjI=",
     ),
 }
 
@@ -148,6 +148,10 @@ def sector_session_key(sector: str) -> str:
 
 def is_sector_authed(sector: str) -> bool:
     return session.get(sector_session_key(sector)) is True
+
+def clear_sector_auth() -> None:
+    for key in SECTOR_PASSWORD_HASHES.keys():
+        session.pop(sector_session_key(key), None)
 
 def require_sector(sector: str):
     def decorator(fn):
@@ -385,6 +389,7 @@ def login():
 
         if user and check_password_hash(user.password, password):
             login_user(user)
+            clear_sector_auth()
             return redirect(url_for("dashboard"))
         else:
             return render_template("login.html", error="Invalid username or password")
@@ -393,6 +398,7 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    clear_sector_auth()
     logout_user()
     return redirect(url_for("login"))
 
