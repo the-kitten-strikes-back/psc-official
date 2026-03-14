@@ -6,395 +6,297 @@
   <title>PSC | Pen Storage Company</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --cream:#f6f7f2;
-      --ink:#1f2933;
-      --muted:#6b7c8f;
-      --mint:#2bb673;
-      --mint-dark:#219d61;
-      --sky:#6bb7ff;
-      --gold:#f4b740;
-      --card:#ffffff;
-      --border:#e2e8f0;
-      --shadow:0 20px 40px rgba(31,41,51,0.12);
-    }
-    *{box-sizing:border-box;}
-    body{
-      margin:0;
-      background:radial-gradient(circle at 15% 5%, rgba(107,183,255,0.12), transparent 45%),
-                 radial-gradient(circle at 90% 10%, rgba(43,182,115,0.1), transparent 40%),
-                 var(--cream);
-      color:var(--ink);
-      font-family:"Plus Jakarta Sans", sans-serif;
-      letter-spacing:0.1px;
-    }
-    header{
-      position:sticky;
-      top:0;
-      z-index:10;
-      background:rgba(246,247,242,0.92);
-      backdrop-filter:blur(10px);
-      border-bottom:1px solid var(--border);
-    }
-    .nav{
-      max-width:1200px;
-      margin:0 auto;
-      padding:18px 24px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .brand-mark{
-      width:40px;
-      height:40px;
-      border-radius:12px;
-      display:grid;
-      place-items:center;
-      font-weight:700;
-      color:#0b3d2a;
-      background:linear-gradient(135deg, rgba(43,182,115,0.25), rgba(107,183,255,0.25));
-      border:1px solid rgba(43,182,115,0.3);
-    }
-    .brand-title{
-      font-family:"DM Serif Display", serif;
-      font-size:20px;
-    }
-    .nav-links{
-      display:flex;
-      gap:20px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .nav-links a{
-      color:var(--muted);
-      text-decoration:none;
-      font-weight:600;
-      font-size:14px;
-    }
-    .nav-links a:hover{color:var(--ink);}
-
-    .hero{
-      max-width:1200px;
-      margin:0 auto;
-      padding:70px 24px 30px;
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
-      gap:32px;
-      align-items:center;
-    }
-    h1{
-      margin:0 0 8px;
-      font-family:"DM Serif Display", serif;
-      font-size:48px;
-    }
-    .typing-container{
-      display:inline-block;
-      position:relative;
+    .typing-container {
+      display: inline-block;
+      position: relative;
     }
     .typewriter-text,
-    .typing-text{
-      background:linear-gradient(90deg, #1b8f5a, #4f98ff);
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
-      font-weight:700;
-      display:inline-block;
+    .typing-text {
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 800;
+      display: inline-block;
     }
-    .typing-text::after{
-      content:"";
-      display:inline-block;
-      width:6px;
-      height:1.1em;
-      background:#4f98ff;
-      margin-left:6px;
-      animation:caretBlink 0.9s infinite;
-      border-radius:2px;
+    .typing-text::after {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 1.1em;
+      background: #3b82f6;
+      margin-left: 6px;
+      animation: caretBlink 0.9s infinite;
+      border-radius: 2px;
     }
-    @keyframes caretBlink{
-      0%,100%{opacity:1}
-      50%{opacity:0}
-    }
-    .hero-sub{
-      color:var(--muted);
-      font-size:16px;
-      line-height:1.7;
-      margin:16px 0 0;
-    }
-    .hero-actions{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      margin-top:24px;
-    }
-    .btn-cta{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:12px 22px;
-      border-radius:14px;
-      font-weight:700;
-      text-decoration:none;
-      border:1px solid transparent;
-      letter-spacing:0.3px;
-      font-size:13px;
-      transition:transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .btn-primary{
-      background:linear-gradient(135deg, var(--mint), var(--mint-dark));
-      color:#0b1a12;
-      box-shadow:0 14px 30px rgba(43,182,115,0.3);
-    }
-    .btn-secondary{
-      background:#fff;
-      color:var(--ink);
-      border-color:var(--border);
-    }
-    .btn-cta:hover{transform:translateY(-2px);}
-
-    .hero-card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:20px;
-      padding:26px;
-      box-shadow:var(--shadow);
+    @keyframes caretBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
 
-    .metrics{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
-      gap:12px;
-      margin-top:24px;
+    .section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 70px 20px;
     }
-    .metric{
-      border:1px dashed rgba(107,183,255,0.3);
-      border-radius:14px;
-      padding:12px;
-      background:rgba(107,183,255,0.08);
+    .section h2 {
+      margin-bottom: 14px;
     }
-    .metric strong{
-      display:block;
-      font-size:20px;
-      color:#1b8f5a;
+    .section p.lead {
+      color: #64748b;
+      font-size: 1.05rem;
+      margin: 0 0 30px 0;
     }
 
-    .section{
-      max-width:1200px;
-      margin:0 auto;
-      padding:50px 24px;
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 30px;
     }
-    .section-title{
-      font-family:"DM Serif Display", serif;
-      font-size:28px;
-      margin:0 0 12px;
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px;
+      text-align: center;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
     }
-    .muted{color:var(--muted);}
-
-    .feature-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
-      gap:18px;
-      margin-top:20px;
+    .stat-card strong {
+      display: block;
+      font-size: 1.5rem;
+      color: #0f172a;
     }
-    .feature-card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:18px;
-      box-shadow:0 12px 24px rgba(31,41,51,0.08);
-      transition:transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .feature-card:hover{transform:translateY(-6px);box-shadow:0 18px 36px rgba(31,41,51,0.12);}
-    .feature-tag{
-      display:inline-block;
-      font-size:11px;
-      letter-spacing:0.4px;
-      text-transform:uppercase;
-      padding:4px 10px;
-      border-radius:999px;
-      background:rgba(43,182,115,0.12);
-      color:#1b8f5a;
-      font-weight:600;
-      margin-bottom:10px;
+    .stat-card span {
+      color: #64748b;
+      font-size: 0.9rem;
     }
 
-    .tiers{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-      gap:16px;
-      margin-top:20px;
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 22px;
+      margin-top: 30px;
     }
-    .tier{
-      border-radius:18px;
-      padding:18px;
-      border:1px solid var(--border);
-      background:#fff;
+    .feature-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 36px rgba(15, 23, 42, 0.12);
+    }
+    .feature-card h3 {
+      margin-top: 10px;
+      color: #0f172a;
+    }
+    .feature-card p {
+      color: #64748b;
+      margin: 10px 0 0 0;
+    }
+    .feature-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
     }
 
-    .cta{
-      background:linear-gradient(135deg, rgba(107,183,255,0.16), rgba(43,182,115,0.14));
-      border:1px solid rgba(107,183,255,0.3);
-      border-radius:22px;
-      padding:26px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      align-items:flex-start;
+    .tiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-top: 26px;
+    }
+    .tier {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 20px;
+      background: #ffffff;
+    }
+    .tier h4 {
+      margin: 0 0 6px 0;
+      color: #0f172a;
+    }
+    .tier p {
+      margin: 0;
+      color: #64748b;
     }
 
-    footer{
-      border-top:1px solid var(--border);
-      padding:36px 24px 60px;
-      color:var(--muted);
-      background:#f9faf7;
+    .cta-band {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 24px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
     }
-    .footer-links{
-      display:flex;
-      flex-wrap:wrap;
-      gap:16px;
-      margin-top:12px;
-    }
-    .footer-links a{color:var(--muted);text-decoration:none;}
-    .footer-links a:hover{color:var(--ink);}
 
-    @media (max-width:768px){
-      h1{font-size:38px;}
-      .nav-links{gap:14px;}
+    .cta-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-slim {
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid transparent;
+      font-size: 13px;
+    }
+    .btn-green {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #0b1a12;
+      box-shadow: 0 12px 22px rgba(16, 185, 129, 0.25);
+    }
+    .btn-outline {
+      background: white;
+      color: #0f172a;
+      border-color: #cbd5f5;
+    }
+
+    @media (max-width: 768px) {
+      .main-content h1 {
+        font-size: 3rem;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="nav">
-      <div class="brand">
-        <div class="brand-mark">PSC</div>
-        <div>
-          <div class="brand-title">Pen Storage Company</div>
-          <div class="muted" style="font-size:12px;">Premium pens, trusted by collectors</div>
-        </div>
+    <nav>
+      <div class="nav-container">
+        <a href="{{ url_for('home') }}" class="logo">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+          PSC
+        </a>
+        <ul class="nav-links">
+          <li><a href="{{ url_for('about') }}">About</a></li>
+          <li><a href="{{ url_for('loan') }}">Browse Pens</a></li>
+          <li><a href="{{ url_for('donate') }}">Donate</a></li>
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+        </ul>
       </div>
-      <div class="nav-links">
-        <a href="/about">About</a>
-        <a href="/loan">Browse Pens</a>
-        <a href="/donate">Donate</a>
-        <a href="/login">Login</a>
-      </div>
-    </div>
+    </nav>
   </header>
 
-  <section class="hero">
-    <div>
-      <h1>PSC</h1>
-      <h2 class="typing-container">The Ultimate <span class="typing-text"></span></h2>
-      <p class="hero-sub">Borrow premium writing instruments, explore legendary pens, and contribute to a secure archive built for pen lovers.</p>
-      <div class="hero-actions">
-        <a href="/register" class="btn-cta btn-primary">Get Started</a>
-        <a href="/loan" class="btn-cta btn-secondary">Browse Collection</a>
+  <div class="main-content">
+    <h1>PSC</h1>
+    <h2 class="typing-container">The Ultimate <span class="typing-text"></span></h2>
+    <p class="lead" style="max-width: 620px; color: #cbd5e1;">
+      Borrow premium writing instruments, explore legendary pens, and contribute to a secure archive built for pen lovers.
+    </p>
+    <div class="container" style="margin-top: 40px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25);">
+      <div class="auth-buttons">
+        <a href="/login" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">LOGIN</a>
+        <a href="/register" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">SIGN UP</a>
       </div>
-      <div class="metrics">
-        <div class="metric"><strong>200+</strong><span class="muted">Pens in storage</span></div>
-        <div class="metric"><strong>500+</strong><span class="muted">Loans completed</span></div>
-        <div class="metric"><strong>PRS</strong><span class="muted">Community rating</span></div>
-      </div>
+      <p style="margin-top: 24px; color: #cbd5e1; font-size: 14px;">New to PSC? Create an account to start loaning premium pens today.</p>
     </div>
-    <div class="hero-card">
-      <h3 style="margin:0 0 8px;">Member Access</h3>
-      <p class="muted" style="margin:0;">Join PSC to track loans, donate pens, and unlock tier benefits.</p>
-      <div class="hero-actions">
-        <a href="/login" class="btn-cta btn-secondary">Login</a>
-        <a href="/register" class="btn-cta btn-primary">Join PSC</a>
-      </div>
-      <div class="metrics">
-        <div class="metric"><strong>7 Days</strong><span class="muted">Standard loan term</span></div>
-        <div class="metric"><strong>A–D</strong><span class="muted">Pen classes</span></div>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <section class="section">
-    <h3 class="section-title">Why PSC</h3>
-    <p class="muted">Everything you need to build a legendary writing rotation — with clear history and honest reviews.</p>
+    <h2>Why Choose PSC?</h2>
+    <p class="lead">A polished experience with transparent ratings, trusted inventory, and clear membership benefits.</p>
     <div class="feature-grid">
       <div class="feature-card">
-        <span class="feature-tag">Collection</span>
-        <h4>Premium Curation</h4>
-        <p class="muted">Every pen is cataloged with class, ink, and rating details.</p>
+        <span class="feature-pill">Collection</span>
+        <h3>Premium Curation</h3>
+        <p>Every pen is cataloged with class, ink, and rating details.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-tag">Membership</span>
-        <h4>Tiered Access</h4>
-        <p class="muted">Upgrade your tier to access higher-class pens and more loans.</p>
+        <span class="feature-pill">Membership</span>
+        <h3>Tiered Access</h3>
+        <p>Upgrade your tier to access higher-class pens and more loans.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-tag">Community</span>
-        <h4>Trusted Reviews</h4>
-        <p class="muted">PRS ratings help members find the right pen for every task.</p>
+        <span class="feature-pill">Community</span>
+        <h3>Trusted Reviews</h3>
+        <p>PRS ratings help members find the right pen for every task.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-tag">Security</span>
-        <h4>Verified History</h4>
-        <p class="muted">Donation and loan trails keep the archive transparent.</p>
+        <span class="feature-pill">Security</span>
+        <h3>Verified History</h3>
+        <p>Donation and loan trails keep the archive transparent.</p>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <h3 class="section-title">Membership Tiers</h3>
-    <p class="muted">Choose the access level that fits your writing needs.</p>
+    <h2>PSC At A Glance</h2>
+    <p class="lead">Simple metrics that show what the community has built.</p>
+    <div class="stats-bar">
+      <div class="stat-card"><strong>200+</strong><span>Pens in storage</span></div>
+      <div class="stat-card"><strong>500+</strong><span>Loans completed</span></div>
+      <div class="stat-card"><strong>200+</strong><span>Community reviews</span></div>
+      <div class="stat-card"><strong>7 Days</strong><span>Standard loan term</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Membership Tiers</h2>
+    <p class="lead">Choose the access level that fits your writing needs.</p>
     <div class="tiers">
       <div class="tier">
         <h4>Basic</h4>
-        <p class="muted">1 loan • Classes C–D</p>
+        <p>1 loan • Classes C–D</p>
       </div>
       <div class="tier">
         <h4>Gold</h4>
-        <p class="muted">3 loans • Classes B–D</p>
+        <p>3 loans • Classes B–D</p>
       </div>
       <div class="tier">
         <h4>Diamond</h4>
-        <p class="muted">5 loans • Classes A–D</p>
+        <p>5 loans • Classes A–D</p>
       </div>
       <div class="tier">
         <h4>Platinum</h4>
-        <p class="muted">10 loans • Classes A–D</p>
+        <p>10 loans • Classes A–D</p>
       </div>
       <div class="tier">
         <h4>Montblanc</h4>
-        <p class="muted">20 loans • Classes A–D</p>
+        <p>20 loans • Classes A–D</p>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <div class="cta">
-      <h3 style="margin:0;">Ready to join the archive?</h3>
-      <p class="muted" style="margin:0;">Start loaning premium pens, share your favorites, and grow your PSC reputation.</p>
-      <div class="hero-actions">
-        <a href="/register" class="btn-cta btn-primary">Get Started</a>
-        <a href="/about" class="btn-cta btn-secondary">Learn More</a>
+    <div class="cta-band">
+      <h2 style="margin:0;">Ready to join the archive?</h2>
+      <p class="lead" style="margin:0;">Start loaning premium pens, share your favorites, and grow your PSC reputation.</p>
+      <div class="cta-actions">
+        <a href="/register" class="btn-slim btn-green">Get Started</a>
+        <a href="/about" class="btn-slim btn-outline">Learn More</a>
       </div>
     </div>
   </section>
 
-  <footer class="section" style="padding-top:20px;">
-    <div>
-      <strong>Explore</strong>
+  <footer>
+    <div class="footer-content">
+      <h2 class="footer-title">Explore</h2>
       <div class="footer-links">
-        <a href="/about">About Us</a>
-        <a href="/loan">Loan a Pen</a>
-        <a href="/donate">Donate a Pen</a>
-        <a href="/login">Login</a>
-        <a href="/register">Join PSC</a>
-        <a href="/sectors">Sector Access</a>
+        <a href="/about" class="footer-link">About Us</a>
+        <a href="/loan" class="footer-link">Loan a Pen</a>
+        <a href="/donate" class="footer-link">Donate a Pen</a>
+        <a href="/login" class="footer-link">Login</a>
+        <a href="/register" class="footer-link">Join PSC</a>
+        <a href="/sectors" class="footer-link">Sector Access</a>
       </div>
-      <div style="margin-top:18px; color:var(--muted);">&copy; 2024 Pen Storage Company. Establishing pen culture, one loan at a time.</div>
+      <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: #94a3b8;">
+        <p>&copy; 2024 Pen Storage Company. Establishing pen culture, one loan at a time.</p>
+      </div>
     </div>
   </footer>
 
