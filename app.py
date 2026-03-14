@@ -870,7 +870,7 @@ def return_loan(loan_id):
             blob = TextBlob(review_text)
             sentiment_score = (blob.sentiment.polarity + 1) * 50  # Scale to 0-100
             pen = Pens.query.get(loan.pen_id)
-            pen.prs = min(100, pen.prs + sentiment_score)  # Add to PRS, cap at 100
+            pen.prs = (sentiment_score + 1) * 50
             loan.review = review_text
 
         loan.return_date = datetime.datetime.utcnow()
