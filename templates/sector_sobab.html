@@ -100,6 +100,22 @@
       font-family:"Orbitron", sans-serif;
       letter-spacing:0.6px;
     }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(24,16,32,0.9);
+      border:1px solid rgba(180,120,160,0.25);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{
+      display:block;
+      font-size:18px;
+    }
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
@@ -182,6 +198,52 @@
   </div>
   {% else %}
   <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.campaigns }}</strong><span class="muted">Campaigns</span></div>
+      <div class="stat"><strong>{{ stats.subscribers }}</strong><span class="muted">Email Contacts</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Design Lab Briefs</h2>
+      <form method="POST" action="{{ url_for('sector_create_brief') }}">
+        <label>Brief Title</label>
+        <input name="title" required placeholder="PSC Vault Rebrand">
+        <label>Goal</label>
+        <textarea name="goal" placeholder="Outcome, conversion target, brand impression..."></textarea>
+        <label>Tone</label>
+        <input name="tone" placeholder="Confident, mysterious, premium">
+        <label>Assets / References</label>
+        <input name="assets" placeholder="Existing posters, logo variants, slogans">
+        <label>Status</label>
+        <select name="status">
+          <option>Draft</option>
+          <option>In Review</option>
+          <option>Approved</option>
+          <option>Released</option>
+        </select>
+        <button class="save-btn" type="submit">Create Brief</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Brief Archive</h2>
+      {% if briefs %}
+      <div class="grid">
+        {% for brief in briefs %}
+        <div class="card">
+          <strong>{{ brief.title }}</strong>
+          <div class="muted">Status: {{ brief.status }}</div>
+          <p class="muted" style="margin-top:8px;">Goal: {{ brief.goal }}</p>
+          <p class="muted">Tone: {{ brief.tone }}</p>
+          <p class="muted">Assets: {{ brief.assets }}</p>
+          <div class="muted" style="margin-top:8px;">Created: {{ brief.created_at.strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No design briefs yet.</p>
+      {% endif %}
+    </div>
     <div class="panel">
       <h2>Launch Campaign</h2>
       <form method="POST" action="{{ url_for('sector_create_campaign') }}">

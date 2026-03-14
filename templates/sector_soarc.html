@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ config.name }} | PSC Sector Console</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#e6eef8;
+      --muted:#b2c0d4;
+      --panel:rgba(18,22,30,0.92);
+      --line:rgba(150,170,210,0.25);
+      --shadow:0 30px 60px rgba(0,0,0,0.45);
+    }
+    body{
+      margin:0;
+      background:linear-gradient(180deg, #0e1219 0%, #0b0f16 100%);
+      color:var(--ink);
+      font-family:"Space Grotesk", sans-serif;
+      letter-spacing:0.2px;
+      min-height:100vh;
+      position:relative;
+      overflow-x:hidden;
+    }
+    header{
+      padding:28px 32px;
+      border-bottom:1px solid var(--line);
+      background:rgba(12,16,24,0.92);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      position:sticky;
+      top:0;
+      z-index:2;
+      backdrop-filter:blur(6px);
+    }
+    h1{
+      margin:0;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:1px;
+    }
+    .subtitle{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 18px;
+      border-radius:999px;
+      border:1px solid rgba(150,170,210,0.35);
+      background:rgba(120,140,180,0.12);
+      color:var(--ink);
+      text-decoration:none;
+      font-weight:600;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+      font-size:12px;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(80,100,140,0.25);}
+    .layout{
+      max-width:1100px;
+      margin:30px auto 80px;
+      padding:0 24px;
+      position:relative;
+      z-index:1;
+    }
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:24px;
+      box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+      position:relative;
+      overflow:hidden;
+      backdrop-filter:blur(8px);
+    }
+    .panel + .panel{margin-top:20px;}
+    .panel h2{
+      margin:0 0 14px;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:0.6px;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(16,20,30,0.9);
+      border:1px solid rgba(120,150,200,0.2);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{display:block;font-size:18px;}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+      gap:16px;
+    }
+    .card{
+      background:rgba(16,20,30,0.9);
+      border:1px solid rgba(120,150,200,0.18);
+      border-radius:14px;
+      padding:18px;
+      box-shadow:inset 0 0 20px rgba(80,100,140,0.08);
+      transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(120,150,200,0.4);
+      box-shadow:0 12px 26px rgba(30,40,60,0.35);
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+    input, textarea, select{
+      width:100%;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid rgba(120,150,200,0.3);
+      background:rgba(10,14,20,0.9);
+      color:var(--ink);
+      font-size:13px;
+    }
+    textarea{min-height:90px;}
+    .save-btn{
+      margin-top:12px;
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid rgba(120,150,200,0.35);
+      background:rgba(120,150,200,0.12);
+      color:var(--ink);
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .muted{color:var(--muted);font-size:13px;}
+    .login{
+      max-width:480px;
+      margin:80px auto;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>{{ config.name }}</h1>
+      <div class="subtitle">{{ config.full }} — {{ config.summary }}</div>
+    </div>
+    <form method="POST" action="{{ url_for('sector_lock', sector='soarc') }}">
+      <button class="btn" type="submit">Lock Sector</button>
+    </form>
+  </header>
+
+  {% if not authed %}
+  <div class="panel login">
+    <h2>Sector Authentication</h2>
+    <p class="muted">Enter the SoARC password to access archives and legendary profiles.</p>
+    {% if error %}<p style="color:#ff808f;">{{ error }}</p>{% endif %}
+    <form method="POST">
+      <input type="password" name="sector_password" placeholder="SoARC Access Code" required>
+      <button class="btn" type="submit">Unlock Console</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.archives }}</strong><span class="muted">Archive Entries</span></div>
+      <div class="stat"><strong>{{ stats.legendary }}</strong><span class="muted">Legendary Pens</span></div>
+      <div class="stat"><strong>{{ stats.pens }}</strong><span class="muted">Total Pens</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Create / Update Archive</h2>
+      <form method="POST" action="{{ url_for('sector_upsert_archive') }}">
+        <label>Pen</label>
+        <select name="pen_id" required>
+          {% for pen in pens %}
+            <option value="{{ pen.id }}">{{ pen.name }} ({{ pen.class_ }})</option>
+          {% endfor %}
+        </select>
+        <label>History</label>
+        <textarea name="history" placeholder="Origin, prior ownership, notable events..."></textarea>
+        <label>Ownership Lineage</label>
+        <textarea name="ownership_lineage" placeholder="Sequence of owners and transfers..."></textarea>
+        <label>Legacy Donor</label>
+        <input name="legacy_donor" placeholder="Name of legacy donor">
+        <label>Legendary Profile</label>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <input type="checkbox" name="legendary" style="width:auto;"> Mark as Legendary
+        </label>
+        <label>Legendary Story</label>
+        <textarea name="legendary_story" placeholder="Why this pen is legendary..."></textarea>
+        <button class="save-btn" type="submit">Save Archive</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Archive Timeline Event</h2>
+      <form method="POST" action="{{ url_for('sector_create_archive_event') }}">
+        <label>Pen</label>
+        <select name="pen_id" required>
+          {% for pen in pens %}
+            <option value="{{ pen.id }}">{{ pen.name }} ({{ pen.class_ }})</option>
+          {% endfor %}
+        </select>
+        <label>Event Type</label>
+        <input name="event_type" placeholder="Transfer, Restoration, Legendary Lock">
+        <label>Event Date</label>
+        <input type="date" name="event_date">
+        <label>Event Details</label>
+        <textarea name="event_details" placeholder="Describe what happened in the archive timeline..."></textarea>
+        <button class="save-btn" type="submit">Add Event</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Timeline Log</h2>
+      {% if events %}
+      <div class="grid">
+        {% for event in events %}
+        <div class="card">
+          <strong>{{ event.pen.name }}</strong>
+          <div class="muted">Type: {{ event.event_type }}</div>
+          <p class="muted" style="margin-top:8px;">{{ event.event_details }}</p>
+          <div class="muted" style="margin-top:8px;">Event Date: {{ event.event_date.strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No timeline events recorded yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <h2>Archive Index</h2>
+      {% if archives %}
+      <div class="grid">
+        {% for archive in archives %}
+        <div class="card">
+          <strong>{{ archive.pen.name }}</strong>
+          <div class="muted">Legacy Donor: {{ archive.legacy_donor or "—" }}</div>
+          <p class="muted" style="margin-top:8px;">History: {{ archive.history }}</p>
+          <p class="muted">Lineage: {{ archive.ownership_lineage }}</p>
+          {% if archive.legendary %}
+          <p class="muted">Legendary: {{ archive.legendary_story }}</p>
+          {% endif %}
+          <div class="muted" style="margin-top:8px;">Updated: {{ archive.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No archive entries created yet.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</body>
+</html>

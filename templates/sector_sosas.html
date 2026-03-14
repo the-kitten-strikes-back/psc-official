@@ -100,6 +100,22 @@
       font-family:"Orbitron", sans-serif;
       letter-spacing:0.6px;
     }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(24,16,18,0.9);
+      border:1px solid rgba(160,90,100,0.25);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{
+      display:block;
+      font-size:18px;
+    }
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
@@ -207,6 +223,50 @@
   </div>
   {% else %}
   <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.records }}</strong><span class="muted">External Records</span></div>
+      <div class="stat"><strong>{{ stats.users }}</strong><span class="muted">Users Tracked</span></div>
+      <div class="stat"><strong>{{ stats.logs }}</strong><span class="muted">Recent Logs</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Threat Reports</h2>
+      <form method="POST" action="{{ url_for('sector_create_threat') }}">
+        <label>Subject Name</label>
+        <input name="subject_name" required placeholder="Person or group">
+        <label>Threat Type</label>
+        <input name="threat_type" placeholder="Theft ring, insider risk, foreign proxy">
+        <label>Severity</label>
+        <select name="severity">
+          <option>Low</option>
+          <option selected>Medium</option>
+          <option>High</option>
+          <option>Critical</option>
+        </select>
+        <label>Details</label>
+        <textarea name="details" placeholder="Evidence, recent incidents, affected sectors..."></textarea>
+        <label>Status</label>
+        <select name="status">
+          <option>Active</option>
+          <option>Monitoring</option>
+          <option>Resolved</option>
+        </select>
+        <button class="save-btn" type="submit">Create Threat Report</button>
+      </form>
+      {% if threats %}
+      <div class="grid" style="margin-top:16px;">
+        {% for threat in threats %}
+        <div class="card">
+          <strong>{{ threat.subject_name }}</strong>
+          <div class="muted">Type: {{ threat.threat_type }}</div>
+          <div class="muted">Severity: {{ threat.severity }} • Status: {{ threat.status }}</div>
+          <p class="muted" style="margin-top:8px;">{{ threat.details }}</p>
+          <div class="muted" style="margin-top:8px;">Filed: {{ threat.created_at.strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
     <div class="panel">
       <h2>Criminal Records (External Persons)</h2>
       <form method="POST" action="{{ url_for('sector_create_criminal_record') }}">

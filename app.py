@@ -50,6 +50,10 @@ SECTOR_PASSWORD_HASHES = {
         "SECTOR_PASSWORD_HASH_SOSAS",
         "pbkdf2_sha256$260000$tqgId5Rqpqzwuw1YPFx9mA==$WWeN75bkUI2X5KrAGip4l+jvU0Yao9lc3R8H/aRh030=",
     ),
+    "soarc": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SOARC",
+        "pbkdf2_sha256$260000$+XJLG1/W4FEJEuyuxyA7yA==$uRiInq1OBPmPZU+MTHp2UBcPLLoz9mxI5AashoOwViY=",
+    ),
 }
 
 SECTOR_CONFIG = {
@@ -82,6 +86,12 @@ SECTOR_CONFIG = {
         "full": "Sector of Security and Secrets",
         "summary": "Handle sensitive relations and maintain PSC security.",
         "accent": "#ff3b5c",
+    },
+    "soarc": {
+        "name": "SoARC",
+        "full": "Sector of Archives and Records",
+        "summary": "Maintain pen history, ownership lineage, legacy donors, and legendary profiles.",
+        "accent": "#b8c7e6",
     },
 }
 
@@ -217,6 +227,23 @@ class BrandCampaign(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     status = db.Column(db.String(50), default="Queued")
 
+class DesignBrief(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    goal = db.Column(db.String(400), default="")
+    tone = db.Column(db.String(120), default="")
+    assets = db.Column(db.String(400), default="")
+    status = db.Column(db.String(50), default="Draft")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+class ClassificationRule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(600), default="")
+    class_target = db.Column(db.String(10), default="C")
+    weight = db.Column(db.Integer, default=50)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 class RepairTicket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
@@ -226,6 +253,15 @@ class RepairTicket(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     resolved_at = db.Column(db.DateTime, nullable=True)
     pen = db.relationship('Pens', backref='repair_tickets')
+
+class IntakeNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
+    checklist = db.Column(db.String(600), default="")
+    condition = db.Column(db.String(200), default="")
+    source = db.Column(db.String(200), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    pen = db.relationship('Pens', backref='intake_notes')
 
 class OperationLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -243,6 +279,22 @@ class OperationLog(db.Model):
     operator = db.Column(db.String(120), default="")
     pen = db.relationship('Pens', backref='operation_logs')
 
+class PartsInventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    part_name = db.Column(db.String(200), nullable=False)
+    quantity = db.Column(db.Integer, default=0)
+    notes = db.Column(db.String(300), default="")
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+class PartsRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    part_name = db.Column(db.String(200), nullable=False)
+    quantity = db.Column(db.Integer, default=1)
+    priority = db.Column(db.String(50), default="Medium")
+    notes = db.Column(db.String(300), default="")
+    status = db.Column(db.String(50), default="Open")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 class CriminalRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(200), nullable=False)
@@ -254,6 +306,36 @@ class CriminalRecord(db.Model):
     tags = db.Column(db.String(200), default="")
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+class ThreatReport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    subject_name = db.Column(db.String(200), nullable=False)
+    threat_type = db.Column(db.String(120), default="")
+    severity = db.Column(db.String(50), default="Medium")
+    details = db.Column(db.String(800), default="")
+    status = db.Column(db.String(50), default="Active")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+class PenArchive(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
+    history = db.Column(db.String(900), default="")
+    ownership_lineage = db.Column(db.String(900), default="")
+    legacy_donor = db.Column(db.String(200), default="")
+    legendary = db.Column(db.Boolean, default=False)
+    legendary_story = db.Column(db.String(900), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    pen = db.relationship('Pens', backref='archive_entries')
+
+class ArchiveEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
+    event_type = db.Column(db.String(120), default="Update")
+    event_details = db.Column(db.String(800), default="")
+    event_date = db.Column(db.Date, default=datetime.date.today)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    pen = db.relationship('Pens', backref='archive_events')
 
 class SectorAccessLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -377,36 +459,58 @@ def sector_page(sector):
         accepted = PenDonations.query.filter_by(status="Accepted").all()
         rejected = PenDonations.query.filter_by(status="Rejected").all()
         pens = Pens.query.all()
+        intake_notes = IntakeNote.query.order_by(IntakeNote.created_at.desc()).all()
         return render_template(
             "sector_socac.html",
             config=SECTOR_CONFIG[sector],
             authed=authed,
             error=error,
+            stats={
+                "pending": len(pending),
+                "accepted": len(accepted),
+                "rejected": len(rejected),
+                "pens": len(pens),
+            },
             pending_donations=pending,
             accepted_donations=accepted,
             rejected_donations=rejected,
             pens=pens,
+            intake_notes=intake_notes,
         )
 
     if sector == "sodac":
         pens = Pens.query.all()
+        avg_prs = int(sum(p.prs for p in pens) / len(pens)) if pens else 0
+        rules = ClassificationRule.query.order_by(ClassificationRule.created_at.desc()).all()
         return render_template(
             "sector_sodac.html",
             config=SECTOR_CONFIG[sector],
             authed=authed,
             error=error,
+            stats={
+                "pens": len(pens),
+                "avg_prs": avg_prs,
+            },
             pens=pens,
+            rules=rules,
         )
 
     if sector == "sobab":
         campaigns = BrandCampaign.query.order_by(BrandCampaign.created_at.desc()).all()
         users = Users.query.all()
+        email_users = [u for u in users if u.email]
+        briefs = DesignBrief.query.order_by(DesignBrief.created_at.desc()).all()
         return render_template(
             "sector_sobab.html",
             config=SECTOR_CONFIG[sector],
             authed=authed,
             error=error,
+            stats={
+                "campaigns": len(campaigns),
+                "subscribers": len(email_users),
+            },
             campaigns=campaigns,
+            briefs=briefs,
             users=users,
         )
 
@@ -414,13 +518,23 @@ def sector_page(sector):
         tickets = RepairTicket.query.order_by(RepairTicket.created_at.desc()).all()
         logs = OperationLog.query.order_by(OperationLog.created_at.desc()).all()
         pens = Pens.query.all()
+        parts = PartsInventory.query.order_by(PartsInventory.updated_at.desc()).all()
+        requests = PartsRequest.query.order_by(PartsRequest.created_at.desc()).all()
+        open_tickets = len([t for t in tickets if t.status != "Resolved"])
         return render_template(
             "sector_sorasr.html",
             config=SECTOR_CONFIG[sector],
             authed=authed,
             error=error,
+            stats={
+                "open_tickets": open_tickets,
+                "total_logs": len(logs),
+                "pens": len(pens),
+            },
             tickets=tickets,
             logs=logs,
+            parts=parts,
+            requests=requests,
             pens=pens,
         )
 
@@ -428,14 +542,42 @@ def sector_page(sector):
         users = Users.query.all()
         records = CriminalRecord.query.order_by(CriminalRecord.updated_at.desc()).all()
         logs = SectorAccessLog.query.order_by(SectorAccessLog.accessed_at.desc()).limit(200).all()
+        threats = ThreatReport.query.order_by(ThreatReport.created_at.desc()).all()
         return render_template(
             "sector_sosas.html",
             config=SECTOR_CONFIG[sector],
             authed=authed,
             error=error,
+            stats={
+                "records": len(records),
+                "users": len(users),
+                "logs": len(logs),
+            },
             users=users,
             records=records,
+            threats=threats,
             logs=logs,
+        )
+
+    if sector == "soarc":
+        pens = Pens.query.all()
+        archives = PenArchive.query.order_by(PenArchive.updated_at.desc()).all()
+        legendary = [a for a in archives if a.legendary]
+        events = ArchiveEvent.query.order_by(ArchiveEvent.created_at.desc()).all()
+        return render_template(
+            "sector_soarc.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            stats={
+                "archives": len(archives),
+                "legendary": len(legendary),
+                "pens": len(pens),
+            },
+            pens=pens,
+            archives=archives,
+            legendary=legendary,
+            events=events,
         )
 
     return redirect(url_for("sectors"))
@@ -594,6 +736,27 @@ def sector_create_campaign():
         db.session.commit()
     return redirect(url_for("sector_page", sector="sobab"))
 
+@app.route("/sector/sobab/briefs", methods=["POST"])
+@login_required
+@require_sector("sobab")
+def sector_create_brief():
+    title = request.form.get("title", "").strip()
+    goal = request.form.get("goal", "").strip()
+    tone = request.form.get("tone", "").strip()
+    assets = request.form.get("assets", "").strip()
+    status = request.form.get("status", "Draft")
+    if title:
+        brief = DesignBrief(
+            title=title,
+            goal=goal,
+            tone=tone,
+            assets=assets,
+            status=status,
+        )
+        db.session.add(brief)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sobab"))
+
 @app.route("/sector/sobab/send-email", methods=["POST"])
 @login_required
 @require_sector("sobab")
@@ -611,6 +774,44 @@ def sector_send_email():
             send_sector_email(recipient, subject, body)
     return redirect(url_for("sector_page", sector="sobab"))
 
+@app.route("/sector/sodac/rules", methods=["POST"])
+@login_required
+@require_sector("sodac")
+def sector_create_rule():
+    name = request.form.get("name", "").strip()
+    description = request.form.get("description", "").strip()
+    class_target = request.form.get("class_target", "C")
+    weight = int(request.form.get("weight") or 50)
+    if name:
+        rule = ClassificationRule(
+            name=name,
+            description=description,
+            class_target=class_target,
+            weight=weight,
+        )
+        db.session.add(rule)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sodac"))
+
+@app.route("/sector/socac/intake", methods=["POST"])
+@login_required
+@require_sector("socac")
+def sector_create_intake():
+    pen_id = request.form.get("pen_id")
+    checklist = request.form.get("checklist", "").strip()
+    condition = request.form.get("condition", "").strip()
+    source = request.form.get("source", "").strip()
+    if pen_id:
+        note = IntakeNote(
+            pen_id=int(pen_id),
+            checklist=checklist,
+            condition=condition,
+            source=source,
+        )
+        db.session.add(note)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="socac"))
+
 @app.route("/sector/sorasr/repairs", methods=["POST"])
 @login_required
 @require_sector("sorasr")
@@ -620,6 +821,43 @@ def sector_create_repair():
     if pen_id and issue:
         ticket = RepairTicket(pen_id=int(pen_id), issue=issue)
         db.session.add(ticket)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sorasr"))
+
+@app.route("/sector/sorasr/parts", methods=["POST"])
+@login_required
+@require_sector("sorasr")
+def sector_upsert_part():
+    part_name = request.form.get("part_name", "").strip()
+    quantity = int(request.form.get("quantity") or 0)
+    notes = request.form.get("notes", "").strip()
+    if part_name:
+        part = PartsInventory.query.filter_by(part_name=part_name).first()
+        if not part:
+            part = PartsInventory(part_name=part_name)
+            db.session.add(part)
+        part.quantity = quantity
+        part.notes = notes
+        part.updated_at = datetime.datetime.utcnow()
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sorasr"))
+
+@app.route("/sector/sorasr/requests", methods=["POST"])
+@login_required
+@require_sector("sorasr")
+def sector_create_parts_request():
+    part_name = request.form.get("part_name", "").strip()
+    quantity = int(request.form.get("quantity") or 1)
+    priority = request.form.get("priority", "Medium")
+    notes = request.form.get("notes", "").strip()
+    if part_name:
+        request_item = PartsRequest(
+            part_name=part_name,
+            quantity=quantity,
+            priority=priority,
+            notes=notes,
+        )
+        db.session.add(request_item)
         db.session.commit()
     return redirect(url_for("sector_page", sector="sorasr"))
 
@@ -709,6 +947,74 @@ def sector_update_criminal_record(record_id):
         record.updated_at = datetime.datetime.utcnow()
         db.session.commit()
     return redirect(url_for("sector_page", sector="sosas"))
+
+@app.route("/sector/sosas/threats", methods=["POST"])
+@login_required
+@require_sector("sosas")
+def sector_create_threat():
+    subject_name = request.form.get("subject_name", "").strip()
+    threat_type = request.form.get("threat_type", "").strip()
+    severity = request.form.get("severity", "Medium")
+    details = request.form.get("details", "").strip()
+    status = request.form.get("status", "Active")
+    if subject_name:
+        report = ThreatReport(
+            subject_name=subject_name,
+            threat_type=threat_type,
+            severity=severity,
+            details=details,
+            status=status,
+        )
+        db.session.add(report)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="sosas"))
+
+@app.route("/sector/soarc/archives", methods=["POST"])
+@login_required
+@require_sector("soarc")
+def sector_upsert_archive():
+    pen_id = request.form.get("pen_id")
+    history = request.form.get("history", "").strip()
+    ownership = request.form.get("ownership_lineage", "").strip()
+    legacy_donor = request.form.get("legacy_donor", "").strip()
+    legendary = request.form.get("legendary") == "on"
+    legendary_story = request.form.get("legendary_story", "").strip()
+    if not pen_id:
+        return redirect(url_for("sector_page", sector="soarc"))
+
+    archive = PenArchive.query.filter_by(pen_id=int(pen_id)).first()
+    if not archive:
+        archive = PenArchive(pen_id=int(pen_id))
+        db.session.add(archive)
+
+    archive.history = history
+    archive.ownership_lineage = ownership
+    archive.legacy_donor = legacy_donor
+    archive.legendary = legendary
+    archive.legendary_story = legendary_story
+    archive.updated_at = datetime.datetime.utcnow()
+    db.session.commit()
+    return redirect(url_for("sector_page", sector="soarc"))
+
+@app.route("/sector/soarc/events", methods=["POST"])
+@login_required
+@require_sector("soarc")
+def sector_create_archive_event():
+    pen_id = request.form.get("pen_id")
+    event_type = request.form.get("event_type", "Update")
+    event_details = request.form.get("event_details", "").strip()
+    event_date_raw = request.form.get("event_date")
+    if pen_id:
+        event_date = datetime.datetime.strptime(event_date_raw, "%Y-%m-%d").date() if event_date_raw else datetime.date.today()
+        event = ArchiveEvent(
+            pen_id=int(pen_id),
+            event_type=event_type,
+            event_details=event_details,
+            event_date=event_date,
+        )
+        db.session.add(event)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="soarc"))
 
 @app.route("/sector/sosas/user/<int:user_id>/status", methods=["POST"])
 @login_required

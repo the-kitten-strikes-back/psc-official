@@ -100,6 +100,22 @@
       font-family:"Orbitron", sans-serif;
       letter-spacing:0.6px;
     }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(16,20,30,0.9);
+      border:1px solid rgba(120,150,200,0.2);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{
+      display:block;
+      font-size:18px;
+    }
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
@@ -191,6 +207,50 @@
   </div>
   {% else %}
   <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.pending }}</strong><span class="muted">Pending Intake</span></div>
+      <div class="stat"><strong>{{ stats.accepted }}</strong><span class="muted">Accepted</span></div>
+      <div class="stat"><strong>{{ stats.rejected }}</strong><span class="muted">Rejected</span></div>
+      <div class="stat"><strong>{{ stats.pens }}</strong><span class="muted">Total Pens</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Intake Checklist Builder</h2>
+      <form method="POST" action="{{ url_for('sector_create_intake') }}">
+        <label>Pen</label>
+        <select name="pen_id" required>
+          {% for pen in pens %}
+            <option value="{{ pen.id }}">{{ pen.name }} ({{ pen.class_ }})</option>
+          {% endfor %}
+        </select>
+        <label>Checklist</label>
+        <textarea name="checklist" placeholder="Cap integrity, ink flow test, clip alignment, barrel condition..."></textarea>
+        <label>Condition</label>
+        <input name="condition" placeholder="Excellent / Good / Needs Repair">
+        <label>Source</label>
+        <input name="source" placeholder="Donation, recovery, swap, expedition">
+        <button class="action-btn" type="submit">Log Intake</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Recent Intake Notes</h2>
+      {% if intake_notes %}
+      <div class="grid">
+        {% for note in intake_notes %}
+        <div class="card">
+          <strong>{{ note.pen.name }}</strong>
+          <div class="muted">Condition: {{ note.condition }}</div>
+          <p class="muted" style="margin-top:8px;">Checklist: {{ note.checklist }}</p>
+          <p class="muted">Source: {{ note.source }}</p>
+          <div class="muted" style="margin-top:8px;">Logged: {{ note.created_at.strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No intake notes logged.</p>
+      {% endif %}
+    </div>
     <div class="panel">
       <h2>Intake Queue</h2>
       {% if pending_donations %}

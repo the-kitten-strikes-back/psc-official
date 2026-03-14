@@ -100,6 +100,22 @@
       font-family:"Orbitron", sans-serif;
       letter-spacing:0.6px;
     }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(16,20,30,0.9);
+      border:1px solid rgba(120,150,200,0.2);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{
+      display:block;
+      font-size:18px;
+    }
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
@@ -179,6 +195,42 @@
   </div>
   {% else %}
   <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.pens }}</strong><span class="muted">Pens in Catalog</span></div>
+      <div class="stat"><strong>{{ stats.avg_prs }}</strong><span class="muted">Average PRS</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Classification Rules Engine</h2>
+      <form method="POST" action="{{ url_for('sector_create_rule') }}">
+        <label>Rule Name</label>
+        <input name="name" required placeholder="Ink consistency > 80% boosts class">
+        <label>Description</label>
+        <textarea name="description" placeholder="Explain how this rule should affect classification."></textarea>
+        <label>Target Class</label>
+        <select name="class_target">
+          <option>A</option>
+          <option>B</option>
+          <option selected>C</option>
+          <option>D</option>
+        </select>
+        <label>Weight</label>
+        <input type="number" name="weight" min="1" max="100" value="50">
+        <button class="save-btn" type="submit">Add Rule</button>
+      </form>
+      {% if rules %}
+      <div class="grid" style="margin-top:16px;">
+        {% for rule in rules %}
+        <div class="card">
+          <strong>{{ rule.name }}</strong>
+          <div class="muted">Target: {{ rule.class_target }} • Weight: {{ rule.weight }}</div>
+          <p class="muted" style="margin-top:8px;">{{ rule.description }}</p>
+          <div class="muted" style="margin-top:8px;">Created: {{ rule.created_at.strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
     <div class="panel">
       <h2>Classification Grid</h2>
       <p class="muted">Adjust PRS, class, and ink metadata. Changes update the live pen catalogue.</p>

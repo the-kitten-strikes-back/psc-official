@@ -100,6 +100,22 @@
       font-family:"Orbitron", sans-serif;
       letter-spacing:0.6px;
     }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(24,18,12,0.9);
+      border:1px solid rgba(180,140,90,0.25);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{
+      display:block;
+      font-size:18px;
+    }
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
@@ -179,6 +195,68 @@
   </div>
   {% else %}
   <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.open_tickets }}</strong><span class="muted">Open Tickets</span></div>
+      <div class="stat"><strong>{{ stats.total_logs }}</strong><span class="muted">Operations Logged</span></div>
+      <div class="stat"><strong>{{ stats.pens }}</strong><span class="muted">Pens in System</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Parts Inventory</h2>
+      <form method="POST" action="{{ url_for('sector_upsert_part') }}">
+        <label>Part Name</label>
+        <input name="part_name" required placeholder="Clip spring, ink tube, grip, cap">
+        <label>Quantity</label>
+        <input type="number" name="quantity" min="0" value="0">
+        <label>Notes</label>
+        <input name="notes" placeholder="Condition, compatible models...">
+        <button class="save-btn" type="submit">Update Inventory</button>
+      </form>
+      {% if parts %}
+      <div class="grid" style="margin-top:16px;">
+        {% for part in parts %}
+        <div class="card">
+          <strong>{{ part.part_name }}</strong>
+          <div class="muted">Qty: {{ part.quantity }}</div>
+          <div class="muted">Notes: {{ part.notes }}</div>
+          <div class="muted" style="margin-top:8px;">Updated: {{ part.updated_at.strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <h2>Parts Requests</h2>
+      <form method="POST" action="{{ url_for('sector_create_parts_request') }}">
+        <label>Part Name</label>
+        <input name="part_name" required placeholder="Micro spring, ink reservoir">
+        <label>Quantity</label>
+        <input type="number" name="quantity" min="1" value="1">
+        <label>Priority</label>
+        <select name="priority">
+          <option>Low</option>
+          <option selected>Medium</option>
+          <option>High</option>
+          <option>Critical</option>
+        </select>
+        <label>Notes</label>
+        <input name="notes" placeholder="Needed for hybrid assembly, urgent repair...">
+        <button class="save-btn" type="submit">Create Request</button>
+      </form>
+      {% if requests %}
+      <div class="grid" style="margin-top:16px;">
+        {% for req in requests %}
+        <div class="card">
+          <strong>{{ req.part_name }}</strong>
+          <div class="muted">Qty: {{ req.quantity }} • Priority: {{ req.priority }}</div>
+          <div class="muted">Notes: {{ req.notes }}</div>
+          <div class="muted" style="margin-top:8px;">Status: {{ req.status }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
     <div class="panel">
       <h2>Operation Log</h2>
       <form method="POST" action="{{ url_for('sector_create_operation') }}">
