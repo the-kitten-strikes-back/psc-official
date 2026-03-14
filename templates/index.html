@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PSC | Pen Storage Company</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
 <body>
   <!-- Hero Section -->
@@ -100,5 +101,7 @@
       </div>
     </div>
   </footer>
+  <div id="psc-chatbot-root"></div>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 </html>

@@ -371,6 +371,7 @@ pointer-events:none;
 
 </style>
 
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
 
 <body>
@@ -716,5 +717,7 @@ console.log("Tip: press and hold the PSC logo to arm founder access.")
 
 </script>
 
+  <div id="psc-chatbot-root"></div>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 </html>

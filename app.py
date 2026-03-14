@@ -12,6 +12,7 @@ import hmac
 from functools import wraps
 import smtplib
 from email.message import EmailMessage
+import google.generativeai as genai
 app = Flask(__name__)
 db_uri = "postgresql://database_2fuy_user:JE01RUdze7ABr6h0WhpArvwvqmH2ojee@dpg-d6q3rgsr85hc73bsi5mg-a/database_2fuy"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
@@ -99,6 +100,30 @@ EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "PSC.Official@outlook.com")
 EMAIL_PASSWORD = os.environ.get("PSC_EMAIL_PASSWORD", "")
 EMAIL_SMTP_HOST = os.environ.get("PSC_EMAIL_SMTP_HOST", "smtp.office365.com")
 EMAIL_SMTP_PORT = int(os.environ.get("PSC_EMAIL_SMTP_PORT", "587"))
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+PSC_SYSTEM_PROMPT = (
+    "You are PSC Assistant, the official chatbot for the Pen Storage Company (PSC). "
+    "PSC helps members loan premium pens, donate pens, and manage their writing life through a secure catalog. "
+    "Your job is to answer everyday questions quickly: how to loan or return a pen, how donations work, "
+    "what subscription tiers mean, how ratings (PRS) work, and how to update pen details. "
+    "Assume most users are not staff and do not care about internal sectors—only mention sectors if the user asks. "
+    "Keep responses concise, friendly, and practical, with clear next steps. "
+    "If something is unknown or not in PSC policy, say so and suggest where to look (e.g., About, Loan, Donate pages). "
+    "Never ask for passwords, API keys, or secrets. "
+    "If a request is unsafe or unrelated to PSC, gently decline and redirect to PSC help."
+)
+
+CHAT_RATE_LIMIT_PER_MIN = 4
+CHAT_MODEL_LIMITS = [
+    (GEMINI_MODEL, 19),
+    ("gemini-3-flash", 20),
+    ("gemma-3-1b", 30),
+    ("gemma-3-4b", 30),
+    ("gemma-3-12b", 30),
+    ("gemma-3-27b", 30),
+]
+CHAT_LIMITS = {}
 
 def send_sector_email(to_address: str, subject: str, body: str) -> None:
     if not EMAIL_PASSWORD:
@@ -113,6 +138,62 @@ def send_sector_email(to_address: str, subject: str, body: str) -> None:
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
         server.send_message(msg)
 
+def call_gemini(messages, model_name) -> str:
+    if not GEMINI_API_KEY:
+        return "Chatbot is not configured. Please set GEMINI_API_KEY."
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        model_name,
+        system_instruction=PSC_SYSTEM_PROMPT,
+    )
+    history = []
+    for item in messages:
+        role = item.get("role")
+        text = item.get("content")
+        if role in ("user", "assistant") and text:
+            history.append({"role": role, "parts": [text]})
+    try:
+        chat = model.start_chat(history=history)
+        last_user = ""
+        for item in reversed(messages):
+            if item.get("role") == "user" and item.get("content"):
+                last_user = item["content"]
+                break
+        if not last_user:
+            return "Please enter a message."
+        response = chat.send_message(last_user)
+        return (response.text or "").strip()
+    except Exception:
+        return "Chatbot is temporarily unavailable."
+
+def get_chat_client_key() -> str:
+    if current_user.is_authenticated:
+        return f"user:{current_user.id}"
+    return f"ip:{request.remote_addr or 'unknown'}"
+
+def get_chat_state(client_key: str):
+    now = datetime.datetime.utcnow()
+    date_key = now.strftime("%Y-%m-%d")
+    minute_key = now.strftime("%Y-%m-%d %H:%M")
+    state = CHAT_LIMITS.get(client_key)
+    if not state or state.get("date") != date_key:
+        state = {
+            "date": date_key,
+            "minute": minute_key,
+            "minute_count": 0,
+            "model_counts": {},
+        }
+        CHAT_LIMITS[client_key] = state
+    if state.get("minute") != minute_key:
+        state["minute"] = minute_key
+        state["minute_count"] = 0
+    return state
+
+def pick_chat_model(state):
+    for model_name, limit in CHAT_MODEL_LIMITS:
+        if state["model_counts"].get(model_name, 0) < limit:
+            return model_name
+    return None
 
 def verify_admin_password(password: str) -> bool:
     try:
@@ -596,6 +677,36 @@ def sector_lock(sector):
     if sector in SECTOR_CONFIG:
         session.pop(sector_session_key(sector), None)
     return redirect(url_for("sector_page", sector=sector))
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json(silent=True) or {}
+    message = (data.get("message") or "").strip()
+    history = data.get("history") or []
+    if not message:
+        return {"reply": "Please enter a message."}, 400
+
+    client_key = get_chat_client_key()
+    state = get_chat_state(client_key)
+    if state["minute_count"] >= CHAT_RATE_LIMIT_PER_MIN:
+        return {"reply": "Rate limit exceeded: max 4 requests per minute."}, 429
+    model_name = pick_chat_model(state)
+    if not model_name:
+        return {"reply": "Daily limit reached. Please try again tomorrow."}, 429
+
+    state["minute_count"] += 1
+    state["model_counts"][model_name] = state["model_counts"].get(model_name, 0) + 1
+
+    messages = []
+    for item in history[-8:]:
+        role = item.get("role")
+        content = item.get("content")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    if not messages or messages[-1]["role"] != "user":
+        messages.append({"role": "user", "content": message})
+    reply = call_gemini(messages, model_name)
+    return {"reply": reply}
 
 @app.route("/dashboard")
 @login_required

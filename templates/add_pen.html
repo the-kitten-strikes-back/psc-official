@@ -161,6 +161,7 @@
             margin-top: 2px;
         }
     </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
 <body>
     <header>
@@ -286,5 +287,7 @@
             </div>
         </div>
     </footer>
+  <div id="psc-chatbot-root"></div>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 </html>

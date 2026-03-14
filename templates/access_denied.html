@@ -46,6 +46,7 @@
       font-weight:600;
     }
   </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
 <body>
   <div class="card">
@@ -53,5 +54,7 @@
     <p>You need admin clearance to enter PSC sector consoles.</p>
     <a href="{{ url_for('home') }}">Return Home</a>
   </div>
+  <div id="psc-chatbot-root"></div>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 </html>
