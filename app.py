@@ -178,7 +178,8 @@ def call_gemini(messages, model_name) -> str:
             ),
         )
         return (response.text or "").strip()
-    except Exception:
+    except Exception as exc:
+        app.logger.exception("Gemini error: %s", exc)
         return "Chatbot is temporarily unavailable."
 
 def get_chat_client_key() -> str:
