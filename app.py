@@ -11,6 +11,7 @@ import hashlib
 import hmac
 from functools import wraps
 import smtplib
+import ssl
 from email.message import EmailMessage
 from google import genai
 from google.genai import types
@@ -140,13 +141,14 @@ CHAT_LIMITS = {}
 def send_sector_email(to_address: str, subject: str, body: str) -> None:
     if not EMAIL_PASSWORD:
         return
+    context = ssl.create_default_context()
     msg = EmailMessage()
     msg["From"] = EMAIL_FROM
     msg["To"] = to_address
     msg["Subject"] = subject
     msg.set_content(body)
     with smtplib.SMTP(EMAIL_SMTP_HOST, EMAIL_SMTP_PORT) as server:
-        server.starttls()
+        server.starttls(context=context)
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
         server.send_message(msg)
 
