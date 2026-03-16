@@ -96,7 +96,7 @@ SECTOR_CONFIG = {
     },
 }
 
-EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "PSC.Official@outlook.com")
+EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "hello@demomailtrap.co")
 MAILTRAP_TOKEN = os.environ.get("PSC_EMAIL_TOKEN", "")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
