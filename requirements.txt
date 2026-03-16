@@ -2,6 +2,7 @@ Flask
 gunicorn
 Flask-Login
 Flask-SQLAlchemy
+mailtrap
 psycopg2-binary
 textblob
 google-genai
