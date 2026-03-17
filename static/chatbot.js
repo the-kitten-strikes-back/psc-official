@@ -4,13 +4,67 @@
 
   let isOpen = false;
   let history = [];
-  let isTyping = false;
+  let socket = null;
+  let roomId = null;
+  let displayName = null;
+  let liveReady = false;
 
   const createEl = (tag, className, text) => {
     const el = document.createElement(tag);
     if (className) el.className = className;
     if (text) el.textContent = text;
     return el;
+  };
+
+  const loadSocketIo = () => {
+    if (typeof io !== 'undefined') return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Socket.IO failed to load'));
+      document.head.appendChild(script);
+    });
+  };
+
+  const appendIncoming = (sender, message) => {
+    if (!message) return;
+    const isSelf = sender && sender === displayName;
+    history.push({
+      role: isSelf ? 'user' : 'assistant',
+      content: isSelf ? message : `${sender || 'SoBAB'}: ${message}`,
+      time: new Date().toISOString()
+    });
+    render();
+  };
+
+  const initLiveChat = async () => {
+    if (liveReady) return;
+    try {
+      await loadSocketIo();
+      const res = await fetch('/support/room');
+      if (!res.ok) throw new Error('Room lookup failed');
+      const data = await res.json();
+      roomId = data.room_id;
+      displayName = data.display_name || 'Guest';
+      socket = io({ transports: ['websocket', 'polling'] });
+      socket.on('connect', () => {
+        socket.emit('customer_join', { room_id: roomId, name: displayName });
+      });
+      socket.on('chat_system', (payload) => {
+        if (payload && payload.message) {
+          appendIncoming('PSC', payload.message);
+        }
+      });
+      socket.on('chat_message', (payload) => {
+        if (payload && payload.message) {
+          appendIncoming(payload.sender || 'SoBAB', payload.message);
+        }
+      });
+      liveReady = true;
+    } catch (err) {
+      liveReady = false;
+    }
   };
 
   const escapeHtml = (value) =>
@@ -123,9 +177,9 @@
 
     const panel = createEl('div', 'psc-chatbot-panel');
     const header = createEl('div', 'psc-chatbot-header');
-    header.appendChild(createEl('span', '', 'PSC Assistant'));
-    const adminLink = createEl('a', '', 'Chat with PSC Official');
-    adminLink.href = 'mailto:PSC.Official@outlook.com?subject=PSC%20Admin%20Chat';
+    header.appendChild(createEl('span', '', 'PSC Live Support'));
+    const adminLink = createEl('a', '', 'Open Support Window');
+    adminLink.href = '/support';
     adminLink.style.color = '#38bdf8';
     adminLink.style.fontSize = '12px';
     adminLink.style.marginLeft = '8px';
@@ -141,7 +195,7 @@
 
     const messages = createEl('div', 'psc-chatbot-messages');
     if (history.length === 0) {
-      const intro = createEl('div', 'psc-chatbot-msg bot', 'Ask me anything about PSC, pens, or sector workflows.');
+      const intro = createEl('div', 'psc-chatbot-msg bot', 'You are connected to PSC customer care. Ask anything about pens, loans, or subscriptions.');
       messages.appendChild(intro);
     }
     history.forEach((msg) => {
@@ -155,20 +209,10 @@
       messages.appendChild(bubble);
     });
 
-    if (isTyping) {
-      const typing = createEl('div', 'psc-chatbot-msg bot psc-chatbot-typing');
-      const dots = createEl('div', 'psc-chatbot-typing-dots');
-      dots.appendChild(createEl('span'));
-      dots.appendChild(createEl('span'));
-      dots.appendChild(createEl('span'));
-      typing.appendChild(dots);
-      messages.appendChild(typing);
-    }
-
     const inputWrap = createEl('div', 'psc-chatbot-input');
     const input = createEl('input');
     input.type = 'text';
-    input.placeholder = 'Type your question...';
+    input.placeholder = 'Type your message...';
     const send = createEl('button', '', 'Send');
 
     const sendMessage = async () => {
@@ -176,37 +220,31 @@
       if (!text) return;
       input.value = '';
       history.push({ role: 'user', content: text, time: new Date().toISOString() });
-      isTyping = true;
       render();
       messages.scrollTop = messages.scrollHeight;
-
-      try {
-        const res = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, history })
-        });
-        const data = await res.json();
-        if (data && data.reply) {
-          history.push({ role: 'assistant', content: data.reply, time: new Date().toISOString() });
-        } else {
-          history.push({
-            role: 'assistant',
-            content: 'Sorry, I could not generate a reply.',
-            time: new Date().toISOString()
-          });
-        }
-      } catch (err) {
+      if (!liveReady) {
         history.push({
           role: 'assistant',
-          content: 'Network error. Please try again.',
+          content: 'Connecting you to SoBAB live support...',
           time: new Date().toISOString()
         });
+        render();
+        await initLiveChat();
+        if (!liveReady || !socket) {
+          history.push({
+            role: 'assistant',
+            content: 'Live support is offline right now. Please try again shortly.',
+            time: new Date().toISOString()
+          });
+          render();
+          return;
+        }
       }
-      isTyping = false;
-      render();
-      const msgBox = root.querySelector('.psc-chatbot-messages');
-      if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+      socket.emit('customer_message', {
+        room_id: roomId,
+        name: displayName,
+        message: text
+      });
     };
 
     send.addEventListener('click', sendMessage);
@@ -224,6 +262,10 @@
 
     const msgBox = root.querySelector('.psc-chatbot-messages');
     if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+
+    if (!liveReady) {
+      initLiveChat();
+    }
   };
 
   render();

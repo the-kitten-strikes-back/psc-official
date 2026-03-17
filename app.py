@@ -742,6 +742,15 @@ def support_chat():
         display_name=display_name,
     )
 
+@app.route("/support/room")
+def support_room():
+    room_id = get_support_room_id()
+    if current_user.is_authenticated:
+        display_name = current_user.username
+    else:
+        display_name = f"Guest-{room_id[:6]}"
+    return {"room_id": room_id, "display_name": display_name}
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
