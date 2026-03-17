@@ -119,7 +119,8 @@ PSC_SYSTEM_PROMPT = (
     "(A = premium like Pilot, Sarasa, Parker; "
     "B = premium economy like Hauser XO, Octane; "
     "C = economy like Flair, Rorito, or unknown brands; "
-    "D = low-quality pens). "
+    "D = low-quality pens like reynolds trimax). "
+    "Class C contains pens with EITHER good ink level/consistency OR with good quality, but not both(that is B)."
     "Website structure: public pages include Home, About, Partnerships, Login, and Sign Up. "
     "Member pages include Dashboard, Loan a Pen, Donate a Pen, and Return Loan. "
     "Admin/sector pages are restricted and should not be emphasized for regular users. "
@@ -138,16 +139,18 @@ def send_sector_email(to_address: str, subject: str, body: str) -> None:
     if not MAILTRAP_TOKEN:
         return
     mail = mt.Mail(
-        sender=mt.Address(email=EMAIL_FROM, name="PSC Official"),
+        sender=mt.Address(email="hello@demomailtrap.co", name="PSC OFFICIAL"),
         to=[mt.Address(email=to_address)],
         subject=subject,
         text=body,
-        category="PSC Sector Email",
+        category="PSC",
     )
     client = mt.MailtrapClient(token=MAILTRAP_TOKEN)
     try:
-        client.send(mail)
+        response = client.send(mail)
+        print(response)
     except Exception:
+        print(response)
         return
 
 def call_gemini(messages, model_name) -> str:
