@@ -10,7 +10,9 @@ import base64
 import hashlib
 import hmac
 from functools import wraps
-import mailtrap as mt
+import smtplib
+import ssl
+from email.message import EmailMessage
 from google import genai
 from google.genai import types
 app = Flask(__name__)
@@ -96,8 +98,10 @@ SECTOR_CONFIG = {
     },
 }
 
-EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "hello@demomailtrap.co")
-MAILTRAP_TOKEN = os.environ.get("PSC_EMAIL_TOKEN", "")
+EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "")
+EMAIL_PASSWORD = os.environ.get("PSC_EMAIL_PASSWORD", "")
+EMAIL_SMTP_HOST = os.environ.get("PSC_EMAIL_SMTP_HOST", "smtp.gmail.com")
+EMAIL_SMTP_PORT = int(os.environ.get("PSC_EMAIL_SMTP_PORT", "587"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 PSC_SYSTEM_PROMPT = (
@@ -136,21 +140,20 @@ CHAT_MODEL_LIMITS = [
 CHAT_LIMITS = {}
 
 def send_sector_email(to_address: str, subject: str, body: str) -> None:
-    if not MAILTRAP_TOKEN:
+    if not EMAIL_FROM or not EMAIL_PASSWORD:
         return
-    mail = mt.Mail(
-        sender=mt.Address(email="hello@demomailtrap.co", name="PSC OFFICIAL"),
-        to=[mt.Address(email=to_address)],
-        subject=subject,
-        text=body,
-        category="PSC",
-    )
-    client = mt.MailtrapClient(token=MAILTRAP_TOKEN)
     try:
-        response = client.send(mail)
-        print(response)
+        context = ssl.create_default_context()
+        msg = EmailMessage()
+        msg["From"] = EMAIL_FROM
+        msg["To"] = to_address
+        msg["Subject"] = subject
+        msg.set_content(body)
+        with smtplib.SMTP(EMAIL_SMTP_HOST, EMAIL_SMTP_PORT, timeout=10) as server:
+            server.starttls(context=context)
+            server.login(EMAIL_FROM, EMAIL_PASSWORD)
+            server.send_message(msg)
     except Exception:
-        print(response)
         return
 
 def call_gemini(messages, model_name) -> str:
