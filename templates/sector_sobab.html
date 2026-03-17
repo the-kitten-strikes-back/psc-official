@@ -170,6 +170,68 @@
       margin:80px auto;
       text-align:center;
     }
+    .chat-layout{
+      display:grid;
+      grid-template-columns:220px 1fr;
+      gap:16px;
+    }
+    .chat-rooms{
+      border:1px solid rgba(180,120,160,0.25);
+      border-radius:12px;
+      padding:12px;
+      background:rgba(24,16,32,0.9);
+      max-height:320px;
+      overflow:auto;
+    }
+    .chat-room{
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:13px;
+      border:1px solid transparent;
+      margin-bottom:8px;
+      background:rgba(18,12,22,0.9);
+    }
+    .chat-room.active{
+      border-color:rgba(255,123,245,0.6);
+      background:rgba(255,123,245,0.15);
+    }
+    .chat-window{
+      border:1px solid rgba(180,120,160,0.25);
+      border-radius:12px;
+      padding:12px;
+      background:rgba(24,16,32,0.9);
+      display:flex;
+      flex-direction:column;
+      min-height:320px;
+    }
+    .chat-log{
+      flex:1;
+      overflow:auto;
+      font-size:13px;
+      color:var(--ink);
+    }
+    .chat-message{
+      padding:8px 10px;
+      margin-bottom:8px;
+      border-radius:10px;
+      background:rgba(18,12,22,0.9);
+      border:1px solid rgba(180,120,160,0.15);
+    }
+    .chat-message strong{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .chat-form{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+    }
+    .chat-form input{
+      flex:1;
+    }
   </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
@@ -201,7 +263,7 @@
   <div class="layout">
     <div class="stats">
       <div class="stat"><strong>{{ stats.campaigns }}</strong><span class="muted">Campaigns</span></div>
-      <div class="stat"><strong>{{ stats.subscribers }}</strong><span class="muted">Email Contacts</span></div>
+      <div class="stat"><strong>{{ stats.subscribers }}</strong><span class="muted">Customer Contacts</span></div>
     </div>
 
     <div class="panel">
@@ -266,27 +328,21 @@
     </div>
 
     <div class="panel">
-      <h2>Automated Email Dispatch</h2>
-      <p class="muted">Outgoing address: PSC.Official@outlook.com</p>
-      <form method="POST" action="{{ url_for('sector_send_email') }}">
-        <label>Recipient Email</label>
-        <input name="recipient" list="psc-contacts" placeholder="name@example.com">
-        <datalist id="psc-contacts">
-          {% for user in users %}
-            {% if user.email %}
-              <option value="{{ user.email }}">{{ user.username }}</option>
-            {% endif %}
-          {% endfor %}
-        </datalist>
-        <label>Subject</label>
-        <input name="subject" required placeholder="PSC Announcement — New Collection">
-        <label>Message</label>
-        <textarea name="body" required placeholder="Write the campaign body here..."></textarea>
-        <label style="display:flex; align-items:center; gap:8px; margin-top:12px;">
-          <input type="checkbox" name="send_all" style="width:auto;"> Send to all users with email
-        </label>
-        <button class="save-btn" type="submit">Send Email</button>
-      </form>
+      <h2>SoBAB Live Customer Care</h2>
+      <p class="muted">Handle customer questions in real time. New customer chats appear on the left.</p>
+      <div class="chat-layout" data-sobab-chat>
+        <div class="chat-rooms">
+          <div class="muted" style="margin-bottom:8px;">Active Chats</div>
+          <div id="sobab-rooms"></div>
+        </div>
+        <div class="chat-window">
+          <div id="sobab-chat-log" class="chat-log"></div>
+          <form id="sobab-chat-form" class="chat-form">
+            <input id="sobab-chat-input" placeholder="Type a response..." autocomplete="off">
+            <button class="save-btn" type="submit">Send</button>
+          </form>
+        </div>
+      </div>
     </div>
 
     <div class="panel">
@@ -310,5 +366,7 @@
   {% endif %}
   <div id="psc-chatbot-root"></div>
   <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='sobab_chat.js') }}"></script>
 </body>
 </html>

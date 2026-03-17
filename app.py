@@ -10,12 +10,12 @@ import base64
 import hashlib
 import hmac
 from functools import wraps
-import smtplib
-import ssl
-from email.message import EmailMessage
+import uuid
+from flask_socketio import SocketIO, emit, join_room
 from google import genai
 from google.genai import types
 app = Flask(__name__)
+socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")
 db_uri = "postgresql://database_2fuy_user:JE01RUdze7ABr6h0WhpArvwvqmH2ojee@dpg-d6q3rgsr85hc73bsi5mg-a/database_2fuy"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -98,10 +98,7 @@ SECTOR_CONFIG = {
     },
 }
 
-EMAIL_FROM = os.environ.get("PSC_EMAIL_FROM", "")
-EMAIL_PASSWORD = os.environ.get("PSC_EMAIL_PASSWORD", "")
-EMAIL_SMTP_HOST = os.environ.get("PSC_EMAIL_SMTP_HOST", "smtp.gmail.com")
-EMAIL_SMTP_PORT = int(os.environ.get("PSC_EMAIL_SMTP_PORT", "587"))
+SOBAB_CHAT_ROOMS = {}
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 PSC_SYSTEM_PROMPT = (
@@ -123,11 +120,14 @@ PSC_SYSTEM_PROMPT = (
     "(A = premium like Pilot, Sarasa, Parker; "
     "B = premium economy like Hauser XO, Octane; "
     "C = economy like Flair, Rorito, or unknown brands; "
-    "D = low-quality pens like reynolds trimax). "
-    "Class C contains pens with EITHER good ink level/consistency OR with good quality, but not both(that is B)."
+    "D = low-quality pens like Reynolds Trimax). "
+    "Class C contains pens with either good ink level/consistency or good build quality, but not both (that is B). "
+    "Brand availability changes with donations and inventory; if asked for specific brands, "
+    "share examples by class and direct users to the Loan a Pen or Dashboard catalog for live availability. "
     "Website structure: public pages include Home, About, Partnerships, Login, and Sign Up. "
     "Member pages include Dashboard, Loan a Pen, Donate a Pen, and Return Loan. "
     "Admin/sector pages are restricted and should not be emphasized for regular users. "
+    "For customer care, direct users to the SoBAB live support chat at /support instead of email. "
     "If something is unknown or not in PSC policy, say so and suggest where to look (e.g., About, Loan, Donate pages). "
     "Never ask for passwords, API keys, or secrets. "
     "If a request is unsafe or unrelated to PSC, gently decline and redirect to PSC help."
@@ -139,27 +139,12 @@ CHAT_MODEL_LIMITS = [
 ]
 CHAT_LIMITS = {}
 
-def send_sector_email(to_address: str, subject: str, body: str) -> None:
-    if not EMAIL_FROM or not EMAIL_PASSWORD:
-        app.logger.warning("Email not sent: missing PSC_EMAIL_FROM or PSC_EMAIL_PASSWORD.")
-        return
-    try:
-        context = ssl.create_default_context()
-        msg = EmailMessage()
-        msg["From"] = EMAIL_FROM
-        msg["To"] = to_address
-        msg["Subject"] = subject
-        msg.set_content(body)
-        with smtplib.SMTP(EMAIL_SMTP_HOST, EMAIL_SMTP_PORT, timeout=10) as server:
-            server.starttls(context=context)
-            server.login(EMAIL_FROM, EMAIL_PASSWORD)
-            server.send_message(msg)
-        app.logger.info("Email sent to %s via SMTP host %s.", to_address, EMAIL_SMTP_HOST)
-    except Exception:
-        app.logger.exception(
-            "Email send failed for %s via SMTP host %s.", to_address, EMAIL_SMTP_HOST
-        )
-        return
+def get_support_room_id() -> str:
+    room_id = session.get("support_room_id")
+    if not room_id:
+        room_id = uuid.uuid4().hex
+        session["support_room_id"] = room_id
+    return room_id
 
 def call_gemini(messages, model_name) -> str:
     if not GEMINI_API_KEY:
@@ -741,6 +726,19 @@ def chat():
     reply = call_gemini(messages, model_name)
     return {"reply": reply}
 
+@app.route("/support")
+def support_chat():
+    room_id = get_support_room_id()
+    if current_user.is_authenticated:
+        display_name = current_user.username
+    else:
+        display_name = f"Guest-{room_id[:6]}"
+    return render_template(
+        "support_chat.html",
+        room_id=room_id,
+        display_name=display_name,
+    )
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
@@ -940,23 +938,6 @@ def sector_create_brief():
         )
         db.session.add(brief)
         db.session.commit()
-    return redirect(url_for("sector_page", sector="sobab"))
-
-@app.route("/sector/sobab/send-email", methods=["POST"])
-@login_required
-@require_sector("sobab")
-def sector_send_email():
-    subject = request.form.get("subject", "").strip()
-    body = request.form.get("body", "").strip()
-    recipient = request.form.get("recipient", "").strip()
-    send_all = request.form.get("send_all") == "on"
-    if subject and body:
-        if send_all:
-            for user in Users.query.all():
-                if user.email:
-                    send_sector_email(user.email, subject, body)
-        elif recipient:
-            send_sector_email(recipient, subject, body)
     return redirect(url_for("sector_page", sector="sobab"))
 
 @app.route("/sector/sodac/rules", methods=["POST"])
@@ -1331,5 +1312,85 @@ def add_pen():
 @app.route("/partnerships")
 def partnerships():
     return render_template("partnerships.html")
+
+@socketio.on("customer_join")
+def handle_customer_join(data):
+    room_id = (data or {}).get("room_id")
+    name = (data or {}).get("name") or "Guest"
+    if not room_id:
+        return
+    join_room(room_id)
+    SOBAB_CHAT_ROOMS[room_id] = {
+        "name": name,
+        "last_seen": datetime.datetime.utcnow(),
+    }
+    emit(
+        "chat_system",
+        {"message": "SoBAB customer care will be with you shortly."},
+        room=room_id,
+    )
+    emit(
+        "sobab_room_update",
+        {"room_id": room_id, "name": name},
+        room="sobab_agents",
+    )
+
+@socketio.on("sobab_join")
+def handle_sobab_join():
+    if not current_user.is_authenticated or not is_sector_authed("sobab"):
+        emit("sobab_error", {"message": "Unauthorized"})
+        return
+    join_room("sobab_agents")
+    rooms_payload = [
+        {"room_id": room_id, "name": info.get("name", "Guest")}
+        for room_id, info in SOBAB_CHAT_ROOMS.items()
+    ]
+    emit("sobab_rooms", {"rooms": rooms_payload})
+
+@socketio.on("customer_message")
+def handle_customer_message(data):
+    room_id = (data or {}).get("room_id")
+    message = (data or {}).get("message", "").strip()
+    sender = (data or {}).get("name") or "Guest"
+    if not room_id or not message:
+        return
+    SOBAB_CHAT_ROOMS.setdefault(room_id, {"name": sender, "last_seen": datetime.datetime.utcnow()})
+    SOBAB_CHAT_ROOMS[room_id]["last_seen"] = datetime.datetime.utcnow()
+    emit(
+        "chat_message",
+        {"sender": sender, "message": message},
+        room=room_id,
+    )
+    emit(
+        "sobab_message",
+        {"room_id": room_id, "sender": sender, "message": message},
+        room="sobab_agents",
+    )
+
+@socketio.on("sobab_message")
+def handle_sobab_message(data):
+    if not current_user.is_authenticated or not is_sector_authed("sobab"):
+        emit("sobab_error", {"message": "Unauthorized"})
+        return
+    room_id = (data or {}).get("room_id")
+    message = (data or {}).get("message", "").strip()
+    if not room_id or not message:
+        return
+    emit(
+        "chat_message",
+        {"sender": "SoBAB", "message": message},
+        room=room_id,
+    )
+    emit(
+        "sobab_message",
+        {"room_id": room_id, "sender": "SoBAB", "message": message},
+        room="sobab_agents",
+    )
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=os.environ.get("FLASK_DEBUG") == "1")
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=os.environ.get("FLASK_DEBUG") == "1",
+    )
