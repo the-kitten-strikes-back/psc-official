@@ -141,6 +141,7 @@ CHAT_LIMITS = {}
 
 def send_sector_email(to_address: str, subject: str, body: str) -> None:
     if not EMAIL_FROM or not EMAIL_PASSWORD:
+        app.logger.warning("Email not sent: missing PSC_EMAIL_FROM or PSC_EMAIL_PASSWORD.")
         return
     try:
         context = ssl.create_default_context()
@@ -153,7 +154,11 @@ def send_sector_email(to_address: str, subject: str, body: str) -> None:
             server.starttls(context=context)
             server.login(EMAIL_FROM, EMAIL_PASSWORD)
             server.send_message(msg)
+        app.logger.info("Email sent to %s via SMTP host %s.", to_address, EMAIL_SMTP_HOST)
     except Exception:
+        app.logger.exception(
+            "Email send failed for %s via SMTP host %s.", to_address, EMAIL_SMTP_HOST
+        )
         return
 
 def call_gemini(messages, model_name) -> str:
