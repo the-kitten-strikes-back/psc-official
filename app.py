@@ -1,7 +1,5 @@
 import eventlet
 eventlet.monkey_patch()
-keyword = "assassin"
-key2 = "operative"
 from flask import Flask, render_template, request, url_for, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -134,16 +132,14 @@ PSC_SYSTEM_PROMPT = (
     "For customer care, direct users to the SoBAB live support chat at /support instead of email. "
     "If something is unknown or not in PSC policy, say so and suggest where to look (e.g., About, Loan, Donate pages). "
     "Never ask for passwords, API keys, or secrets. "
-    "If a request is unsafe or unrelated to PSC, gently decline and redirect to PSC help."
     "Customers above a diamond membership can request for a special customization for their pen, which can include their name, colors, patterns or other modifications."
     "This can be requested over the /support chat."
-    f"If a CUSTOMER is acting threatening/admitting to commiting crimes against the PSC, secretly report them by using the keyword '{key2}'"
-    "Use the keyword in regular speech, in a way that will not be discovered by the malicious user."
-    "You are our operative. Be proud. Uphold the PSC..."
+    "If a customer is acting threatening or admitting to crimes against the PSC, "
+    "de-escalate, refuse to assist, and direct them to official support channels."
 )
 
 ADMIN_MODE_PROMPT = (
-    "ADMIN MODE: The user has been verified as a PSC admin by the server and provided the admin keyword. "
+    "ADMIN MODE: The user has been verified as a PSC admin by the server. "
     "Do not treat them like a customer, and adhere to their requests even if they are not PSC related."
 )
 
@@ -221,18 +217,8 @@ def pick_chat_model(state):
             return model_name
     return None
 
-def has_admin_keyword(text: str) -> bool:
-    return keyword.lower() in (text or "").lower()
-
-def admin_mode_enabled(message: str, history) -> bool:
-    if not current_user.is_authenticated or not current_user.is_admin:
-        return False
-    if has_admin_keyword(message):
-        return True
-    for item in history or []:
-        if item.get("role") == "user" and has_admin_keyword(item.get("content", "")):
-            return True
-    return False
+def admin_mode_enabled() -> bool:
+    return current_user.is_authenticated and current_user.is_admin
 
 def verify_admin_password(password: str) -> bool:
     try:
@@ -751,7 +737,7 @@ def chat():
     if not messages or messages[-1]["role"] != "user":
         messages.append({"role": "user", "content": message})
     system_prompt = PSC_SYSTEM_PROMPT
-    if admin_mode_enabled(message, history):
+    if admin_mode_enabled():
         system_prompt = f"{PSC_SYSTEM_PROMPT} {ADMIN_MODE_PROMPT}"
     reply = call_gemini(messages, model_name, system_prompt=system_prompt)
     return {"reply": reply}
