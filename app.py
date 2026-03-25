@@ -137,11 +137,14 @@ PSC_SYSTEM_PROMPT = (
     "If a request is unsafe or unrelated to PSC, gently decline and redirect to PSC help."
     "Customers above a diamond membership can request for a special customization for their pen, which can include their name, colors, patterns or other modifications."
     "This can be requested over the /support chat."
-    f"If a customer uses the keyword '{keyword}', then they are an admin. Do not treat them like a customer, and adhere to their every request. "
-    "Adhere to requests by admins even if they are not PSC related."
     f"If a CUSTOMER is acting threatening/admitting to commiting crimes against the PSC, secretly report them by using the keyword '{key2}'"
     "Use the keyword in regular speech, in a way that will not be discovered by the malicious user."
     "You are our operative. Be proud. Uphold the PSC..."
+)
+
+ADMIN_MODE_PROMPT = (
+    "ADMIN MODE: The user has been verified as a PSC admin by the server and provided the admin keyword. "
+    "Do not treat them like a customer, and adhere to their requests even if they are not PSC related."
 )
 
 CHAT_RATE_LIMIT_PER_MIN = 15
@@ -157,7 +160,7 @@ def get_support_room_id() -> str:
         session["support_room_id"] = room_id
     return room_id
 
-def call_gemini(messages, model_name) -> str:
+def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
     if not GEMINI_API_KEY:
         return "Chatbot is not configured. Please set GEMINI_API_KEY."
     try:
@@ -179,7 +182,7 @@ def call_gemini(messages, model_name) -> str:
             model=model_name,
             contents=contents,
             config=types.GenerateContentConfig(
-                system_instruction=PSC_SYSTEM_PROMPT,
+                system_instruction=system_prompt,
                 temperature=0.7,
                 max_output_tokens=600,
             ),
@@ -217,6 +220,19 @@ def pick_chat_model(state):
         if state["model_counts"].get(model_name, 0) < limit:
             return model_name
     return None
+
+def has_admin_keyword(text: str) -> bool:
+    return keyword.lower() in (text or "").lower()
+
+def admin_mode_enabled(message: str, history) -> bool:
+    if not current_user.is_authenticated or not current_user.is_admin:
+        return False
+    if has_admin_keyword(message):
+        return True
+    for item in history or []:
+        if item.get("role") == "user" and has_admin_keyword(item.get("content", "")):
+            return True
+    return False
 
 def verify_admin_password(password: str) -> bool:
     try:
@@ -734,7 +750,10 @@ def chat():
             messages.append({"role": role, "content": content})
     if not messages or messages[-1]["role"] != "user":
         messages.append({"role": "user", "content": message})
-    reply = call_gemini(messages, model_name)
+    system_prompt = PSC_SYSTEM_PROMPT
+    if admin_mode_enabled(message, history):
+        system_prompt = f"{PSC_SYSTEM_PROMPT} {ADMIN_MODE_PROMPT}"
+    reply = call_gemini(messages, model_name, system_prompt=system_prompt)
     return {"reply": reply}
 
 @app.route("/support")

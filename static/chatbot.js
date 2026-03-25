@@ -4,67 +4,13 @@
 
   let isOpen = false;
   let history = [];
-  let socket = null;
-  let roomId = null;
-  let displayName = null;
-  let liveReady = false;
+  let isLoading = false;
 
   const createEl = (tag, className, text) => {
     const el = document.createElement(tag);
     if (className) el.className = className;
     if (text) el.textContent = text;
     return el;
-  };
-
-  const loadSocketIo = () => {
-    if (typeof io !== 'undefined') return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Socket.IO failed to load'));
-      document.head.appendChild(script);
-    });
-  };
-
-  const appendIncoming = (sender, message) => {
-    if (!message) return;
-    const isSelf = sender && sender === displayName;
-    history.push({
-      role: isSelf ? 'user' : 'assistant',
-      content: isSelf ? message : `${sender || 'SoBAB'}: ${message}`,
-      time: new Date().toISOString()
-    });
-    render();
-  };
-
-  const initLiveChat = async () => {
-    if (liveReady) return;
-    try {
-      await loadSocketIo();
-      const res = await fetch('/support/room');
-      if (!res.ok) throw new Error('Room lookup failed');
-      const data = await res.json();
-      roomId = data.room_id;
-      displayName = data.display_name || 'Guest';
-      socket = io({ transports: ['websocket', 'polling'] });
-      socket.on('connect', () => {
-        socket.emit('customer_join', { room_id: roomId, name: displayName });
-      });
-      socket.on('chat_system', (payload) => {
-        if (payload && payload.message) {
-          appendIncoming('PSC', payload.message);
-        }
-      });
-      socket.on('chat_message', (payload) => {
-        if (payload && payload.message) {
-          appendIncoming(payload.sender || 'SoBAB', payload.message);
-        }
-      });
-      liveReady = true;
-    } catch (err) {
-      liveReady = false;
-    }
   };
 
   const escapeHtml = (value) =>
@@ -163,6 +109,18 @@
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const renderTyping = () => {
+    const bubble = createEl('div', 'psc-chatbot-msg bot psc-chatbot-typing');
+    const body = createEl('div', 'psc-chatbot-msg-body');
+    const dots = createEl('div', 'psc-chatbot-typing-dots');
+    for (let i = 0; i < 3; i += 1) {
+      dots.appendChild(createEl('span'));
+    }
+    body.appendChild(dots);
+    bubble.appendChild(body);
+    return bubble;
+  };
+
   const render = () => {
     root.innerHTML = '';
     if (!isOpen) {
@@ -177,25 +135,25 @@
 
     const panel = createEl('div', 'psc-chatbot-panel');
     const header = createEl('div', 'psc-chatbot-header');
-    header.appendChild(createEl('span', '', 'PSC Live Support'));
-    const adminLink = createEl('a', '', 'Open Support Window');
-    adminLink.href = '/support';
-    adminLink.style.color = '#38bdf8';
-    adminLink.style.fontSize = '12px';
-    adminLink.style.marginLeft = '8px';
-    adminLink.style.textDecoration = 'none';
-    adminLink.target = '_blank';
+    header.appendChild(createEl('span', '', 'PSC Assistant'));
+    const supportLink = createEl('a', '', 'Live support');
+    supportLink.href = '/support';
+    supportLink.style.color = '#38bdf8';
+    supportLink.style.fontSize = '12px';
+    supportLink.style.marginLeft = '8px';
+    supportLink.style.textDecoration = 'none';
+    supportLink.target = '_blank';
     const close = createEl('button', 'psc-chatbot-close', '✕');
     close.addEventListener('click', () => {
       isOpen = false;
       render();
     });
-    header.appendChild(adminLink);
+    header.appendChild(supportLink);
     header.appendChild(close);
 
     const messages = createEl('div', 'psc-chatbot-messages');
     if (history.length === 0) {
-      const intro = createEl('div', 'psc-chatbot-msg bot', 'You are connected to PSC customer care. Ask anything about pens, loans, or subscriptions.');
+      const intro = createEl('div', 'psc-chatbot-msg bot', 'Ask about loans, donations, subscriptions, or pens.');
       messages.appendChild(intro);
     }
     history.forEach((msg) => {
@@ -209,6 +167,10 @@
       messages.appendChild(bubble);
     });
 
+    if (isLoading) {
+      messages.appendChild(renderTyping());
+    }
+
     const inputWrap = createEl('div', 'psc-chatbot-input');
     const input = createEl('input');
     input.type = 'text';
@@ -217,34 +179,35 @@
 
     const sendMessage = async () => {
       const text = input.value.trim();
-      if (!text) return;
+      if (!text || isLoading) return;
       input.value = '';
       history.push({ role: 'user', content: text, time: new Date().toISOString() });
+      isLoading = true;
       render();
       messages.scrollTop = messages.scrollHeight;
-      if (!liveReady) {
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history })
+        });
+        const data = await res.json();
         history.push({
           role: 'assistant',
-          content: 'Connecting you to SoBAB live support...',
+          content: data.reply || 'Sorry, I could not generate a response.',
           time: new Date().toISOString()
         });
+      } catch (err) {
+        history.push({
+          role: 'assistant',
+          content: 'Chatbot is temporarily unavailable. Please try again shortly.',
+          time: new Date().toISOString()
+        });
+      } finally {
+        isLoading = false;
         render();
-        await initLiveChat();
-        if (!liveReady || !socket) {
-          history.push({
-            role: 'assistant',
-            content: 'Live support is offline right now. Please try again shortly.',
-            time: new Date().toISOString()
-          });
-          render();
-          return;
-        }
       }
-      socket.emit('customer_message', {
-        room_id: roomId,
-        name: displayName,
-        message: text
-      });
     };
 
     send.addEventListener('click', sendMessage);
@@ -262,10 +225,6 @@
 
     const msgBox = root.querySelector('.psc-chatbot-messages');
     if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
-
-    if (!liveReady) {
-      initLiveChat();
-    }
   };
 
   render();
