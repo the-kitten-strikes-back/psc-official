@@ -182,17 +182,22 @@
           <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
           PSC
         </a>
-        <ul class="nav-links">
-          <li><a href="{{ url_for('about') }}">About</a></li>
-          <li><a href="{{ url_for('loan') }}">Browse Pens</a></li>
-          <li><a href="{{ url_for('donate') }}">Donate</a></li>
-          <li><a href="{{ url_for('login') }}">Login</a></li>
-        </ul>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('loan') }}">Browse Pens</a></li>
+            <li><a href="{{ url_for('donate') }}">Donate</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+          </ul>
+        </div>
       </div>
     </nav>
   </header>
 
-  <div class="main-content">
+  <div class="main-content particle-bg">
     <h1>PSC</h1>
     <h2 class="typing-container">The Ultimate <span class="typing-text"></span></h2>
     <p class="lead" style="max-width: 620px;">
@@ -208,94 +213,108 @@
   </div>
 
   <section class="section">
-    <h2>Why Choose PSC?</h2>
-    <p class="lead">A polished experience with transparent ratings, trusted inventory, and clear membership benefits.</p>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <span class="feature-pill"><i class="fas fa-crown"></i> Collection</span>
-        <h3>Premium Curation</h3>
-        <p>Every pen is cataloged with class, ink, and rating details for the ultimate writing experience.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-pill"><i class="fas fa-users"></i> Membership</span>
-        <h3>Tiered Access</h3>
-        <p>Upgrade your tier to access higher-class pens and enjoy more loans with exclusive benefits.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-pill"><i class="fas fa-star"></i> Community</span>
-        <h3>Trusted Reviews</h3>
-        <p>PRS ratings help members discover the perfect pen for every writing task and occasion.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-pill"><i class="fas fa-shield-alt"></i> Security</span>
-        <h3>Verified History</h3>
-        <p>Complete donation and loan trails ensure transparency and security for our archive.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>PSC At A Glance</h2>
-    <p class="lead">Simple metrics that show what the community has built together.</p>
-    <div class="stats-bar">
-      <div class="stat-card">
-        <i class="fas fa-pen-nib" style="font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
-        <strong>200+</strong><span>Pens in storage</span>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-handshake" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem;"></i>
-        <strong>500+</strong><span>Loans completed</span>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-comments" style="font-size: 1.5rem; color: var(--secondary); margin-bottom: 0.5rem;"></i>
-        <strong>200+</strong><span>Community reviews</span>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-clock" style="font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
-        <strong>7 Days</strong><span>Standard loan term</span>
+    <div class="section-container">
+      <h2>Why Choose PSC?</h2>
+      <p class="lead">A polished experience with transparent ratings, trusted inventory, and clear membership benefits.</p>
+      <div class="feature-grid">
+        <div class="feature-card fade-in-up">
+          <span class="feature-badge"><i class="fas fa-crown"></i> Collection</span>
+          <div class="icon"><i class="fas fa-pen-nib"></i></div>
+          <h3>Premium Curation</h3>
+          <p>Every pen is cataloged with class, ink, and rating details for the ultimate writing experience.</p>
+        </div>
+        <div class="feature-card fade-in-up">
+          <span class="feature-badge"><i class="fas fa-users"></i> Membership</span>
+          <div class="icon"><i class="fas fa-users"></i></div>
+          <h3>Tiered Access</h3>
+          <p>Upgrade your tier to access higher-class pens and enjoy more loans with exclusive benefits.</p>
+        </div>
+        <div class="feature-card fade-in-up">
+          <span class="feature-badge"><i class="fas fa-star"></i> Community</span>
+          <div class="icon"><i class="fas fa-star"></i></div>
+          <h3>Trusted Reviews</h3>
+          <p>PRS ratings help members discover the perfect pen for every writing task and occasion.</p>
+        </div>
+        <div class="feature-card fade-in-up">
+          <span class="feature-badge"><i class="fas fa-shield-alt"></i> Security</span>
+          <div class="icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Verified History</h3>
+          <p>Complete donation and loan trails ensure transparency and security for our archive.</p>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <h2>Membership Tiers</h2>
-    <p class="lead">Choose the access level that fits your writing needs and passion.</p>
-    <div class="tiers">
-      <div class="tier">
-        <i class="fas fa-seedling" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem;"></i>
-        <h4>Basic</h4>
-        <p>1 loan • Classes C–D • Perfect for getting started</p>
-      </div>
-      <div class="tier">
-        <i class="fas fa-medal" style="font-size: 1.5rem; color: var(--secondary); margin-bottom: 0.5rem;"></i>
-        <h4>Gold</h4>
-        <p>3 loans • Classes B–D • Enhanced access</p>
-      </div>
-      <div class="tier">
-        <i class="fas fa-gem" style="font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
-        <h4>Diamond</h4>
-        <p>5 loans • Classes A–D • Premium experience</p>
-      </div>
-      <div class="tier">
-        <i class="fas fa-crown" style="font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
-        <h4>Platinum</h4>
-        <p>10 loans • Classes A–D • Ultimate access</p>
-      </div>
-      <div class="tier">
-        <i class="fas fa-star" style="font-size: 1.5rem; color: gold; margin-bottom: 0.5rem;"></i>
-        <h4>Montblanc</h4>
-        <p>20 loans • Classes A–D • Legendary status</p>
+    <div class="section-container">
+      <h2>PSC At A Glance</h2>
+      <p class="lead">Simple metrics that show what the community has built together.</p>
+      <div class="stats-grid">
+        <div class="stat-card fade-in-up">
+          <div class="icon"><i class="fas fa-pen-nib"></i></div>
+          <div class="value">200+</div>
+          <div class="label">Pens in storage</div>
+        </div>
+        <div class="stat-card fade-in-up">
+          <div class="icon"><i class="fas fa-handshake"></i></div>
+          <div class="value">500+</div>
+          <div class="label">Loans completed</div>
+        </div>
+        <div class="stat-card fade-in-up">
+          <div class="icon"><i class="fas fa-comments"></i></div>
+          <div class="value">200+</div>
+          <div class="label">Community reviews</div>
+        </div>
+        <div class="stat-card fade-in-up">
+          <div class="icon"><i class="fas fa-clock"></i></div>
+          <div class="value">7 Days</div>
+          <div class="label">Standard loan term</div>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <div class="cta-band">
-      <h2 style="margin:0; color: var(--gray-900);">Ready to join the archive?</h2>
-      <p class="lead" style="margin:0; color: var(--gray-700);">Start loaning premium pens, share your favorites, and grow your PSC reputation.</p>
+    <div class="section-container">
+      <h2>Membership Tiers</h2>
+      <p class="lead">Choose the access level that fits your writing needs and passion.</p>
+      <div class="tier-grid">
+        <div class="tier-card fade-in-up">
+          <div class="icon"><i class="fas fa-seedling"></i></div>
+          <h4>Basic</h4>
+          <p>1 loan • Classes C–D • Perfect for getting started</p>
+        </div>
+        <div class="tier-card fade-in-up">
+          <div class="icon"><i class="fas fa-medal"></i></div>
+          <h4>Gold</h4>
+          <p>3 loans • Classes B–D • Enhanced access</p>
+        </div>
+        <div class="tier-card fade-in-up">
+          <div class="icon"><i class="fas fa-gem"></i></div>
+          <h4>Diamond</h4>
+          <p>5 loans • Classes A–D • Premium experience</p>
+        </div>
+        <div class="tier-card fade-in-up">
+          <div class="icon"><i class="fas fa-crown"></i></div>
+          <h4>Platinum</h4>
+          <p>10 loans • Classes A–D • Ultimate access</p>
+        </div>
+        <div class="tier-card fade-in-up">
+          <div class="icon"><i class="fas fa-star"></i></div>
+          <h4>Montblanc</h4>
+          <p>20 loans • Classes A–D • Legendary status</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="cta-section fade-in-up">
+      <h2 style="margin:0; color: var(--text-primary);">Ready to join the archive?</h2>
+      <p class="lead" style="margin:0; color: var(--text-secondary);">Start loaning premium pens, share your favorites, and grow your PSC reputation.</p>
       <div class="cta-actions">
-        <a href="/register" class="btn-slim btn-green"><i class="fas fa-rocket"></i> Get Started</a>
-        <a href="/about" class="btn-slim btn-outline"><i class="fas fa-info-circle"></i> Learn More</a>
+        <a href="/register" class="btn-primary"><i class="fas fa-rocket"></i> Get Started</a>
+        <a href="/about" class="btn-outline">Learn More</a>
       </div>
     </div>
   </section>
@@ -388,6 +407,29 @@
     });
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Theme toggle functionality
+      const themeToggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      html.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        const icon = themeToggle.querySelector('i');
+        icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+      }
+
       const element = document.querySelector(".typing-text");
       if (element) {
         new SmoothTypewriter(

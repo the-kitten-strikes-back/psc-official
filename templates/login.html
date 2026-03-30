@@ -8,25 +8,30 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="nav-container">
-                <a href="{{ url_for('home') }}" class="logo">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
-                    PSC
-                </a>
-                <ul class="nav-links">
-                    <li><a href="{{ url_for('home') }}">Home</a></li>
-                    <li><a href="{{ url_for('about') }}">About</a></li>
-                    <li><a href="{{ url_for('register') }}">Sign Up</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
+  <header>
+    <nav>
+      <div class="nav-container">
+        <a href="{{ url_for('home') }}" class="logo">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+          PSC
+        </a>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <ul class="nav-links">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('register') }}">Sign Up</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
 
     <main>
-        <div class="main-content" style="min-height: auto; padding: 80px 20px; background: linear-gradient(135deg, #f8fafc, #e2e8f0);">
-            <div class="login-container">
+        <div class="main-content">
+            <div class="login-container fade-in-up">
                 <h1 style="font-size: 2rem; margin-bottom: 30px;">PSC STRIKES BACK.</h1>
                 {% if error %}
                 <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 12px; padding: 16px; margin-bottom: 24px; color: #991b1b; font-weight: 500;">
@@ -34,11 +39,21 @@
                 </div>
                 {% endif %}
                 <form method="POST" action="{{ url_for('login') }}">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                    <button type="submit" style="margin-top: 20px;">Login</button>
+                    <div class="form-group">
+                        <label class="form-label" for="username">Username</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="username" name="username" class="form-input" placeholder="Enter your username" required>
+                            <i class="fas fa-user input-icon"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
+                            <i class="fas fa-lock input-icon"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" style="margin-top: 20px; width: 100%;">Login</button>
                 </form>
                 <div class="login-link">
                     <p>Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a></p>
@@ -66,9 +81,33 @@
   <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 </html>
-        });
-    </script>
   <div id="psc-chatbot-root"></div>
   <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Theme toggle functionality
+      const themeToggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      html.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        const icon = themeToggle.querySelector('i');
+        icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+      }
+    });
+  </script>
 </body>
 </html>
