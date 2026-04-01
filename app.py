@@ -524,6 +524,15 @@ def google_verify():
 def home():
     return render_template("index.html")
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return render_template('sitemap.xml'), 200, {'Content-Type': 'application/xml'}
+
+
+@app.route('/robots.txt')
+def robots():
+    return app.send_static_file('robots.txt'), 200, {'Content-Type': 'text/plain'}
+
 
 @app.route("/about", methods=["GET", "POST"])
 def about():
