@@ -551,6 +551,10 @@ def about():
 
     return render_template("about.html")
 
+@app.route("/contact")
+def contact():
+    return redirect("mailto:PSC.Official@outlook.com")
+
 @app.route("/sectors")
 @login_required
 def sectors():
