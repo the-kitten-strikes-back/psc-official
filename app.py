@@ -102,6 +102,12 @@ SECTOR_CONFIG = {
 }
 
 SOBAB_CHAT_ROOMS = {}
+HJCHAT_ROOM_ID = "hjchat_public_room"
+HJCHAT_SESSION_KEY = "hjchat_authed"
+HJCHAT_NAME_KEY = "hjchat_name"
+HJCHAT_MESSAGES = []
+HJCHAT_MAX_MESSAGES = 200
+HJCHAT_PASSWORD = os.environ.get("HJCHAT_PASSWORD", "psc-chat-2026")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 PSC_SYSTEM_PROMPT = (
@@ -156,6 +162,23 @@ def get_support_room_id() -> str:
         room_id = uuid.uuid4().hex
         session["support_room_id"] = room_id
     return room_id
+
+def is_hjchat_authed() -> bool:
+    return session.get(HJCHAT_SESSION_KEY) is True
+
+def verify_hjchat_password(password: str) -> bool:
+    candidate = (password or "").strip()
+    if not candidate:
+        return False
+    return hmac.compare_digest(candidate, HJCHAT_PASSWORD)
+
+def get_hjchat_display_name() -> str:
+    cached_name = session.get(HJCHAT_NAME_KEY)
+    if cached_name:
+        return cached_name
+    generated = f"Guest-{uuid.uuid4().hex[:6].upper()}"
+    session[HJCHAT_NAME_KEY] = generated
+    return generated
 
 def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
     if not GEMINI_API_KEY:
@@ -792,6 +815,28 @@ def support_room():
     else:
         display_name = f"Guest-{room_id[:6]}"
     return {"room_id": room_id, "display_name": display_name}
+
+@app.route("/hjchat", methods=["GET", "POST"])
+def hjchat_page():
+    error = None
+    if request.method == "POST" and not is_hjchat_authed():
+        password = request.form.get("hjchat_password", "")
+        if verify_hjchat_password(password):
+            session[HJCHAT_SESSION_KEY] = True
+            return redirect(url_for("hjchat_page"))
+        error = "Invalid password."
+
+    return render_template(
+        "hjchat.html",
+        authed=is_hjchat_authed(),
+        display_name=get_hjchat_display_name(),
+        error=error,
+    )
+
+@app.route("/hjchat/lock", methods=["POST"])
+def hjchat_lock():
+    session.pop(HJCHAT_SESSION_KEY, None)
+    return redirect(url_for("hjchat_page"))
 
 @app.route("/dashboard")
 @login_required
@@ -1440,6 +1485,41 @@ def handle_sobab_message(data):
         {"room_id": room_id, "sender": "SoBAB", "message": message},
         room="sobab_agents",
     )
+
+@socketio.on("hjchat_join")
+def handle_hjchat_join(data):
+    if not is_hjchat_authed():
+        emit("hjchat_error", {"message": "Unauthorized"})
+        return
+
+    join_room(HJCHAT_ROOM_ID)
+    emit("hjchat_history", {"messages": HJCHAT_MESSAGES})
+    emit(
+        "hjchat_system",
+        {"message": "Connected to Chat."},
+    )
+
+@socketio.on("hjchat_message")
+def handle_hjchat_message(data):
+    if not is_hjchat_authed():
+        emit("hjchat_error", {"message": "Unauthorized"})
+        return
+
+    message = (data or {}).get("message", "").strip()
+    sender = (data or {}).get("name") or get_hjchat_display_name()
+    if not message:
+        return
+
+    payload = {
+        "sender": sender,
+        "message": message,
+        "timestamp": datetime.datetime.utcnow().strftime("%H:%M"),
+    }
+    HJCHAT_MESSAGES.append(payload)
+    if len(HJCHAT_MESSAGES) > HJCHAT_MAX_MESSAGES:
+        del HJCHAT_MESSAGES[:-HJCHAT_MAX_MESSAGES]
+
+    emit("hjchat_message", payload, room=HJCHAT_ROOM_ID)
 
 if __name__ == "__main__":
     socketio.run(

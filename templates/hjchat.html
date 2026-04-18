@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat | PSC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='hjchat.css') }}">
+</head>
+<body>
+  {% if authed %}
+  <main class="wa-app" data-hjchat data-display-name="{{ display_name }}">
+    <aside class="wa-sidebar">
+      <div class="wa-avatar">HJ</div>
+      <div class="wa-profile">
+        <h2>Chat</h2>
+        <p class="wa-muted">No login required</p>
+      </div>
+      <form class="wa-lock-form" action="{{ url_for('hjchat_lock') }}" method="POST">
+        <button type="submit">Lock</button>
+      </form>
+    </aside>
+
+    <section class="wa-chat-panel">
+      <header class="wa-chat-header">
+        <h1>Chat</h1>
+        <div class="wa-meta">You: {{ display_name }}</div>
+      </header>
+
+      <div id="hjchat-log" class="wa-chat-log"></div>
+
+      <form id="hjchat-form" class="wa-compose" autocomplete="off">
+        <input id="hjchat-input" type="text" placeholder="Type a message" maxlength="800" required>
+        <button type="submit">Send</button>
+      </form>
+    </section>
+  </main>
+  {% else %}
+  <main class="wa-gate-wrap">
+    <section class="wa-gate-card">
+      <h1>Chat</h1>
+      <p>Enter password to access this chat.</p>
+      {% if error %}
+      <p class="wa-error">{{ error }}</p>
+      {% endif %}
+      <form method="POST" class="wa-gate-form" autocomplete="off">
+        <input
+          type="password"
+          name="hjchat_password"
+          placeholder="Password"
+          required
+          autofocus
+        >
+        <button type="submit">Enter</button>
+      </form>
+    </section>
+  </main>
+  {% endif %}
+
+  {% if authed %}
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='hjchat.js') }}"></script>
+  {% endif %}
+</body>
+</html>
