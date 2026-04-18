@@ -1,10 +1,11 @@
 import eventlet
 eventlet.monkey_patch()
-from flask import Flask, render_template, request, url_for, redirect, session
+from flask import Flask, render_template, request, url_for, redirect, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from sqlalchemy import text
 import datetime
 import os
 from textblob import TextBlob
@@ -18,7 +19,7 @@ from google import genai
 from google.genai import types
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")
-db_uri = "postgresql://database_2fuy_user:JE01RUdze7ABr6h0WhpArvwvqmH2ojee@dpg-d6q3rgsr85hc73bsi5mg-a/database_2fuy"
+db_uri = "postgresql://database_u3hi_user:Zu5F7OvT4Tp5LTXEY7XrNzMk0SzgRce5@dpg-d7hktlho3t8c73ah1mng-a/database_u3hi"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 280,
@@ -532,6 +533,15 @@ def sitemap():
 @app.route('/robots.txt')
 def robots():
     return app.send_static_file('robots.txt'), 200, {'Content-Type': 'text/plain'}
+
+@app.route("/healthz")
+def healthz():
+    try:
+        # Keep DB warm and verify connectivity for uptime monitors.
+        db.session.execute(text("SELECT 1"))
+        return jsonify({"status": "ok"}), 200
+    except Exception as err:
+        return jsonify({"status": "error", "message": str(err)}), 500
 
 
 @app.route("/about", methods=["GET", "POST"])
