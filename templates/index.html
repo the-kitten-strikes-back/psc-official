@@ -259,22 +259,22 @@
       <div class="stats-grid">
         <div class="stat-card fade-in-up">
           <div class="icon"><i class="fas fa-pen-nib"></i></div>
-          <div class="value">200+</div>
+          <div class="value">{{ "{:,}".format(home_stats.pens_in_storage) }}</div>
           <div class="label">Pens in storage</div>
         </div>
         <div class="stat-card fade-in-up">
           <div class="icon"><i class="fas fa-handshake"></i></div>
-          <div class="value">500+</div>
+          <div class="value">{{ "{:,}".format(home_stats.loans_completed) }}</div>
           <div class="label">Loans completed</div>
         </div>
         <div class="stat-card fade-in-up">
           <div class="icon"><i class="fas fa-comments"></i></div>
-          <div class="value">200+</div>
+          <div class="value">{{ "{:,}".format(home_stats.community_reviews) }}</div>
           <div class="label">Community reviews</div>
         </div>
         <div class="stat-card fade-in-up">
           <div class="icon"><i class="fas fa-clock"></i></div>
-          <div class="value">7 Days</div>
+          <div class="value">{{ home_stats.standard_loan_days }} Days</div>
           <div class="label">Standard loan term</div>
         </div>
       </div>

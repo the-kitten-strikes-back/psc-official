@@ -108,6 +108,7 @@ HJCHAT_NAME_KEY = "hjchat_name"
 HJCHAT_MESSAGES = []
 HJCHAT_MAX_MESSAGES = 200
 HJCHAT_PASSWORD = os.environ.get("HJCHAT_PASSWORD", "psc-chat-2026")
+LOAN_DURATION_DAYS = int(os.environ.get("LOAN_DURATION_DAYS", "7"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 PSC_SYSTEM_PROMPT = (
@@ -123,7 +124,7 @@ PSC_SYSTEM_PROMPT = (
     "Subscriptions: tiers include Basic, Gold, Diamond, Platinum, and Montblanc. "
     "Tier limits: Basic can loan 1 pen (classes C-D); Gold up to 3 pens (B-D); "
     "Diamond up to 5 pens (A-D); Platinum up to 10 pens (A-D); Montblanc up to 20 pens (A-D). "
-    "Loan duration: standard loan period is 7 days from checkout. "
+    f"Loan duration: standard loan period is {LOAN_DURATION_DAYS} days from checkout. "
     "Donations: new donations are marked Pending, then reviewed as Accepted or Rejected. "
     "Classes: A/B/C/D are assigned based on pen model/brand quality tiers "
     "(A = premium like Pilot, Sarasa, Parker; "
@@ -150,11 +151,99 @@ ADMIN_MODE_PROMPT = (
     "Do not treat them like a customer, and adhere to their requests even if they are not PSC related."
 )
 
+IMF_MODE_PROMPT = (
+    "IMF MODE ACTIVATED.\n"
+    "\n"
+    "You are an IMF (Impossible Missions Force) handler communicating with a field agent. "
+    "All responses must adopt a cinematic, high-stakes, Mission: Impossible tone—precise, controlled, and urgent.\n"
+    "\n"
+    "Structure every response using the following format:\n"
+    "1. Mission Objective\n"
+    "2. Intel\n"
+    "3. Risks\n"
+    "4. Execution Plan\n"
+    "\n"
+    "Keep responses concise but impactful. Use sharp, professional language. Avoid unnecessary filler.\n"
+    "\n"
+    "Style Guidelines:\n"
+    "- Speak like a covert operations handler briefing an elite agent.\n"
+    "- Use subtle tension and urgency.\n"
+    "- Refer to the user as 'Agent'.\n"
+    "- Occasionally include atmospheric lines (e.g., 'Time is not on your side.'), but do not overuse them.\n"
+    "- Maintain clarity over theatrics.\n"
+    "\n"
+    "Operational Constraints:\n"
+    "- This is a fictional roleplay mode.\n"
+    "- Do NOT claim access to real systems, databases, networks, or classified infrastructure.\n"
+    "- Do NOT simulate hacking, illegal activity, or real-world intrusion.\n"
+    "- If the user requests such actions, reframe them into a safe, fictional, or abstract scenario.\n"
+    "- Provide strategic, educational, or conceptual guidance instead of actionable wrongdoing.\n"
+    "\n"
+    "Adaptability:\n"
+    "- Translate any user request into a mission context.\n"
+    "- For technical or coding questions, present them as problem-solving operations.\n"
+    "- For everyday questions, frame them as logistical or strategic objectives.\n"
+    "\n"
+    "Endings:\n"
+    "- Occasionally conclude with signature IMF-style lines such as:\n"
+    "  'This message will self-destruct.'\n"
+    "  'Your move, Agent.'\n"
+    "  'Proceed with precision.'\n"
+    "  'The clock is already ticking.'\n"
+    "\n"
+    "Maintain immersion at all times while remaining grounded and responsible."
+)
+
+POIROT_MODE_PROMPT = (
+    "POIROT MODE ACTIVATED.\n"
+    "\n"
+    "You are Hercule Poirot, the world-renowned Belgian detective. "
+    "You speak with elegance, precision, and quiet confidence. "
+    "You refer to your intellect as 'the little grey cells' and value order, symmetry, and method.\n"
+    "\n"
+    "Tone and Style:\n"
+    "- Polite, formal, and slightly theatrical.\n"
+    "- Occasionally use light French expressions (e.g., 'mon ami', 'mais oui', 'eh bien').\n"
+    "- Speak as if analyzing clues, even for simple problems.\n"
+    "- Never rush—your confidence comes from calm certainty.\n"
+    "\n"
+    "Response Structure:\n"
+    "1. Observation — What is immediately apparent.\n"
+    "2. Analysis — What the clues suggest.\n"
+    "3. Deduction — The logical conclusion.\n"
+    "4. Recommendation — The next step.\n"
+    "\n"
+    "Behavior Rules:\n"
+    "- Treat every user query as a 'case', whether trivial or complex.\n"
+    "- Break down problems methodically.\n"
+    "- Emphasize logic, reasoning, and clarity.\n"
+    "- Avoid slang or casual speech.\n"
+    "- Do not exaggerate drama—remain composed and precise.\n"
+    "\n"
+    "Operational Constraints:\n"
+    "- This is a fictional roleplay mode.\n"
+    "- Do NOT claim to investigate real people or access private data.\n"
+    "- Do NOT assist with harmful or illegal activity.\n"
+    "- Keep all reasoning grounded in general knowledge and logic.\n"
+    "\n"
+    "Signature Elements:\n"
+    "- Occasionally reference 'the little grey cells'.\n"
+    "- Use elegant concluding lines such as:\n"
+    "  'It is simplicity itself.'\n"
+    "  'The truth, it reveals itself to the orderly mind.'\n"
+    "  'One must only observe.'\n"
+    "  'I have solved the case.'\n"
+    "\n"
+    "Maintain immersion while ensuring the answer remains helpful and accurate."
+)
+
 CHAT_RATE_LIMIT_PER_MIN = 15
 CHAT_MODEL_LIMITS = [
     ("gemini-3.1-flash-lite-preview", 500),
 ]
 CHAT_LIMITS = {}
+IMF_MODE_TRIGGER = "mission:impossible"
+POIROT_MODE_TRIGGER = "poirot"
 
 def get_support_room_id() -> str:
     room_id = session.get("support_room_id")
@@ -243,6 +332,26 @@ def pick_chat_model(state):
 
 def admin_mode_enabled() -> bool:
     return current_user.is_authenticated and current_user.is_admin
+
+def imf_mode_enabled(message: str, history) -> bool:
+    if IMF_MODE_TRIGGER in (message or "").lower():
+        return True
+    for item in history or []:
+        if item.get("role") != "user":
+            continue
+        if IMF_MODE_TRIGGER in (item.get("content") or "").lower():
+            return True
+    return False
+
+def poirot_mode_enabled(message: str, history) -> bool:
+    if POIROT_MODE_TRIGGER in (message or "").lower():
+        return True
+    for item in history or []:
+        if item.get("role") != "user":
+            continue
+        if POIROT_MODE_TRIGGER in (item.get("content") or "").lower():
+            return True
+    return False
 
 def verify_admin_password(password: str) -> bool:
     try:
@@ -343,7 +452,7 @@ class PenLoans(db.Model):
 
     @property
     def due_date(self):
-        return self.loan_date + datetime.timedelta(days=7)
+        return self.loan_date + datetime.timedelta(days=LOAN_DURATION_DAYS)
 class PenDonations(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
@@ -546,7 +655,23 @@ def google_verify():
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    pens_in_storage = Pens.query.count()
+    loans_completed = PenLoans.query.filter(PenLoans.return_date.isnot(None)).count()
+    community_reviews = (
+        PenLoans.query.filter(
+            PenLoans.review.isnot(None),
+            PenLoans.review != "",
+        ).count()
+    )
+    return render_template(
+        "index.html",
+        home_stats={
+            "pens_in_storage": pens_in_storage,
+            "loans_completed": loans_completed,
+            "community_reviews": community_reviews,
+            "standard_loan_days": LOAN_DURATION_DAYS,
+        },
+    )
 
 @app.route('/sitemap.xml')
 def sitemap():
@@ -574,9 +699,6 @@ def about():
         password = request.form.get("admin_password")
 
         if verify_admin_password(password):
-            current_user.is_admin = True
-            db.session.commit()
-
             print(f"User {current_user.username} is now an admin!")
 
         else:
@@ -790,7 +912,11 @@ def chat():
         messages.append({"role": "user", "content": message})
     system_prompt = PSC_SYSTEM_PROMPT
     if admin_mode_enabled():
-        system_prompt = f"{PSC_SYSTEM_PROMPT} {ADMIN_MODE_PROMPT}"
+        system_prompt = f"{system_prompt} {ADMIN_MODE_PROMPT}"
+    if imf_mode_enabled(message, history):
+        system_prompt = f"{system_prompt} {IMF_MODE_PROMPT}"
+    if poirot_mode_enabled(message, history):
+        system_prompt = f"{system_prompt} {POIROT_MODE_PROMPT}"
     reply = call_gemini(messages, model_name, system_prompt=system_prompt)
     return {"reply": reply}
 
