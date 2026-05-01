@@ -317,7 +317,9 @@
           <strong>{{ pen.name }}</strong>
           <div class="muted">Class {{ pen.class_ }} • PRS {{ pen.prs }}</div>
           <div class="muted">Ink: {{ pen.ink_color }} • {{ pen.ink_level }}%</div>
+          <div class="muted">Image: {% if pen.picture %}Added{% else %}Not added{% endif %}</div>
           <div class="actions" style="margin-top:10px;">
+            <a href="{{ url_for('edit_pen', pen_id=pen.id, return_sector='socac') }}" class="action-btn">Edit</a>
             <form method="POST" action="{{ url_for('delete_pen', pen_id=pen.id) }}" onsubmit="return confirm('Delete this pen permanently?');">
               <button type="submit" class="action-btn action-danger">Delete</button>
             </form>

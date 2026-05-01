@@ -70,6 +70,14 @@
         select {
             cursor: pointer;
         }
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+            box-sizing: border-box;
+        }
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -96,6 +104,27 @@
         .pen-id {
             color: #64748b;
             font-size: 14px;
+            margin: 0;
+        }
+        .current-picture {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .current-picture img {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .picture-note {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
             margin: 0;
         }
         .form-actions {
@@ -169,7 +198,9 @@
                     <p class="pen-id">Pen ID #{{ pen.id }}</p>
                 </div>
 
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="return_sector" value="{{ return_sector }}">
+
                     <!-- Basic Information -->
                     <div class="form-section">
                         <h3>Basic Information</h3>
@@ -225,9 +256,29 @@
                         </div>
                     </div>
 
+                    <!-- Picture Upload -->
+                    <div class="form-section">
+                        <h3>Picture</h3>
+
+                        {% if pen.picture %}
+                        <div class="current-picture">
+                            <img src="{{ url_for('static', filename='pens/' + pen.picture) }}" alt="{{ pen.name }}">
+                            <p class="picture-note">Current image: {{ pen.picture }}</p>
+                        </div>
+                        {% else %}
+                        <p class="picture-note">No image has been added for this pen yet.</p>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <label for="picture">Upload New Picture</label>
+                            <input type="file" id="picture" name="picture" accept="image/*">
+                            <p class="picture-note">Supported: PNG, JPG, JPEG, GIF, WebP. Leave blank to keep the current image.</p>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="submit-btn">✓ Save Changes</button>
-                        <a href="{{ url_for('sectors') }}" class="cancel-btn">← Cancel</a>
+                        <a href="{{ url_for('sector_page', sector=return_sector) }}" class="cancel-btn">← Cancel</a>
                     </div>
                 </form>
             </div>

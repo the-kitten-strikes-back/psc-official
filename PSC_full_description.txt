@@ -1,0 +1,228 @@
+
+What PSC is
+PSC is a community platform built around pens. People can join, borrow pens, donate pens, return borrowed pens, leave feedback, and track their own activity. It is presented as both a practical pen-sharing service and a playful “organization” with internal departments called sectors.
+
+At its core, PSC is about:
+- Making quality pens discoverable
+- Letting members borrow and return pens in a structured way
+- Letting members donate pens to grow the shared collection
+- Using member feedback to keep pen ratings useful
+- Running member support through live chat
+
+
+How the PSC experience feels for a normal member
+1. Visit the homepage and see PSC’s purpose, highlights, and membership tiers.
+2. Create an account or log in.
+3. Open your dashboard to see your loans and donations.
+4. Browse available pens and borrow one if your membership tier allows it.
+5. Donate pens to the community.
+6. Return borrowed pens and optionally leave a review.
+7. Use the PSC assistant chat for quick help, or the live support chat for direct human help.
+
+
+Membership and borrowing model
+PSC uses membership tiers to decide how much access a member has.
+
+- Basic: small borrowing limit, lower classes
+- Gold: higher limit and wider access
+- Diamond: larger limit including top class access
+- Platinum: very high limit
+- Montblanc: highest limit
+
+Each pen has a class (A/B/C/D) and a rating score. Member reviews after return help shape rating updates. This is how PSC keeps quality and trust visible across the catalog.
+
+
+The “sector” concept (internal consoles)
+PSC includes six themed internal departments, each with a special responsibility:
+
+- SoCAC: collection intake, donation approvals/rejections, inventory handling
+- SoDAC: pen classification and rating-focused updates
+- SoBAB: branding, campaigns, design briefs, and live customer-care operations
+- SoRASR: repairs, parts, and operational logs
+- SoSAS: security, threat records, status tracking, and access monitoring
+- SoARC: archive history, ownership lineage, timeline events, legendary pen profiles
+
+These consoles are restricted and require both admin status and sector unlocking.
+
+
+Live communication features
+PSC includes three messaging experiences:
+
+1. PSC Assistant chat
+- On-page helper for member questions (loans, donations, subscriptions, policies).
+- Includes a “live support” handoff path.
+
+2. SoBAB live support chat
+- Real-time conversation between customer and support staff.
+- Customers join from the support page; support agents respond from the SoBAB console.
+
+3. HJ chat room
+- A separate password-protected chat space with simple room messaging.
+
+
+Brand voice and storytelling style
+PSC mixes practical utility with roleplay and world-building:
+- It presents itself like a serious pen archive and operations organization.
+- Some pages include playful lore, dramatic language, and hidden/admin-flavored interactions.
+- The result is a hybrid of useful membership workflows plus personality-rich presentation.
+
+
+Visual and design direction
+Across pages, PSC uses:
+- Strong branded color accents
+- Modern card-style layouts
+- Light/dark theme behavior in some core pages
+- Animated or stylized page sections
+- A floating assistant chat UI
+- Chat interfaces designed for quick message exchange
+
+
+Operations and publishing notes (plain-language)
+PSC is set up so it can run as an always-on web service. It has:
+- A startup command definition
+- A dependency list
+- Search indexing files for discoverability
+- A health/status endpoint for uptime checks
+
+
+Important file-by-file description of the entire PSC project
+
+Root files
+- app.py
+  Main brain of PSC. Handles registration, login, dashboard, loaning, donating, returning, sector access, support chat behavior, and assistant responses.
+
+- README.md
+  Human-friendly project overview: what PSC does, key capabilities, setup, and route highlights.
+
+- requirements.txt
+  List of software packages needed to run PSC.
+
+- Procfile
+  Deployment start command for running PSC in hosted environments.
+
+- .gitignore
+  Defines which local/system files should not be stored in version control.
+
+- .codex
+  Empty placeholder file.
+
+
+Templates (page content)
+- templates/index.html
+  Homepage with PSC intro, benefits, stats, and membership tier showcase.
+
+- templates/about.html
+  About/mission/story page, value statements, and hidden admin-password input area.
+
+- templates/login.html
+  Member login page.
+
+- templates/signup.html
+  Member registration page.
+
+- templates/dashboard.html
+  Member control center showing active loans, donations, top donators, and employee-of-month section.
+
+- templates/loan.html
+  Pen browsing and borrowing page with pen cards and loan action.
+
+- templates/donate.html
+  Donation submission page for new pen entries.
+
+- templates/return_loan.html
+  Return flow page with optional review text.
+
+- templates/partnerships.html
+  PSC partner showcase and collaboration narrative page.
+
+- templates/sectors.html
+  Sector selection page for internal consoles.
+
+- templates/access_denied.html
+  Restricted-access warning page.
+
+- templates/subscription.html
+  Internal page to update member subscription tiers.
+
+- templates/support_chat.html
+  Customer-facing real-time support chat page.
+
+- templates/hjchat.html
+  Password-gated chat page with room messaging interface.
+
+- templates/sector_socac.html
+  SoCAC console: intake logging, donation queue, accepted/rejected items, compiled inventory.
+
+- templates/sector_sodac.html
+  SoDAC console: classification rule entry and pen metadata/rating updates.
+
+- templates/sector_sobab.html
+  SoBAB console: design briefs, campaign queue, and live support-agent chat panel.
+
+- templates/sector_sorasr.html
+  SoRASR console: parts inventory, requests, operation logs, repair tickets.
+
+- templates/sector_sosas.html
+  SoSAS console: threat reports, criminal records, user security status, access logs.
+
+- templates/sector_soarc.html
+  SoARC console: archive entries, ownership history, timeline events, legendary pen stories.
+
+- templates/add_pen.html
+  Internal form to add a pen directly to inventory (with optional image).
+
+- templates/edit_pen.html
+  Internal pen update form.
+
+- templates/admin.html
+  Legacy-style sector admin interface template (not the main route flow now, but still present).
+
+- templates/sitemap.xml
+  Search crawler map for major PSC pages.
+
+- templates/google6e3d9dae5ce142f4.html
+  Site ownership verification file.
+
+
+Static files (behavior, styling, assets)
+- static/chatbot.js
+  Front-end behavior for the PSC assistant chat widget.
+
+- static/support_chat.js
+  Real-time customer support chat behavior for support page users.
+
+- static/sobab_chat.js
+  Real-time support-agent chat behavior for SoBAB internal console.
+
+- static/hjchat.js
+  Real-time behavior for the password-gated HJ chat.
+
+- static/chatbot.css
+  Visual style for the floating PSC assistant chat widget.
+
+- static/hjchat.css
+  Visual style for HJ chat interface.
+
+- static/styles.css
+  Main modern visual system used across PSC pages.
+
+- static/styles_old.css
+  Older/alternate style system retained in project.
+
+- static/robots.txt
+  Basic crawler access rule.
+
+- static/logo.png
+  PSC logo image asset.
+
+
+Bottom line
+PSC is a full community pen platform with:
+- Public storytelling pages
+- Member account and borrowing flows
+- Donation and review-driven quality loop
+- Tier-based access model
+- Real-time support
+- Internal sector consoles for operations, classification, archives, branding, and security
+
+It combines practical utility (borrowing/donation management) with a distinct narrative identity (sector-based organization and themed console workflows), making it both usable and personality-driven.

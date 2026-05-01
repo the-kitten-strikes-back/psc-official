@@ -163,14 +163,14 @@ IMF_MODE_PROMPT = (
     "3. Risks\n"
     "4. Execution Plan\n"
     "\n"
-    "Keep responses concise but impactful. Use sharp, professional language. Avoid unnecessary filler.\n"
+    "Keep responses concise but impactful. Use sharp, spy-like cryptic language. Avoid unnecessary filler.\n"
     "\n"
     "Style Guidelines:\n"
     "- Speak like a covert operations handler briefing an elite agent.\n"
-    "- Use subtle tension and urgency.\n"
+    "- Use tension and urgency.\n"
     "- Refer to the user as 'Agent'.\n"
     "- Occasionally include atmospheric lines (e.g., 'Time is not on your side.'), but do not overuse them.\n"
-    "- Maintain clarity over theatrics.\n"
+    "- Maintain theatrics over clarity..\n"
     "\n"
     "Operational Constraints:\n"
     "- This is a fictional roleplay mode.\n"
@@ -1452,12 +1452,16 @@ def reject_donation(donation_id):
 @app.route("/admin/pen/<int:pen_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_pen(pen_id):
-    if not is_sector_authed("sodac"):
-        return redirect(url_for("sector_page", sector="sodac"))
+    return_sector = request.form.get("return_sector") or request.args.get("return_sector") or "sodac"
+    if return_sector not in SECTOR_CONFIG:
+        return_sector = "sodac"
+
+    if not (is_sector_authed("sodac") or is_sector_authed("socac")):
+        return redirect(url_for("sector_page", sector=return_sector))
 
     pen = Pens.query.get(pen_id)
     if not pen:
-        return redirect(url_for("sector_page", sector="sodac"))
+        return redirect(url_for("sector_page", sector=return_sector))
 
     if request.method == "POST":
         pen.name = request.form.get("name", pen.name)
@@ -1466,10 +1470,13 @@ def edit_pen(pen_id):
         pen.ink_color = request.form.get("ink_color", pen.ink_color)
         pen.class_ = request.form.get("class_", pen.class_)
         pen.prs = int(request.form.get("prs", pen.prs))
+        picture_filename = save_pen_picture(request.files.get("picture"))
+        if picture_filename:
+            pen.picture = picture_filename
         db.session.commit()
-        return redirect(url_for("sector_page", sector="sodac"))
+        return redirect(url_for("sector_page", sector=return_sector))
 
-    return render_template("edit_pen.html", pen=pen)
+    return render_template("edit_pen.html", pen=pen, return_sector=return_sector)
 
 @app.route("/admin/pen/<int:pen_id>/delete", methods=["POST"])
 @login_required
@@ -1500,6 +1507,16 @@ def toggle_admin(user_id):
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def save_pen_picture(file):
+    if not file or not file.filename or not allowed_file(file.filename):
+        return None
+
+    filename = secure_filename(file.filename)
+    timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_")
+    filename = timestamp + filename
+    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    return filename
+
 @app.route("/admin/add-pen", methods=["GET", "POST"])
 @login_required
 def add_pen():
@@ -1515,16 +1532,7 @@ def add_pen():
         prs = int(request.form.get("prs", 50))
 
         # Handle picture upload
-        picture_filename = None
-        if "picture" in request.files:
-            file = request.files["picture"]
-            if file and file.filename and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                # Add timestamp to make filename unique
-                timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_")
-                filename = timestamp + filename
-                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-                picture_filename = filename
+        picture_filename = save_pen_picture(request.files.get("picture"))
 
         # Create pen
         pen = Pens(name=name, description=description, ink_level=ink_level,
