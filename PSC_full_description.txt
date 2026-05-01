@@ -103,8 +103,7 @@ Root files
 - .gitignore
   Defines which local/system files should not be stored in version control.
 
-- .codex
-  Empty placeholder file.
+
 
 
 Templates (page content)
