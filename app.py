@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy import text
+from sqlalchemy import or_, text
 import datetime
 import os
 from textblob import TextBlob
@@ -1008,16 +1008,59 @@ def set_employee_of_month():
 @app.route("/loan", methods=["GET", "POST"])
 @login_required
 def loan():
+    def filtered_loan_pens():
+        filters = {
+            "q": request.args.get("q", "").strip(),
+            "class": request.args.get("class", "").strip().upper(),
+            "ink_color": request.args.get("ink_color", "").strip(),
+            "min_ink": request.args.get("min_ink", "").strip(),
+            "min_prs": request.args.get("min_prs", "").strip(),
+            "sort": request.args.get("sort", "name_asc").strip(),
+        }
+
+        active_loan_pen_ids = db.session.query(PenLoans.pen_id).filter(PenLoans.return_date.is_(None))
+        query = Pens.query.filter(~Pens.id.in_(active_loan_pen_ids))
+
+        if filters["q"]:
+            search = f"%{filters['q']}%"
+            query = query.filter(or_(Pens.name.ilike(search), Pens.description.ilike(search)))
+
+        if filters["class"] in {"A", "B", "C", "D"}:
+            query = query.filter(Pens.class_ == filters["class"])
+
+        if filters["ink_color"]:
+            color_search = f"%{filters['ink_color']}%"
+            query = query.filter(Pens.ink_color.ilike(color_search))
+
+        if filters["min_ink"].isdigit():
+            query = query.filter(Pens.ink_level >= min(int(filters["min_ink"]), 100))
+
+        if filters["min_prs"].isdigit():
+            query = query.filter(Pens.prs >= min(int(filters["min_prs"]), 100))
+
+        sort_options = {
+            "name_asc": Pens.name.asc(),
+            "class_asc": Pens.class_.asc(),
+            "ink_desc": Pens.ink_level.desc(),
+            "prs_desc": Pens.prs.desc(),
+            "newest": Pens.id.desc(),
+        }
+        query = query.order_by(sort_options.get(filters["sort"], Pens.name.asc()))
+
+        return query.all(), filters
+
     if request.method == "POST":
         pen_id = request.form.get("pen_id")
         pen = Pens.query.get(pen_id)
         if not pen:
-            return render_template("loan.html", error="Pen not found")
+            pens, filters = filtered_loan_pens()
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found")
 
         # Check if pen is available (not loaned)
         active_loan = PenLoans.query.filter_by(pen_id=pen_id, return_date=None).first()
         if active_loan:
-            return render_template("loan.html", error="Pen is already loaned")
+            pens, filters = filtered_loan_pens()
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen is already loaned")
 
         # Check subscription limits
         user = current_user
@@ -1031,9 +1074,11 @@ def loan():
         limits = subscription_limits.get(user.subscription_status, {"max_loans": 0, "classes": []})
         current_loans = PenLoans.query.filter_by(borrower_id=user.id, return_date=None).count()
         if current_loans >= limits["max_loans"]:
-            return render_template("loan.html", error="Loan limit reached for your subscription")
+            pens, filters = filtered_loan_pens()
+            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription")
         if pen.class_ not in limits["classes"]:
-            return render_template("loan.html", error="Pen class not allowed for your subscription")
+            pens, filters = filtered_loan_pens()
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription")
 
         # Create loan
         loan = PenLoans(pen_id=pen_id, lender_id=pen.donations[0].donor_id if pen.donations else 1, borrower_id=user.id)  # Assuming lender is donor
@@ -1043,8 +1088,8 @@ def loan():
         return redirect(url_for("dashboard"))
 
     # GET: list available pens
-    available_pens = Pens.query.all()
-    return render_template("loan.html", pens=available_pens)
+    available_pens, filters = filtered_loan_pens()
+    return render_template("loan.html", pens=available_pens, filters=filters)
 
 @app.route("/donate", methods=["GET", "POST"])
 @login_required

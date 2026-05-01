@@ -133,6 +133,78 @@
         .loan-btn:active {
             transform: translateY(0);
         }
+        .filters-panel {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 18px;
+            margin: 28px 0 10px;
+        }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            align-items: end;
+        }
+        .filter-field label {
+            display: block;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .filter-field input,
+        .filter-field select {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            color: #1e293b;
+            font-size: 14px;
+            padding: 10px 12px;
+            min-height: 42px;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+        .filter-field input:focus,
+        .filter-field select:focus {
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+            outline: none;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-btn,
+        .clear-filters {
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            min-height: 42px;
+            padding: 10px 16px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .filter-btn {
+            background: #0066cc;
+            border: 1px solid #0066cc;
+            color: #ffffff;
+        }
+        .clear-filters {
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            display: inline-flex;
+        }
+        .results-summary {
+            color: #64748b;
+            font-size: 14px;
+            margin: 18px 0 -18px;
+        }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -189,7 +261,52 @@
                 <div class="error-message">{{ error }}</div>
             {% endif %}
 
+            <form method="GET" class="filters-panel">
+                <div class="filters-grid">
+                    <div class="filter-field">
+                        <label for="q">Search</label>
+                        <input id="q" name="q" type="search" value="{{ filters['q'] if filters else '' }}" placeholder="Name or description">
+                    </div>
+                    <div class="filter-field">
+                        <label for="class">Class</label>
+                        <select id="class" name="class">
+                            <option value="">Any class</option>
+                            {% for class_option in ["A", "B", "C", "D"] %}
+                                <option value="{{ class_option }}" {% if filters and filters['class'] == class_option %}selected{% endif %}>Class {{ class_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="ink_color">Ink Color</label>
+                        <input id="ink_color" name="ink_color" value="{{ filters['ink_color'] if filters else '' }}" placeholder="Black, blue, #000">
+                    </div>
+                    <div class="filter-field">
+                        <label for="min_ink">Min Ink</label>
+                        <input id="min_ink" name="min_ink" type="number" min="0" max="100" value="{{ filters['min_ink'] if filters else '' }}" placeholder="0-100">
+                    </div>
+                    <div class="filter-field">
+                        <label for="min_prs">Min PRS</label>
+                        <input id="min_prs" name="min_prs" type="number" min="0" max="100" value="{{ filters['min_prs'] if filters else '' }}" placeholder="0-100">
+                    </div>
+                    <div class="filter-field">
+                        <label for="sort">Sort</label>
+                        <select id="sort" name="sort">
+                            <option value="name_asc" {% if not filters or filters['sort'] == "name_asc" %}selected{% endif %}>Name</option>
+                            <option value="class_asc" {% if filters and filters['sort'] == "class_asc" %}selected{% endif %}>Class</option>
+                            <option value="ink_desc" {% if filters and filters['sort'] == "ink_desc" %}selected{% endif %}>Ink: high to low</option>
+                            <option value="prs_desc" {% if filters and filters['sort'] == "prs_desc" %}selected{% endif %}>PRS: high to low</option>
+                            <option value="newest" {% if filters and filters['sort'] == "newest" %}selected{% endif %}>Newest</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">Apply Filters</button>
+                        <a href="{{ url_for('loan') }}" class="clear-filters">Clear</a>
+                    </div>
+                </div>
+            </form>
+
             {% if pens %}
+            <p class="results-summary">{{ pens|length }} available pen{% if pens|length != 1 %}s{% endif %} found</p>
             <div class="pens-grid">
                 {% for pen in pens %}
                 <div class="pen-card">
@@ -243,7 +360,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.5 6.253 2 10.753 2 16.5S6.5 26.747 12 26.747s10-4.5 10-10.247S17.5 6.253 12 6.253z" />
                 </svg>
-                <p>No pens available for loaning at the moment. Please check back soon!</p>
+                <p>No pens match those filters right now. Try clearing or widening your search.</p>
             </div>
             {% endif %}
         </section>
