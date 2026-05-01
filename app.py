@@ -647,9 +647,9 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
-@app.route("/google6e3d9dae5ce142f4.html")
+@app.route("/google3e4f534e8aec0991.html")
 def google_verify():
-    return render_template("google6e3d9dae5ce142f4.html")
+    return render_template("google3e4f534e8aec0991.html")
 
 
 
