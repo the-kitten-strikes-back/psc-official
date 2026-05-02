@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSC | VAULT - CLASS S</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a0505 50%, #0a0a0a 100%);
+      color: #f0e68c;
+      font-family: "Courier New", monospace;
+      overflow: hidden;
+    }
+
+    .vault-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .security-border {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 2px solid #8b0000;
+      pointer-events: none;
+      box-shadow: inset 0 0 50px rgba(139, 0, 0, 0.3);
+      animation: flicker 0.15s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.95; }
+    }
+
+    .vault-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .vault-stamp {
+      font-size: 72px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 8px;
+      color: #8b0000;
+      text-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 40px rgba(139, 0, 0, 0.4);
+      margin: 0;
+      animation: pulse-red 2s infinite;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { text-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 40px rgba(139, 0, 0, 0.4); }
+      50% { text-shadow: 0 0 10px rgba(139, 0, 0, 0.4), 0 0 20px rgba(139, 0, 0, 0.2); }
+    }
+
+    .classification {
+      font-size: 14px;
+      letter-spacing: 2px;
+      margin-top: 10px;
+      color: #ffcc00;
+      text-transform: uppercase;
+    }
+
+    .vault-content {
+      max-width: 800px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #8b0000;
+      padding: 40px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+    }
+
+    .tier-name {
+      font-size: 28px;
+      color: #ff6b6b;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.6);
+    }
+
+    .lore-box {
+      border-left: 3px solid #ffcc00;
+      padding-left: 15px;
+      margin: 20px 0;
+      line-height: 1.8;
+      color: #f0e68c;
+      font-size: 14px;
+    }
+
+    .restriction-warning {
+      background: rgba(139, 0, 0, 0.3);
+      border: 1px solid #8b0000;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+      color: #ffcccc;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      animation: blink-warning 1s infinite;
+    }
+
+    @keyframes blink-warning {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .pen-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+    }
+
+    .pen-list li {
+      padding: 10px;
+      margin: 8px 0;
+      background: rgba(255, 204, 0, 0.05);
+      border-left: 2px solid #ffcc00;
+      color: #f0e68c;
+    }
+
+    .pen-list li strong {
+      color: #ff6b6b;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .back-link a {
+      color: #ffcc00;
+      text-decoration: none;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid #ffcc00;
+      padding: 8px 16px;
+      display: inline-block;
+      transition: all 0.3s;
+    }
+
+    .back-link a:hover {
+      background: rgba(255, 204, 0, 0.1);
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
+    }
+  </style>
+</head>
+<body>
+  <div class="security-border"></div>
+  
+  <div class="vault-container">
+    <div class="vault-header">
+      <h1 class="vault-stamp">VAULT</h1>
+      <div class="classification">⚠ CLASS S - ULTRA-CLASSIFIED ⚠</div>
+    </div>
+
+    <div class="vault-content">
+      <div class="tier-name">Class S: The Legendary Tier</div>
+      
+      <div class="lore-box">
+        <strong>RESTRICTED ACCESS DOCUMENT</strong><br><br>
+        The Class S tier represents the pinnacle of pen craftsmanship—pens so rare, so finely engineered, 
+        and so historically significant that they transcend mere writing instruments. These are artifacts. 
+        Legends. Pieces of pen history that have influenced empires, inspired revolutions, and changed 
+        the very way humans think about the written word.
+      </div>
+
+      <div class="lore-box">
+        Each Class S pen is accompanied by a bloodline—a documented history stretching back decades, 
+        sometimes centuries. Some have been wielded by diplomats during treaty signings. Others have 
+        penned the opening lines of bestselling novels. A few have signatures from their original makers, 
+        now long departed.
+      </div>
+
+      <div class="restriction-warning">
+        ⚠ CRITICAL RESTRICTION ⚠<br>
+        CLASS S PENS CANNOT BE LOANED<br>
+        PRESERVATION PROTOCOL OMEGA ACTIVATED
+      </div>
+
+      <div class="lore-box">
+        <strong>Why Not Loanable?</strong><br>
+        Class S pens exist solely for observation and historical preservation. Allowing them into active 
+        rotation would be akin to lending the Gutenberg Bible. The ink has crystallized into museum-grade 
+        preservation fluid. The mechanisms are sealed in hermetic chambers. To loan one would be to risk 
+        shattering a thousand-year dream, pen by precious pen.
+      </div>
+
+      <div class="lore-box">
+        <strong>The Legendary Collection (Selection):</strong>
+        <ul class="pen-list">
+          <li><strong>The Philosopher's Quill</strong> — Handcrafted in 1847, allegedly used to write drafts of existential philosophy</li>
+          <li><strong>Midnight Aurora</strong> — A limited run from 1923, never used, still sealed in original brass packaging</li>
+          <li><strong>The Echo</strong> — Said to have been traded in a poker game for a small fortune; its current owner keeps it in a vault</li>
+          <li><strong>Obsidian's Dream</strong> — Crafted from meteorite fragments and obsidian, only 3 exist in the world</li>
+          <li><strong>The Archivist</strong> — Pen used by the famous historian to document war records; carries the weight of history</li>
+        </ul>
+      </div>
+
+      <div class="lore-box">
+        PSC is honored to house Class S pens on behalf of the global collecting community. 
+        We stand as custodians of legend. View-only access is available to verified enthusiasts who understand the gravity of their historical significance.
+      </div>
+    </div>
+
+    <div class="back-link">
+      <a href="{{ url_for('index') }}">Return to PSC</a>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='easter_eggs.js') }}"></script>
+</body>
+</html>

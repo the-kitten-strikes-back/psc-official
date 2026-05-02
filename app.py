@@ -1700,6 +1700,28 @@ def handle_hjchat_message(data):
 
     emit("hjchat_message", payload, room=HJCHAT_ROOM_ID)
 
+# Easter Egg Routes
+@app.route("/vault")
+def vault():
+    """Class S - Ultra-classified legendary pen tier"""
+    return render_template("vault.html")
+
+@app.route("/manifest")
+def manifest():
+    """Cryptic manifesto from PSC founders"""
+    return render_template("manifest.html")
+
+@app.route("/thegrandinkwell")
+def thegrandinkwell():
+    """Murder mystery universe expansion - The Grand Inkwell Investigation"""
+    return render_template("thegrandinkwell.html")
+
+# Custom 404 Error Handler with Poirot personality
+@app.errorhandler(404)
+def page_not_found(error):
+    """Custom 404 handler featuring Poirot's detective wisdom"""
+    return render_template("error_404.html"), 404
+
 if __name__ == "__main__":
     socketio.run(
         app,

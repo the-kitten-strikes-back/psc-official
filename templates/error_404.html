@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSC | 404 - Page Not Found</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a1428 0%, #162a4d 50%, #0a1428 100%);
+      color: #d0d0d0;
+      font-family: "Courier New", monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .error-container {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .error-code {
+      font-size: 120px;
+      font-weight: bold;
+      color: #1e90ff;
+      text-shadow: 0 0 20px rgba(30, 144, 255, 0.5);
+      margin: 0;
+      line-height: 1;
+      animation: pulse-blue 2s infinite;
+    }
+
+    @keyframes pulse-blue {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .detective-box {
+      background: rgba(30, 144, 255, 0.1);
+      border: 2px solid #1e90ff;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 30px 0;
+      box-shadow: 0 0 30px rgba(30, 144, 255, 0.2);
+    }
+
+    .detective-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1e90ff;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .poirot-quote {
+      font-size: 16px;
+      font-style: italic;
+      color: #87ceeb;
+      line-height: 1.6;
+      margin: 20px 0;
+    }
+
+    .investigation-text {
+      font-size: 13px;
+      color: #b0c4de;
+      line-height: 1.7;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-left: 3px solid #1e90ff;
+      margin: 15px 0;
+    }
+
+    .clue-box {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px dashed #ffd700;
+      padding: 15px;
+      margin: 15px 0;
+      font-size: 12px;
+      color: #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .navigation {
+      margin-top: 30px;
+    }
+
+    .nav-button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 10px 5px;
+      background: #1e90ff;
+      color: #000;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: 2px solid #1e90ff;
+    }
+
+    .nav-button:hover {
+      background: transparent;
+      color: #1e90ff;
+      text-shadow: 0 0 10px rgba(30, 144, 255, 0.6);
+    }
+
+    .nav-button.secondary {
+      background: transparent;
+      color: #1e90ff;
+      border: 2px solid #1e90ff;
+    }
+
+    .nav-button.secondary:hover {
+      background: #1e90ff;
+      color: #000;
+    }
+
+    .signature {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <h1 class="error-code">404</h1>
+    
+    <div class="detective-box">
+      <div class="detective-title">🔍 A Detective's Observation</div>
+      
+      <div class="poirot-quote">
+        "This page, it does not exist. Or does it? You see, the absence of something is itself a presence, 
+        non? The missing page leaves a void—but voids, they have meaning. Someone wanted this page to disappear. 
+        Or perhaps... it never existed at all."
+      </div>
+
+      <div class="investigation-text">
+        <strong>The Case of the Missing Page:</strong><br><br>
+        My dear friend, you have stumbled upon a mystery. The URL you seek has eluded even the most careful 
+        cataloging systems of PSC. Either:
+        <ul style="text-align: left; margin: 10px 0;">
+          <li><strong>The path was mistyped</strong> — a small error, but errors compound in the world of precision</li>
+          <li><strong>The page was moved</strong> — relocated to another sector of the database, classified beyond reach</li>
+          <li><strong>The page never existed</strong> — a phantom, a ghost in the machine, awaiting discovery</li>
+          <li><strong>Someone hid it</strong> — intentionally removed from view, perhaps for reasons we cannot fathom</li>
+        </ul>
+      </div>
+
+      <div class="investigation-text">
+        One must apply logic and reason. The little grey cells must work! Return to known territory—the Home page, 
+        the Dashboard, or perhaps the Support channels—and search for what you truly seek. 
+      </div>
+
+      <div class="clue-box">
+        Clue: Check the URL for typos. Even Poirot is occasionally defeated by a simple spelling mistake.
+      </div>
+    </div>
+
+    <div class="navigation">
+      <a href="{{ url_for('index') }}" class="nav-button">Return Home</a>
+      <a href="javascript:history.back()" class="nav-button secondary">Go Back</a>
+    </div>
+
+    <div class="signature">
+      — Investigation conducted by Hercule Poirot, on behalf of PSC
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='easter_eggs.js') }}"></script>
+</body>
+</html>

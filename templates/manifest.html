@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSC | The Manifesto</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+      color: #d0d0d0;
+      font-family: "Georgia", serif;
+      line-height: 1.9;
+    }
+
+    .manifesto-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 30px;
+      position: relative;
+    }
+
+    .parchment {
+      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 50%, #2a2a2a 100%);
+      border: 1px solid #444;
+      padding: 50px;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .parchment::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 2px,
+          rgba(255, 255, 255, 0.02) 2px,
+          rgba(255, 255, 255, 0.02) 4px
+        );
+      pointer-events: none;
+    }
+
+    .manifesto-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .manifesto-title {
+      text-align: center;
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #c9302c;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .manifesto-subtitle {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .manifesto-section {
+      margin: 30px 0;
+      padding: 20px;
+      border-left: 3px solid #c9302c;
+      background: rgba(201, 48, 44, 0.05);
+    }
+
+    .manifesto-section h2 {
+      font-size: 18px;
+      color: #c9302c;
+      font-weight: bold;
+      margin-top: 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .manifesto-section p {
+      margin: 12px 0;
+      color: #d0d0d0;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .manifesto-quote {
+      font-style: italic;
+      color: #a9a9a9;
+      border-left: 2px solid #666;
+      padding-left: 15px;
+      margin: 20px 0;
+    }
+
+    .signature {
+      text-align: right;
+      margin-top: 40px;
+      font-family: "Brush Script MT", cursive;
+      color: #888;
+      font-size: 18px;
+      position: relative;
+      padding-top: 20px;
+    }
+
+    .signature::before {
+      content: "";
+      display: block;
+      width: 100px;
+      height: 1px;
+      background: #666;
+      margin-left: auto;
+      margin-bottom: 5px;
+    }
+
+    .date-stamp {
+      text-align: right;
+      font-size: 11px;
+      color: #666;
+      margin-top: 5px;
+      letter-spacing: 1px;
+    }
+
+    .document-warning {
+      text-align: center;
+      padding: 15px;
+      background: rgba(201, 48, 44, 0.1);
+      border: 1px dashed #666;
+      margin-top: 40px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .back-link a {
+      color: #c9302c;
+      text-decoration: none;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid #c9302c;
+      padding: 8px 16px;
+      display: inline-block;
+      transition: all 0.3s;
+    }
+
+    .back-link a:hover {
+      background: rgba(201, 48, 44, 0.1);
+    }
+
+    .redacted {
+      background: #000;
+      color: #000;
+      cursor: pointer;
+      padding: 2px 5px;
+      user-select: none;
+    }
+
+    .redacted:hover {
+      color: #888;
+      text-shadow: 0 0 3px rgba(200, 200, 200, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="manifesto-container">
+    <div class="parchment">
+      <div class="manifesto-content">
+        <h1 class="manifesto-title">The Manifesto</h1>
+        <div class="manifesto-subtitle">A Declaration of Purpose — PSC Founding Council — CLASSIFIED</div>
+
+        <div class="manifesto-section">
+          <h2>I. The Problem of Chaos</h2>
+          <p>
+            The world of writing instruments exists in a state of entropy. Pens are scattered, forgotten, 
+            misplaced. Legends become myths. Quality fades into obscurity. History is written with ballpoint, 
+            and nobody thinks twice about the vessel that carried the words.
+          </p>
+          <p class="manifesto-quote">
+            "A pen without a home is a story without a listener."
+          </p>
+        </div>
+
+        <div class="manifesto-section">
+          <h2>II. The Philosophy of Preservation</h2>
+          <p>
+            We are not mere collectors. We are custodians of human expression. Every pen has a story—a weight, 
+            a purpose, a moment in time when it changed something. Whether it penned love letters or constitutions, 
+            whether it belonged to a scholar or a dreamer, each instrument deserves respect, care, and recognition.
+          </p>
+          <p>
+            The Pen Storage Company exists to organize, elevate, and celebrate the written word through the tools that birth it.
+          </p>
+        </div>
+
+        <div class="manifesto-section">
+          <h2>III. The Six Sectors of Truth</h2>
+          <p>
+            We have divided our mission into six pillars, each stewarded by a Sector bound by oath and expertise:
+          </p>
+          <ul>
+            <li><strong>SoDAC</strong> — The classifiers, bringing order to disorder.</li>
+            <li><strong>SoBAB</strong> — The amplifiers, making the story heard.</li>
+            <li><strong>SoRASR</strong> — The engineers, restoring and perfecting.</li>
+            <li><strong>SoCAC</strong> — The seekers, hunting the lost and forgotten.</li>
+            <li><strong>SoSAS</strong> — The guardians, protecting what matters.</li>
+            <li><strong>SoARC</strong> — The rememberers, archiving the eternal record.</li>
+          </ul>
+        </div>
+
+        <div class="manifesto-section">
+          <h2>IV. The Oath of the Custodian</h2>
+          <p>
+            Those who enter PSC commit to a truth: we do not own these pens. We steward them. 
+            We loan, not hoard. We celebrate, not hide. We believe that a pen's greatest purpose is to be used, 
+            to write, to create—but never carelessly. Never without intention.
+          </p>
+          <p class="manifesto-quote">
+            "In ink, we trust. In memory, we endure."
+          </p>
+        </div>
+
+        <div class="manifesto-section">
+          <h2>V. The Great Mystery</h2>
+          <p>
+            There exists a legend among us—whispered in the halls of SoARC, debated in the chambers of SoCAC. 
+            Tales of <span class="redacted">████████████</span> and the incident known only as <span class="redacted">████████</span>. 
+            Some say a rare pen was stolen. Others claim it was returned. A few believe it never existed at all.
+          </p>
+          <p>
+            The truth? That mystery is the heartbeat of PSC. Without mystery, without unanswered questions, 
+            we are merely a database. But with questions? We are a legend.
+          </p>
+        </div>
+
+        <div class="manifesto-section">
+          <h2>VI. The Call to Action</h2>
+          <p>
+            If you hold a pen, you hold history. If you seek a pen, you seek connection. 
+            If you believe that objects carry meaning, that stories matter, that the written word 
+            is sacred—then join us. Become part of the tapestry.
+          </p>
+          <p>
+            The Pen Storage Company waits for you. Your pen awaits. The story awaits.
+          </p>
+        </div>
+
+        <div class="signature">
+          For the Council,
+          <div class="date-stamp">Established in darkness. Maintained in light.</div>
+        </div>
+
+        <div class="document-warning">
+          This document contains references to classified events. Do not share outside official channels.
+        </div>
+      </div>
+    </div>
+
+    <div class="back-link">
+      <a href="{{ url_for('index') }}">Return to PSC</a>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='easter_eggs.js') }}"></script>
+</body>
+</html>

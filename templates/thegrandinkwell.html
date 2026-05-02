@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSC | The Grand Inkwell Investigation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a0a0a 0%, #2d1010 50%, #1a0a0a 100%);
+      color: #e8d5c4;
+      font-family: "Courier New", monospace;
+      line-height: 1.8;
+    }
+
+    .investigation-container {
+      max-width: 950px;
+      margin: 0 auto;
+      padding: 60px 30px;
+    }
+
+    .case-file {
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #8b4513;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .case-file::before {
+      content: "CONFIDENTIAL";
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      color: rgba(255, 0, 0, 0.15);
+      transform: rotate(-15deg);
+      letter-spacing: 2px;
+    }
+
+    .case-header {
+      text-align: center;
+      border-bottom: 2px solid #8b4513;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .case-number {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #999;
+      text-transform: uppercase;
+    }
+
+    .case-title {
+      font-size: 32px;
+      font-weight: bold;
+      color: #d4a574;
+      margin: 10px 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .case-date {
+      font-size: 12px;
+      color: #777;
+      letter-spacing: 1px;
+    }
+
+    .case-section {
+      margin: 25px 0;
+      padding: 20px;
+      background: rgba(139, 69, 19, 0.1);
+      border-left: 3px solid #d4a574;
+    }
+
+    .case-section h2 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #d4a574;
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .case-section p {
+      font-size: 13px;
+      margin: 10px 0;
+      color: #c9b5a0;
+      line-height: 1.7;
+    }
+
+    .evidence-item {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #666;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 12px;
+      color: #a9a9a9;
+      font-family: "Courier New", monospace;
+    }
+
+    .timeline {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+
+    .timeline li {
+      padding: 12px 0 12px 20px;
+      border-left: 2px solid #8b4513;
+      margin-left: 10px;
+      position: relative;
+      font-size: 12px;
+      color: #c9b5a0;
+    }
+
+    .timeline li::before {
+      content: "•";
+      position: absolute;
+      left: -8px;
+      font-size: 16px;
+      color: #d4a574;
+    }
+
+    .timeline li strong {
+      color: #d4a574;
+    }
+
+    .suspect-profile {
+      background: rgba(100, 50, 0, 0.15);
+      border: 1px solid #8b4513;
+      padding: 15px;
+      margin: 15px 0;
+      font-size: 12px;
+    }
+
+    .suspect-profile strong {
+      display: block;
+      color: #d4a574;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .theory {
+      border: 2px dashed #8b4513;
+      padding: 15px;
+      margin: 15px 0;
+      background: rgba(139, 69, 19, 0.05);
+      color: #d4a574;
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    .clue {
+      display: inline-block;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid #d4a574;
+      padding: 8px 12px;
+      margin: 5px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .unknown {
+      color: #999;
+      font-weight: bold;
+      text-decoration: underline wavy;
+    }
+
+    .signature-line {
+      margin-top: 30px;
+      font-size: 11px;
+      color: #666;
+      letter-spacing: 1px;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .back-link a {
+      color: #d4a574;
+      text-decoration: none;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid #d4a574;
+      padding: 8px 16px;
+      display: inline-block;
+      transition: all 0.3s;
+    }
+
+    .back-link a:hover {
+      background: rgba(212, 165, 116, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="investigation-container">
+    <div class="case-file">
+      <div class="case-header">
+        <div class="case-number">CASE FILE: PSC-2026-INKWELL-01</div>
+        <h1 class="case-title">The Grand Inkwell Mystery</h1>
+        <div class="case-date">Investigation Active — Last Update: ████████████</div>
+      </div>
+
+      <div class="case-section">
+        <h2>Case Summary</h2>
+        <p>
+          Approximately <span class="unknown">██ months ago</span>, PSC experienced an unprecedented event. 
+          A pen of legendary significance—the codename for which is <span class="unknown">██████████</span>—
+          vanished from the high-security vault maintained by SoSAS. 
+        </p>
+        <p>
+          The pen was never logged as missing. No alarms triggered. No records were altered. 
+          Yet somehow, someone knew exactly where it was, when to retrieve it, and how to circumvent 
+          every failsafe in the PSC security apparatus.
+        </p>
+        <p>
+          The Grand Inkwell was not stolen. It was <em>recovered</em>. But recovered by whom? And why?
+        </p>
+      </div>
+
+      <div class="case-section">
+        <h2>Key Evidence</h2>
+        <div class="evidence-item">
+          Evidence A: A single strand of <span class="unknown">███████</span> fiber found at the breach point.
+          Origin unknown. Material composition suggests <span class="unknown">██████████████</span>.
+        </div>
+        <div class="evidence-item">
+          Evidence B: A note left in the vault, written in fountain pen, containing only the words: 
+          "The writer returns home."
+        </div>
+        <div class="evidence-item">
+          Evidence C: Security footage from the night in question shows a figure in a <span class="unknown">████████</span> 
+          approaching the vault. The footage corrupts for exactly 47 seconds at the critical moment.
+        </div>
+        <div class="evidence-item">
+          Evidence D: An ink analysis performed on the note reveals traces of a formula last used in <span class="unknown">████████</span>.
+        </div>
+      </div>
+
+      <div class="case-section">
+        <h2>Timeline of Events</h2>
+        <ul class="timeline">
+          <li><strong>Day -1:</strong> SoARC completes inventory audit. All pens accounted for.</li>
+          <li><strong>Night 0:</strong> Security anomaly detected at 02:47 AM. <span class="unknown">████████</span> bypassed.</li>
+          <li><strong>Day 1:</strong> Audit performed. One pen missing. SoSAS director notified. Investigation classified.</li>
+          <li><strong>Day 3:</strong> Analysis of evidence begins. Fountain pen identified as <span class="unknown">████████</span> era.</li>
+          <li><strong>Day 7:</strong> Theories conflict. SoARC claims the pen was <em>misclassified</em> from the start.</li>
+          <li><strong>Day 14:</strong> Lead investigator placed on leave. Investigation continues under seal.</li>
+          <li><strong>Now:</strong> Case remains open. The Grand Inkwell awaits discovery.</li>
+        </ul>
+      </div>
+
+      <div class="case-section">
+        <h2>Prime Suspects & Theories</h2>
+        <div class="suspect-profile">
+          <strong>Theory A: The Archivist's Return</strong><br>
+          An SoARC member, <span class="unknown">████████</span>, has been flagged as having knowledge 
+          of the vault's location. Motive unknown. Last known location: <span class="unknown">██████████</span>.
+        </div>
+        <div class="suspect-profile">
+          <strong>Theory B: The Inside Job</strong><br>
+          Analysis suggests the thief had intimate knowledge of PSC security protocols. Could be current staff. 
+          Could be former staff. Could be someone with access we don't even know about.
+        </div>
+        <div class="suspect-profile">
+          <strong>Theory C: The Pen Chose Its Owner</strong><br>
+          A minority theory, but one worth noting: pens of legendary status are said to call to their true keepers. 
+          What if The Grand Inkwell wasn't stolen—but simply answered when summoned?
+        </div>
+      </div>
+
+      <div class="case-section">
+        <h2>Investigation Notes (Excerpt)</h2>
+        <p>
+          The Grand Inkwell represents more than just a pen. Its mechanics are centuries ahead of its time. 
+          Its ink composition is <span class="unknown">████████████</span>. Its provenance traces back to 
+          <span class="unknown">██████</span>, suggesting involvement of <span class="unknown">██████████████</span>.
+        </p>
+        <p>
+          One investigator theorized: "If this pen was stolen, why hasn't it surfaced on the black market? 
+          If it was recovered, why hasn't it been returned? Unless... it's already been used. 
+          Unless someone is writing something important with it right now."
+        </p>
+        <p class="theory">
+          The truth is hidden in the very thing that brought us here: <strong>the written word</strong>. 
+          Somewhere in PSC's archives, in someone's journal, or in the margins of an old catalog, 
+          the Grand Inkwell's story continues to be written—by the pen itself, through its owner.
+        </p>
+      </div>
+
+      <div class="case-section">
+        <h2>Clues for the Observant</h2>
+        <div style="text-align: center;">
+          <span class="clue">Vault's Hidden Key</span>
+          <span class="clue">SoARC's Sealed Archive</span>
+          <span class="clue">The Midnight Aurora</span>
+          <span class="clue">47 Seconds Missing</span>
+          <span class="clue">The Writer Returns</span>
+        </div>
+      </div>
+
+      <div class="signature-line">
+        Case Filed By: <span class="unknown">████████</span><br>
+        Classification Level: MAXIMUM<br>
+        Next Review Date: <span class="unknown">████████████</span>
+      </div>
+    </div>
+
+    <div class="back-link">
+      <a href="{{ url_for('index') }}">Return to PSC</a>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='easter_eggs.js') }}"></script>
+</body>
+</html>
