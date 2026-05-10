@@ -272,9 +272,68 @@ def get_hjchat_display_name() -> str:
     session[HJCHAT_NAME_KEY] = generated
     return generated
 
+def get_last_user_message(messages) -> str:
+    for item in reversed(messages or []):
+        if item.get("role") == "user" and item.get("content"):
+            return item["content"].strip()
+    return ""
+
+def build_local_faq_response(message: str) -> str:
+    prompt = (message or "").lower()
+    if not prompt:
+        return "Please enter a message."
+
+    if any(word in prompt for word in ("loan", "borrow", "checkout")):
+        return (
+            "To loan a pen, sign in and open the Loan a Pen page from your dashboard. "
+            "Your membership tier decides how many pens you can borrow and which classes you can access. "
+            f"Loans normally last {LOAN_DURATION_DAYS} days. For live availability, check the catalog."
+        )
+    if any(word in prompt for word in ("return", "returned")):
+        return (
+            "Open Return Loan from your dashboard, choose the active loan, and submit it. "
+            "You can add a review when returning the pen, and that feedback can affect the pen's PRS rating."
+        )
+    if any(word in prompt for word in ("donate", "donation")):
+        return (
+            "Use the Donate a Pen page after signing in. New donations are marked Pending first, "
+            "then PSC reviews them and changes the status to Accepted or Rejected."
+        )
+    if any(word in prompt for word in ("subscription", "tier", "basic", "gold", "diamond", "platinum", "montblanc")):
+        return (
+            "PSC subscription tiers are Basic, Gold, Diamond, Platinum, and Montblanc. "
+            "Basic can loan 1 pen from classes C-D, Gold up to 3 from B-D, Diamond up to 5 from A-D, "
+            "Platinum up to 10 from A-D, and Montblanc up to 20 from A-D."
+        )
+    if "prs" in prompt or "rating" in prompt:
+        return (
+            "PSC uses PRS, the Pen Rating Score, on a 0-100 scale. "
+            "Return reviews can increase the score, capped at 100. Higher PRS usually means a better pen experience."
+        )
+    if any(word in prompt for word in ("class a", "class b", "class c", "class d", "classes", "classification")):
+        return (
+            "PSC sorts pens into A, B, C, and D classes. "
+            "A is premium, B is premium economy, C is economy or mixed-quality, and D is low-quality. "
+            "Specific availability depends on current donations and inventory."
+        )
+    if any(word in prompt for word in ("support", "help", "agent", "human")):
+        return (
+            "For direct help from a person, use the SoBAB live support chat at /support. "
+            "The PSC assistant can handle quick questions, but live support is the best path for account-specific help."
+        )
+
+    return (
+        "The PSC assistant is running in fallback mode right now, so I can help with loans, returns, donations, "
+        "subscription tiers, PRS ratings, and pen classes. For anything account-specific, please use /support."
+    )
+
+def is_gemini_location_error(exc: Exception) -> bool:
+    details = str(exc).lower()
+    return "user location is not supported for the api use" in details
+
 def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
     if not GEMINI_API_KEY:
-        return "Chatbot is not configured. Please set GEMINI_API_KEY."
+        return build_local_faq_response(get_last_user_message(messages))
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         contents = []
@@ -302,7 +361,12 @@ def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
         return (response.text or "").strip()
     except Exception as exc:
         app.logger.exception("Gemini error: %s", exc)
-        return "Chatbot is temporarily unavailable."
+        if is_gemini_location_error(exc):
+            app.logger.warning(
+                "Gemini API request blocked due to Google location or account eligibility checks. "
+                "Verify the runtime egress location, VPN/proxy settings, project eligibility, and API key setup."
+            )
+        return build_local_faq_response(get_last_user_message(messages))
 
 def get_chat_client_key() -> str:
     if current_user.is_authenticated:
