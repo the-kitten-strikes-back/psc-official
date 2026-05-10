@@ -3,7 +3,6 @@ gunicorn
 Flask-Login
 Flask-SQLAlchemy
 Flask-SocketIO
-eventlet
 psycopg2-binary
 textblob
 google-genai
