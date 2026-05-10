@@ -6,12 +6,16 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, text
 import datetime
 import os
+import socket
+import sys
 from textblob import TextBlob
 import base64
 import hashlib
 import hmac
 from functools import wraps
+from urllib.parse import urlparse
 import uuid
+import requests
 from flask_socketio import SocketIO, emit, join_room
 from google import genai
 from google.genai import types
@@ -245,6 +249,143 @@ CHAT_MODEL_LIMITS = [
 CHAT_LIMITS = {}
 IMF_MODE_TRIGGER = "mission:impossible"
 POIROT_MODE_TRIGGER = "poirot"
+GEMINI_RUNTIME_STATUS = {
+    "configured": bool(GEMINI_API_KEY),
+    "model": GEMINI_MODEL,
+    "status": "not_configured" if not GEMINI_API_KEY else "ready",
+    "fallback_active": not bool(GEMINI_API_KEY),
+    "fallback_reason": "missing_api_key" if not GEMINI_API_KEY else None,
+    "last_error": None,
+    "updated_at": None,
+}
+LOCATION_CACHE_TTL_SECONDS = 300
+LOCATION_CACHE = {
+    "value": None,
+    "expires_at": None,
+}
+
+
+def update_gemini_runtime_status(status: str, fallback_reason=None, error=None) -> None:
+    GEMINI_RUNTIME_STATUS["configured"] = bool(GEMINI_API_KEY)
+    GEMINI_RUNTIME_STATUS["model"] = GEMINI_MODEL
+    GEMINI_RUNTIME_STATUS["status"] = status
+    GEMINI_RUNTIME_STATUS["fallback_active"] = fallback_reason is not None
+    GEMINI_RUNTIME_STATUS["fallback_reason"] = fallback_reason
+    GEMINI_RUNTIME_STATUS["last_error"] = error
+    GEMINI_RUNTIME_STATUS["updated_at"] = datetime.datetime.utcnow().isoformat() + "Z"
+
+
+def utc_now() -> datetime.datetime:
+    return datetime.datetime.utcnow()
+
+
+def redact_database_uri(uri: str) -> dict:
+    parsed = urlparse(uri or "")
+    return {
+        "scheme": parsed.scheme or None,
+        "host": parsed.hostname,
+        "port": parsed.port,
+        "database": parsed.path.lstrip("/") or None,
+    }
+
+
+def get_public_network_location(force_refresh: bool = False) -> dict:
+    now = utc_now()
+    if (
+        not force_refresh
+        and LOCATION_CACHE["value"] is not None
+        and LOCATION_CACHE["expires_at"] is not None
+        and now < LOCATION_CACHE["expires_at"]
+    ):
+        return LOCATION_CACHE["value"]
+
+    providers = [
+        ("ipinfo", "https://ipinfo.io/json"),
+        ("ipapi", "https://ipapi.co/json/"),
+    ]
+    result = {
+        "status": "unavailable",
+        "provider": None,
+        "ip": None,
+        "city": None,
+        "region": None,
+        "country": None,
+        "timezone": None,
+        "org": None,
+        "raw": None,
+        "error": None,
+        "checked_at": now.isoformat() + "Z",
+    }
+
+    for provider_name, url in providers:
+        try:
+            response = requests.get(url, timeout=2)
+            response.raise_for_status()
+            payload = response.json()
+            result = {
+                "status": "ok",
+                "provider": provider_name,
+                "ip": payload.get("ip"),
+                "city": payload.get("city"),
+                "region": payload.get("region"),
+                "country": payload.get("country") or payload.get("country_name"),
+                "timezone": payload.get("timezone"),
+                "org": payload.get("org") or payload.get("asn"),
+                "raw": payload,
+                "error": None,
+                "checked_at": utc_now().isoformat() + "Z",
+            }
+            break
+        except Exception as exc:
+            result["provider"] = provider_name
+            result["error"] = str(exc)
+
+    LOCATION_CACHE["value"] = result
+    LOCATION_CACHE["expires_at"] = now + datetime.timedelta(seconds=LOCATION_CACHE_TTL_SECONDS)
+    return result
+
+
+def build_runtime_diagnostics() -> dict:
+    database_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    return {
+        "utc_time": utc_now().isoformat() + "Z",
+        "local_time": datetime.datetime.now().isoformat(),
+        "python_version": sys.version,
+        "hostname": socket.gethostname(),
+        "port_env": os.environ.get("PORT"),
+        "render": {
+            "service_name": os.environ.get("RENDER_SERVICE_NAME"),
+            "service_id": os.environ.get("RENDER_SERVICE_ID"),
+            "instance_id": os.environ.get("RENDER_INSTANCE_ID"),
+            "region": os.environ.get("RENDER_REGION"),
+            "git_commit": os.environ.get("RENDER_GIT_COMMIT"),
+        },
+        "request": {
+            "remote_addr": request.remote_addr,
+            "headers": {
+                "host": request.headers.get("Host"),
+                "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+                "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+                "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
+                "user_agent": request.headers.get("User-Agent"),
+            },
+        },
+        "socketio": {
+            "async_mode": socketio.async_mode,
+        },
+        "database": {
+            "configured": bool(database_uri),
+            "target": redact_database_uri(database_uri),
+            "engine_options": app.config.get("SQLALCHEMY_ENGINE_OPTIONS", {}),
+        },
+        "gemini_config": {
+            "api_key_configured": bool(GEMINI_API_KEY),
+            "model": GEMINI_MODEL,
+        },
+        "network_location": get_public_network_location(
+            force_refresh=request.args.get("refresh") == "1"
+        ),
+    }
 
 def get_support_room_id() -> str:
     room_id = session.get("support_room_id")
@@ -331,6 +472,7 @@ def is_gemini_location_error(exc: Exception) -> bool:
 
 def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
     if not GEMINI_API_KEY:
+        update_gemini_runtime_status("fallback", fallback_reason="missing_api_key")
         return build_local_faq_response(get_last_user_message(messages))
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
@@ -356,6 +498,7 @@ def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
                 max_output_tokens=600,
             ),
         )
+        update_gemini_runtime_status("ok")
         return (response.text or "").strip()
     except Exception as exc:
         app.logger.exception("Gemini error: %s", exc)
@@ -363,6 +506,17 @@ def call_gemini(messages, model_name, system_prompt=PSC_SYSTEM_PROMPT) -> str:
             app.logger.warning(
                 "Gemini API request blocked due to Google location or account eligibility checks. "
                 "Verify the runtime egress location, VPN/proxy settings, project eligibility, and API key setup."
+            )
+            update_gemini_runtime_status(
+                "fallback",
+                fallback_reason="location_blocked",
+                error=str(exc),
+            )
+        else:
+            update_gemini_runtime_status(
+                "fallback",
+                fallback_reason="api_error",
+                error=str(exc),
             )
         return build_local_faq_response(get_last_user_message(messages))
 
@@ -755,6 +909,24 @@ def healthz():
         return jsonify({"status": "ok"}), 200
     except Exception as err:
         return jsonify({"status": "error", "message": str(err)}), 500
+
+
+@app.route("/health")
+def health():
+    diagnostics = {
+        "status": "ok",
+        "database": "ok",
+        "gemini": dict(GEMINI_RUNTIME_STATUS),
+        "runtime": build_runtime_diagnostics(),
+    }
+    try:
+        db.session.execute(text("SELECT 1"))
+    except Exception as err:
+        diagnostics["status"] = "error"
+        diagnostics["database"] = "error"
+        diagnostics["database_error"] = str(err)
+        return jsonify(diagnostics), 500
+    return jsonify(diagnostics), 200
 
 
 @app.route("/about", methods=["GET", "POST"])
