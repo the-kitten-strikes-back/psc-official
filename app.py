@@ -24,7 +24,7 @@ from whitenoise import WhiteNoise
 app = Flask(__name__)
 app.wsgi_app = WhiteNoise(app.wsgi_app, root=os.path.join(os.path.dirname(__file__), 'static'))
 socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")
-db_uri = "postgresql://database_u3hi_user:Zu5F7OvT4Tp5LTXEY7XrNzMk0SzgRce5@dpg-d7hktlho3t8c73ah1mng-a/database_u3hi"
+db_uri = "postgresql://database_5std_user:qPrNxScDaLhYvv8YyApQdxlYunmeInOJ@dpg-d85gg8j7uimc739giccg-a/database_5std"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 280,
