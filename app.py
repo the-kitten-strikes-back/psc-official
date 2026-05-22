@@ -271,6 +271,8 @@ CHAT_MODEL_LIMITS = [
 CHAT_LIMITS = {}
 IMF_MODE_TRIGGER = "mission:impossible"
 POIROT_MODE_TRIGGER = "poirot"
+EREADER_CHAT_SESSION_KEY = "ereader_chat_history"
+ADD_PEN_PREFILL_SESSION_KEY = "add_pen_prefill"
 GEMINI_RUNTIME_STATUS = {
     "configured": bool(GEMINI_API_KEY),
     "model": GEMINI_MODEL,
@@ -564,6 +566,36 @@ def get_chat_state(client_key: str):
         state["minute"] = minute_key
         state["minute_count"] = 0
     return state
+
+
+def build_chat_reply(message: str, history):
+    client_key = get_chat_client_key()
+    state = get_chat_state(client_key)
+    if state["minute_count"] >= CHAT_RATE_LIMIT_PER_MIN:
+        return "Rate limit exceeded: max 4 requests per minute."
+    model_name = pick_chat_model(state)
+    if not model_name:
+        return "Daily limit reached. Please try again tomorrow."
+
+    state["minute_count"] += 1
+    state["model_counts"][model_name] = state["model_counts"].get(model_name, 0) + 1
+
+    messages = []
+    for item in (history or [])[-8:]:
+        role = item.get("role")
+        content = item.get("content")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    if not messages or messages[-1]["role"] != "user":
+        messages.append({"role": "user", "content": message})
+    system_prompt = PSC_SYSTEM_PROMPT
+    if admin_mode_enabled():
+        system_prompt = f"{system_prompt} {ADMIN_MODE_PROMPT}"
+    if imf_mode_enabled(message, history):
+        system_prompt = f"{system_prompt} {IMF_MODE_PROMPT}"
+    if poirot_mode_enabled(message, history):
+        system_prompt = f"{system_prompt} {POIROT_MODE_PROMPT}"
+    return call_gemini(messages, model_name, system_prompt=system_prompt)
 
 def pick_chat_model(state):
     for model_name, limit in CHAT_MODEL_LIMITS:
@@ -1405,35 +1437,32 @@ def chat():
     history = data.get("history") or []
     if not message:
         return {"reply": "Please enter a message."}, 400
-
-    client_key = get_chat_client_key()
-    state = get_chat_state(client_key)
-    if state["minute_count"] >= CHAT_RATE_LIMIT_PER_MIN:
-        return {"reply": "Rate limit exceeded: max 4 requests per minute."}, 429
-    model_name = pick_chat_model(state)
-    if not model_name:
-        return {"reply": "Daily limit reached. Please try again tomorrow."}, 429
-
-    state["minute_count"] += 1
-    state["model_counts"][model_name] = state["model_counts"].get(model_name, 0) + 1
-
-    messages = []
-    for item in history[-8:]:
-        role = item.get("role")
-        content = item.get("content")
-        if role in ("user", "assistant") and content:
-            messages.append({"role": role, "content": content})
-    if not messages or messages[-1]["role"] != "user":
-        messages.append({"role": "user", "content": message})
-    system_prompt = PSC_SYSTEM_PROMPT
-    if admin_mode_enabled():
-        system_prompt = f"{system_prompt} {ADMIN_MODE_PROMPT}"
-    if imf_mode_enabled(message, history):
-        system_prompt = f"{system_prompt} {IMF_MODE_PROMPT}"
-    if poirot_mode_enabled(message, history):
-        system_prompt = f"{system_prompt} {POIROT_MODE_PROMPT}"
-    reply = call_gemini(messages, model_name, system_prompt=system_prompt)
+    reply = build_chat_reply(message, history)
     return {"reply": reply}
+
+
+@app.route("/ereader", methods=["GET", "POST"])
+def ereader_chat():
+    history = session.get(EREADER_CHAT_SESSION_KEY, [])
+    if not isinstance(history, list):
+        history = []
+
+    if request.method == "POST":
+        action = request.form.get("action", "send")
+        if action == "clear":
+            session[EREADER_CHAT_SESSION_KEY] = []
+            return redirect(url_for("ereader_chat"))
+
+        message = (request.form.get("message") or "").strip()
+        if message:
+            history.append({"role": "user", "content": message, "time": utc_now().isoformat() + "Z"})
+            reply = build_chat_reply(message, history)
+            history.append({"role": "assistant", "content": reply, "time": utc_now().isoformat() + "Z"})
+            session[EREADER_CHAT_SESSION_KEY] = history[-20:]
+            session.modified = True
+            return redirect(url_for("ereader_chat"))
+
+    return render_template("ereader.html", history=history)
 
 @app.route("/support")
 def support_chat():
@@ -2373,43 +2402,21 @@ def add_pen():
         "retired_reason": "",
     }
     form_data = dict(default_form_data)
-    barcode_notice = None
+    stored_prefill = session.get(ADD_PEN_PREFILL_SESSION_KEY, {})
+    if isinstance(stored_prefill, dict):
+        for key in form_data.keys():
+            if key in stored_prefill:
+                form_data[key] = stored_prefill[key]
+    barcode_notice = session.pop("add_pen_prefill_notice", None)
     error = None
 
     if request.method == "POST":
         for key in form_data.keys():
             if key in request.form:
                 form_data[key] = request.form.get(key)
-        action = request.form.get("action", "create")
-        barcode_notice = None
-
-        if action == "scan":
-            scanned_barcode, scan_error = decode_barcode_from_upload(request.files.get("barcode_image"))
-            if scan_error:
-                error = scan_error
-                return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
-            form_data["barcode"] = scanned_barcode
-            barcode, barcode_metadata = get_barcode_seed_data(scanned_barcode)
-            if barcode_metadata:
-                for key, value in barcode_metadata.items():
-                    form_data[key] = value
-                barcode_notice = f"Barcode {barcode} was scanned from the image and matched an existing PSC pen record."
-            else:
-                barcode_notice = f"Barcode {scanned_barcode} was scanned successfully. Fill the remaining pen details and save."
-            return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=None)
 
         barcode = normalize_barcode(request.form.get("barcode"))
         form_data["barcode"] = barcode
-
-        if action == "lookup":
-            barcode, barcode_metadata = get_barcode_seed_data(barcode)
-            if barcode_metadata:
-                for key, value in barcode_metadata.items():
-                    form_data[key] = value
-                barcode_notice = f"Barcode {barcode} matched an existing PSC pen record and auto-filled the form."
-            else:
-                error = f"Barcode {barcode or 'blank'} is not in the PSC database yet. You can still complete the form manually."
-            return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
 
         name = request.form.get("name")
         description = request.form.get("description")
@@ -2435,9 +2442,64 @@ def add_pen():
                    barcode=barcode or None, location=location, retired=retired, retired_reason=retired_reason, famous=famous)
         db.session.add(pen)
         db.session.commit()
+        session.pop(ADD_PEN_PREFILL_SESSION_KEY, None)
+        session.pop("add_pen_prefill_notice", None)
         return redirect(url_for("sector_page", sector="socac"))
 
     return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
+
+
+@app.route("/admin/add-pen/barcode", methods=["GET", "POST"])
+@login_required
+def add_pen_barcode():
+    if not is_sector_authed("socac"):
+        return redirect(url_for("sector_page", sector="socac"))
+
+    form_data = {"barcode": ""}
+    notice = None
+    error = None
+
+    if request.method == "POST":
+        action = request.form.get("action", "lookup")
+        barcode = normalize_barcode(request.form.get("barcode"))
+        form_data["barcode"] = barcode
+
+        if action == "scan":
+            scanned_barcode, scan_error = decode_barcode_from_upload(request.files.get("barcode_image"))
+            if scan_error:
+                error = scan_error
+                return render_template("barcode_add.html", form_data=form_data, notice=notice, error=error)
+            barcode = scanned_barcode
+            form_data["barcode"] = barcode
+
+        if not barcode:
+            error = "Enter a barcode number or upload a barcode image first."
+            return render_template("barcode_add.html", form_data=form_data, notice=notice, error=error)
+
+        barcode, barcode_metadata = get_barcode_seed_data(barcode)
+        prefill = {
+            "barcode": barcode,
+            "name": "",
+            "description": "",
+            "ink_level": 100,
+            "ink_color": "Black",
+            "class_": "C",
+            "prs": 50,
+            "location": "Vault Shelf A",
+            "retired_reason": "",
+        }
+        if barcode_metadata:
+            prefill.update(barcode_metadata)
+            notice = f"Barcode {barcode} matched an existing PSC pen record. The full add form has been prefilled."
+        else:
+            notice = f"Barcode {barcode} captured. Continue to the add form and complete the remaining pen details."
+
+        session[ADD_PEN_PREFILL_SESSION_KEY] = prefill
+        session["add_pen_prefill_notice"] = notice
+        session.modified = True
+        return redirect(url_for("add_pen"))
+
+    return render_template("barcode_add.html", form_data=form_data, notice=notice, error=error)
 @app.route("/partnerships")
 def partnerships():
     return render_template("partnerships.html")

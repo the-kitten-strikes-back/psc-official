@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Add - PSC Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .form-container {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 700px;
+            margin: 40px auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .info-box, .notice-box, .error-box {
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(51, 102, 204, 0.05));
+            border: 2px solid #0066cc;
+        }
+        .notice-box {
+            background: #ecfeff;
+            border: 1px solid #67e8f9;
+            color: #155e75;
+        }
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        .submit-btn, .secondary-btn, .cancel-btn {
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+        }
+        .secondary-btn {
+            background: white;
+            color: #1e293b;
+            border: 2px solid #cbd5e1;
+        }
+        .cancel-btn {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+        .option-info {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+                    PSC
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('sectors') }}">Sector Access</a></li>
+                    <li><a href="{{ url_for('add_pen') }}">Full Add Form</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-section">
+            <h1>Barcode Add</h1>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px; text-align: center;">Scan the barcode or enter the digits here first. Then the normal add-pen form opens with the barcode and any known PSC details prefilled.</p>
+
+            <div class="form-container">
+                {% if notice %}
+                <div class="notice-box">{{ notice }}</div>
+                {% endif %}
+                {% if error %}
+                <div class="error-box">{{ error }}</div>
+                {% endif %}
+
+                <div class="info-box">
+                    <strong>How this works:</strong>
+                    <p style="margin-top: 8px;">This page only handles barcode capture. It avoids the required pen fields from the full inventory form, so scanners and lookups can run cleanly.</p>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="barcode">Barcode Number</label>
+                        <input type="text" id="barcode" name="barcode" inputmode="numeric" value="{{ form_data.barcode }}" placeholder="Scan here or type barcode digits">
+                        <div class="option-info">Most USB barcode scanners behave like keyboards and will type directly into this field.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barcode_image">Barcode Image</label>
+                        <input type="file" id="barcode_image" name="barcode_image" accept="image/*">
+                        <div class="option-info">Upload a clear photo of the barcode if you want the server to decode it with OpenCV.</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" name="action" value="lookup" class="submit-btn">Use Barcode Number</button>
+                        <button type="submit" name="action" value="scan" class="secondary-btn">Scan Barcode Image</button>
+                        <a href="{{ url_for('add_pen') }}" class="cancel-btn">Back to Full Form</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
