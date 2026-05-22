@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retired Pens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:960px;margin:0 auto;padding:40px 20px 80px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 18px 30px rgba(15,23,42,.06)}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('famous_pens') }}">Famous Pens</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>Retired Pen List</h1>
+        {% for pen in pens %}
+        <div class="card">
+            <h2>{{ pen.name }}</h2>
+            <p>{{ pen.retired_reason or "Retired from circulation." }}</p>
+            <p style="color:#64748b;">Last location: {{ pen.location or "Archive vault" }}</p>
+        </div>
+        {% else %}
+        <p>No pens have been retired yet.</p>
+        {% endfor %}
+    </main>
+</body>
+</html>

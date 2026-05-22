@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC Regions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:1100px;margin:0 auto;padding:40px 20px 80px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:24px;text-decoration:none;color:inherit;box-shadow:0 18px 30px rgba(15,23,42,.06)}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('community') }}">Community</a></li><li><a href="{{ url_for('newsletter') }}">Newsletter</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>Regional PSC Pages</h1>
+        <div class="grid">
+            {% for region in region_cards %}
+            <a href="{{ url_for('region_detail', region_slug=region.slug) }}" class="card">
+                <h2>{{ region.label }}</h2>
+                <p>{{ region.members }} members • {{ region.messages }} messages • {{ region.newsletters }} newsletters</p>
+            </a>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

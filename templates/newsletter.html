@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC Newsletter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:1000px;margin:0 auto;padding:40px 20px 80px}.issue{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:24px;margin-bottom:18px;box-shadow:0 18px 30px rgba(15,23,42,.06)}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('community') }}">Community</a></li><li><a href="{{ url_for('regions') }}">Regions</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>PSC Newsletter Archive</h1>
+        {% for issue in issues %}
+        <article class="issue">
+            <h2>{{ issue.title }}</h2>
+            <p style="color:#64748b;">{{ issue.issue_date.strftime('%B %d, %Y') }} • {{ region_labels.get(issue.region, issue.region|title) }}</p>
+            <p><strong>{{ issue.summary }}</strong></p>
+            <p>{{ issue.body }}</p>
+        </article>
+        {% else %}
+        <p>No newsletter issues are published yet.</p>
+        {% endfor %}
+    </main>
+</body>
+</html>

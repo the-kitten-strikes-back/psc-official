@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC Community</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 20px 80px; }
+        .grid { display:grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
+        .card { background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:24px; box-shadow:0 18px 32px rgba(15,23,42,0.07); }
+        .message { padding:14px 0; border-bottom:1px solid #e2e8f0; }
+        .message:last-child { border-bottom:none; }
+        .meta { color:#64748b; font-size:13px; }
+        textarea, input, select { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:12px; margin-top:8px; }
+        button { margin-top:14px; padding:12px 18px; border:none; border-radius:10px; background:#0066cc; color:#fff; font-weight:700; cursor:pointer; }
+        .quick-links { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:16px; }
+        .quick-links a { display:block; padding:14px; border-radius:12px; background:#f8fafc; text-decoration:none; color:#0f172a; font-weight:700; border:1px solid #e2e8f0; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('home') }}">Home</a></li><li><a href="{{ url_for('newsletter') }}">Newsletter</a></li><li><a href="{{ url_for('reviews') }}">Reviews</a></li><li><a href="{{ url_for('members') if current_user.is_authenticated else url_for('login') }}">Members</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>PSC Community Hub</h1>
+        <p class="lead">General chat, region energy, newsletter access, easter eggs, mini games, and a more welcoming community front door.</p>
+        <div class="grid">
+            <section class="card">
+                <h2>General Chat</h2>
+                <form method="POST">
+                    {% if not current_user.is_authenticated %}
+                    <label>Display Name<input type="text" name="display_name" placeholder="Guest Writer"></label>
+                    {% endif %}
+                    <label>Region
+                        <select name="region">
+                            {% for slug, label in region_labels.items() %}
+                            <option value="{{ slug }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>Message<textarea name="message" rows="4" placeholder="Talk pens, swaps, meetups, reviews, or hidden easter eggs..."></textarea></label>
+                    <button type="submit">Post Message</button>
+                </form>
+                <div style="margin-top: 20px;">
+                    {% for message in messages %}
+                    <div class="message">
+                        <strong>{{ message.display_name }}</strong>
+                        <div class="meta">{{ message.region }} • {{ message.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+                        <p style="margin-top:8px;">{{ message.message }}</p>
+                    </div>
+                    {% else %}
+                    <p>No community messages yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+            <aside class="card">
+                <h2>What’s New</h2>
+                <p><strong>{{ psc_day.name }}</strong><br>{{ psc_day.date_label }} • {{ psc_day.summary }}</p>
+                <div class="quick-links">
+                    <a href="{{ url_for('merch') if current_user.is_authenticated else url_for('login') }}">Merch Drops</a>
+                    <a href="{{ url_for('regions') }}">Region Pages</a>
+                    <a href="{{ url_for('games') }}">Mini Games</a>
+                    <a href="{{ url_for('famous_pens') }}">Famous Pens</a>
+                    <a href="{{ url_for('retired_pens') }}">Retired Pens</a>
+                    <a href="{{ url_for('psc_day') }}">PSC Day</a>
+                </div>
+                <h3 style="margin-top: 24px;">Latest Newsletter Issues</h3>
+                {% for issue in latest_newsletters %}
+                <div class="message">
+                    <strong>{{ issue.title }}</strong>
+                    <div class="meta">{{ issue.issue_date.strftime('%B %d, %Y') }}</div>
+                    <p style="margin-top:8px;">{{ issue.summary }}</p>
+                </div>
+                {% endfor %}
+                <div style="margin-top: 24px; padding: 16px; border-radius: 14px; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.08));">
+                    <strong>Community Note</strong>
+                    <p style="margin-top: 8px;">PSC is aiming for a broader, more inclusive member mix. The site now puts community, regions, and visible member profiles front and center instead of feeling like a closed club.</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+</body>
+</html>

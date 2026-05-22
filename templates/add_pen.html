@@ -160,6 +160,44 @@
             color: #64748b;
             margin-top: 2px;
         }
+        .barcode-strip {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.04), rgba(37, 99, 235, 0.08));
+            border: 2px dashed #93c5fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 26px;
+        }
+        .barcode-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        .ghost-btn {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #1e293b;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .notice-box, .error-box {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+        .notice-box {
+            background: #ecfeff;
+            border: 1px solid #67e8f9;
+            color: #155e75;
+        }
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
     </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
 </head>
@@ -186,6 +224,13 @@
             <p style="color: #64748b; font-size: 16px; margin-bottom: 30px; text-align: center;">Add a new pen to the PSC inventory. Fill in all required fields marked with *</p>
 
             <div class="form-container">
+                {% if barcode_notice %}
+                <div class="notice-box">{{ barcode_notice }}</div>
+                {% endif %}
+                {% if error %}
+                <div class="error-box">{{ error }}</div>
+                {% endif %}
+
                 <div class="info-box">
                     <h4>📋 Pen Classification</h4>
                     <p><strong>Class A:</strong> Premium quality pens (Pilot, Sarasa, Parker)<br>
@@ -195,18 +240,38 @@
                 </div>
 
                 <form method="POST" enctype="multipart/form-data">
+                    <div class="barcode-strip">
+                        <h3 style="margin-bottom: 8px;">Barcode Add</h3>
+                        <p style="color: #64748b; margin-bottom: 0;">Upload a clear barcode photo for real server-side scanning with OpenCV, or type the barcode digits manually. Manual lookup only fills from existing PSC records with the same barcode.</p>
+                        <div class="form-group" style="margin-top: 18px;">
+                            <label for="barcode">Barcode Number</label>
+                            <input type="text" id="barcode" name="barcode" inputmode="numeric" value="{{ form_data.barcode }}" placeholder="Scan here or enter digits">
+                            <div class="option-info">Most USB scanners type directly into this field like a keyboard.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="barcode_image">Barcode Image</label>
+                            <input type="file" id="barcode_image" name="barcode_image" accept="image/*">
+                            <div class="option-info">Upload a focused image of the barcode at the back of the pen package for OpenCV barcode decoding.</div>
+                        </div>
+                        <div class="barcode-actions">
+                            <button type="submit" name="action" value="scan" class="ghost-btn">Scan Barcode Image</button>
+                            <button type="submit" name="action" value="lookup" class="ghost-btn">Load Barcode Data</button>
+                            <button type="button" id="clear-barcode" class="ghost-btn">Clear Barcode</button>
+                        </div>
+                    </div>
+
                     <!-- Basic Information -->
                     <div class="form-section">
                         <h3>Basic Information</h3>
 
                         <div class="form-group">
                             <label for="name">Pen Name <span class="required">*</span></label>
-                            <input type="text" id="name" name="name" required placeholder="e.g., Pilot G2 Pro" autofocus>
+                            <input type="text" id="name" name="name" required placeholder="e.g., Pilot G2 Pro" value="{{ form_data.name }}">
                         </div>
 
                         <div class="form-group">
                             <label for="description">Description</label>
-                            <textarea id="description" name="description" placeholder="Describe the pen - brand, model, special features, writing experience..."></textarea>
+                            <textarea id="description" name="description" placeholder="Describe the pen - brand, model, special features, writing experience...">{{ form_data.description }}</textarea>
                         </div>
                     </div>
 
@@ -218,16 +283,16 @@
                             <div class="form-group">
                                 <label for="class_">Class <span class="required">*</span></label>
                                 <select id="class_" name="class_" required>
-                                    <option value="A">A - Premium Quality</option>
-                                    <option value="B">B - Premium Economy</option>
-                                    <option value="C" selected>C - Economy</option>
-                                    <option value="D">D - Budget/Basic</option>
+                                    <option value="A" {% if form_data.class_ == 'A' %}selected{% endif %}>A - Premium Quality</option>
+                                    <option value="B" {% if form_data.class_ == 'B' %}selected{% endif %}>B - Premium Economy</option>
+                                    <option value="C" {% if form_data.class_ == 'C' %}selected{% endif %}>C - Economy</option>
+                                    <option value="D" {% if form_data.class_ == 'D' %}selected{% endif %}>D - Budget/Basic</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="ink_color">Ink Color</label>
-                                <input type="text" id="ink_color" name="ink_color" value="Black" placeholder="e.g., Black, Blue, Red">
+                                <input type="text" id="ink_color" name="ink_color" value="{{ form_data.ink_color }}" placeholder="e.g., Black, Blue, Red">
                             </div>
                         </div>
 
@@ -235,7 +300,7 @@
                             <div class="form-group">
                                 <label for="ink_level">Ink Level <span class="required">*</span></label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="number" id="ink_level" name="ink_level" min="0" max="100" value="100" required style="flex: 1;">
+                                    <input type="number" id="ink_level" name="ink_level" min="0" max="100" value="{{ form_data.ink_level }}" required style="flex: 1;">
                                     <span style="color: #64748b; font-weight: 600;">%</span>
                                 </div>
                             </div>
@@ -243,10 +308,15 @@
                             <div class="form-group">
                                 <label for="prs">Pen Rating Score (PRS) <span class="required">*</span></label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="number" id="prs" name="prs" min="0" max="100" step="1" value="50" required style="flex: 1;">
-                                    <span style="color: #64748b; font-weight: 600;">/5</span>
+                                    <input type="number" id="prs" name="prs" min="0" max="100" step="1" value="{{ form_data.prs }}" required style="flex: 1;">
+                                    <span style="color: #64748b; font-weight: 600;">/100</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ form_data.location }}" placeholder="Vault shelf or storage region">
                         </div>
                     </div>
 
@@ -266,7 +336,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn">✓ Add Pen to Inventory</button>
+                        <button type="submit" name="action" value="create" class="submit-btn">✓ Add Pen to Inventory</button>
                         <a href="{{ url_for('sectors') }}" class="cancel-btn">← Cancel</a>
                     </div>
                 </form>
@@ -289,5 +359,22 @@
     </footer>
   <div id="psc-chatbot-root"></div>
   <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const barcodeInput = document.getElementById("barcode");
+      const clearButton = document.getElementById("clear-barcode");
+
+      if (barcodeInput && !barcodeInput.value) {
+        barcodeInput.focus();
+      }
+
+      if (clearButton && barcodeInput) {
+        clearButton.addEventListener("click", () => {
+          barcodeInput.value = "";
+          barcodeInput.focus();
+        });
+      }
+    });
+  </script>
 </body>
 </html>

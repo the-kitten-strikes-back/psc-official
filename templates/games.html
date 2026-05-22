@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC Mini Games</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:900px;margin:0 auto;padding:40px 20px 80px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:24px;box-shadow:0 18px 30px rgba(15,23,42,.06)}button{margin-top:12px;padding:12px 18px;border:none;border-radius:10px;background:#0066cc;color:#fff;font-weight:700;cursor:pointer}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('community') }}">Community</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <div class="card">
+            <h1>Little Pen Mini Games</h1>
+            <p>Guess which pen has the highest PRS, then reveal the leaderboard.</p>
+            <ul>
+                {% for pen in pens %}
+                <li>{{ pen.name }} — Class {{ pen.class_ }}</li>
+                {% endfor %}
+            </ul>
+            <button id="reveal">Reveal Top Pen</button>
+            <p id="answer" style="margin-top:14px;"></p>
+        </div>
+    </main>
+    <script>
+        document.getElementById('reveal').addEventListener('click', function () {
+            const answer = document.getElementById('answer');
+            answer.textContent = 'Top current pen: {{ pens[0].name if pens else "No pens yet" }}.';
+        });
+    </script>
+</body>
+</html>

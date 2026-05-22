@@ -182,6 +182,17 @@
                             <label for="description">Description</label>
                             <textarea id="description" name="description" placeholder="Describe your pen - brand, model, special features, condition..."></textarea>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="location">Pen Location</label>
+                                <input type="text" id="location" name="location" placeholder="Vault shelf, classroom, meetup box..." value="Vault Shelf A">
+                            </div>
+                            <div class="form-group">
+                                <label for="member_title">Member Title</label>
+                                <input type="text" id="member_title" name="member_title" placeholder="Archivist, Ink Scout, Regional Lead...">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-section">
@@ -220,9 +231,18 @@
                                 <label for="prs">Pen Rating Score (PRS)</label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <input type="number" id="prs" name="prs" min="0" max="100" step="1" value="50" style="flex: 1;">
-                                    <span style="color: #64748b; font-weight: 600;">/5</span>
+                                    <span style="color: #64748b; font-weight: 600;">/100</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="region">Your Region</label>
+                            <select id="region" name="region">
+                                {% for slug, label in region_labels.items() %}
+                                <option value="{{ label }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
 

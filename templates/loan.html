@@ -243,6 +243,7 @@
                     <li><a href="{{ url_for('about') }}">About</a></li>
                     <li><a href="{{ url_for('loan') }}" class="active">Loan</a></li>
                     <li><a href="{{ url_for('donate') }}">Donate</a></li>
+                    <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
                     <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 </ul>
@@ -255,6 +256,10 @@
             <h1>Find & Loan a Pen 📖</h1>
             <p style="color: #64748b; font-size: 16px; margin-bottom: 30px;">Explore our collection of available pens and loan one for your needs.</p>
             <p style="color: #64748b; font-size: 14px; margin-top: -18px; margin-bottom: 30px;">Loan period: 7 days from the date you borrow.</p>
+            <div class="filters-panel" style="margin-top: 0;">
+                <strong style="display:block; color:#1e293b;">Your current rank: {{ rank.name }}</strong>
+                <span style="color:#64748b; font-size: 14px;">Class access: {{ rank.class_access|join(", ") }}. {{ rank.merch_note }}.</span>
+            </div>
 
             {% if error %}
                 <div class="error-message">{{ error }}</div>
@@ -334,6 +339,10 @@
                                 <span style="text-transform: capitalize;">{{ pen.ink_color.replace('#', '').lower() }}</span>
                             </div>
                             <div class="meta-item">
+                                <strong>Location</strong>
+                                {{ pen.location or "Vault Shelf A" }}
+                            </div>
+                            <div class="meta-item">
                                 <strong>Quality</strong>
                                 {% if pen.prs >= 80 %}★★★★★ {% elif pen.prs >= 60 %}★★★★☆ {% elif pen.prs >= 40 %}★★★☆☆ {% elif pen.prs >= 20 %}★★☆☆☆ {% else %}★☆☆☆☆ {% endif %}
                             </div>
@@ -343,13 +352,15 @@
 
                         <div class="prs-rating">
                             <div class="prs-label">Pen Rating Score</div>
-                            <strong>{{ "%.1f" | format(pen.prs) }}/5</strong>
+                            <strong>{{ pen.prs }}/100</strong>
                         </div>
 
                         <form method="POST" style="margin-top: auto;">
                             <input type="hidden" name="pen_id" value="{{ pen.id }}">
+                            <input type="text" name="meeting_point" placeholder="Optional meeting point" style="width:100%; margin-bottom:10px; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
                             <button type="submit" class="loan-btn">Loan This Pen</button>
                         </form>
+                        <a href="{{ url_for('edit_pen_community', pen_id=pen.id) }}" style="margin-top: 12px; text-align:center; color:#0066cc; font-weight:600; text-decoration:none;">Suggest or edit pen details</a>
                     </div>
                 </div>
                 {% endfor %}

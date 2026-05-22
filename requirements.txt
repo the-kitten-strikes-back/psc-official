@@ -7,3 +7,4 @@ psycopg2-binary
 textblob
 google-genai
 whitenoise
+opencv-contrib-python-headless

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC Pen Reviews</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:1000px;margin:0 auto;padding:40px 20px 80px}.review{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 18px 30px rgba(15,23,42,.06)}.meta{color:#64748b;font-size:14px}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('loan') }}">Loan</a></li><li><a href="{{ url_for('community') }}">Community</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>Pen Review Wall</h1>
+        {% for review in reviews %}
+        <article class="review">
+            <h2 style="font-size:1.1rem;">{{ review.pen.name }}</h2>
+            <p class="meta">{{ review.user.username }} • {{ review.rating }}/5 • {{ review.created_at.strftime('%B %d, %Y') }}</p>
+            <p>{{ review.body }}</p>
+        </article>
+        {% else %}
+        <p>No reviews yet.</p>
+        {% endfor %}
+    </main>
+</body>
+</html>

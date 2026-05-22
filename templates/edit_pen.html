@@ -237,6 +237,11 @@
                             </div>
                         </div>
 
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ pen.location or 'Vault Shelf A' }}">
+                        </div>
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="ink_level">Ink Level</label>
@@ -253,6 +258,20 @@
                                     <span style="color: #64748b; font-weight: 600;">/5</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="form-row" style="margin-top: 20px;">
+                            <div class="form-group">
+                                <label><input type="checkbox" name="retired" {% if pen.retired %}checked{% endif %}> Retired pen</label>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" name="famous" {% if pen.famous %}checked{% endif %}> Famous pen</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="retired_reason">Retired Reason</label>
+                            <textarea id="retired_reason" name="retired_reason">{{ pen.retired_reason or '' }}</textarea>
                         </div>
                     </div>
 

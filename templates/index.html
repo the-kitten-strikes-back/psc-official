@@ -190,6 +190,7 @@
           <ul class="nav-links">
             <li><a href="{{ url_for('about') }}">About</a></li>
             <li><a href="{{ url_for('loan') }}">Browse Pens</a></li>
+            <li><a href="{{ url_for('community') }}">Community</a></li>
             <li><a href="{{ url_for('donate') }}">Donate</a></li>
             <li><a href="{{ url_for('login') }}">Login</a></li>
           </ul>
@@ -277,6 +278,45 @@
           <div class="value">{{ home_stats.standard_loan_days }} Days</div>
           <div class="label">Standard loan term</div>
         </div>
+        <div class="stat-card fade-in-up">
+          <div class="icon"><i class="fas fa-users"></i></div>
+          <div class="value">{{ "{:,}".format(home_stats.members) }}</div>
+          <div class="label">Members in the archive</div>
+        </div>
+        <div class="stat-card fade-in-up">
+          <div class="icon"><i class="fas fa-box-archive"></i></div>
+          <div class="value">{{ "{:,}".format(home_stats.retired_pens) }}</div>
+          <div class="label">Retired pens preserved</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-container">
+      <h2>Major PSC Update</h2>
+      <p class="lead">Location-aware pens, member ranks, merch preorders, review walls, newsletters, region pages, loan chat threads, and more easter eggs are now part of the PSC universe.</p>
+      <div class="feature-grid">
+        <div class="feature-card fade-in-up">
+          <span class="feature-pill">Community</span>
+          <h3>Chat, Meetups, and Reviews</h3>
+          <p>Loaner-borrower threads, meeting points, a general chat feed, and a full review page make the archive feel alive.</p>
+        </div>
+        <div class="feature-card fade-in-up">
+          <span class="feature-pill">Progression</span>
+          <h3>Ranks and Member Stats</h3>
+          <p>Members now have visible stats, ranks, history, and directory pages tied to borrowing power and merch drops.</p>
+        </div>
+        <div class="feature-card fade-in-up">
+          <span class="feature-pill">Culture</span>
+          <h3>Regions, PSC Day, and Inclusion</h3>
+          <p>Regional pages, newsletter issues, and a clearer welcome for a broader mix of members make PSC less closed-off and more fun.</p>
+        </div>
+        <div class="feature-card fade-in-up">
+          <span class="feature-pill">Lore</span>
+          <h3>Retired and Famous Pens</h3>
+          <p>Legendary pens now have a place in the canon, alongside retired entries and archive history for past loans and donations.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -322,6 +362,7 @@
       <div class="cta-actions">
         <a href="/register" class="btn-primary"><i class="fas fa-rocket"></i> Get Started</a>
         <a href="/about" class="btn-outline">Learn More</a>
+        <a href="{{ url_for('community') }}" class="btn-outline">See the Update</a>
       </div>
     </div>
   </section>

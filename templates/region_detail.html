@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ region_label }} | PSC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:1000px;margin:0 auto;padding:40px 20px 80px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:24px;margin-bottom:18px;box-shadow:0 18px 30px rgba(15,23,42,.06)}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('regions') }}">All Regions</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>{{ region_label }}</h1>
+        <section class="card">
+            <h2>Members</h2>
+            {% for member in region_members %}
+            <p>{{ member.username }} • {{ member.member_title or member.subscription_status }}</p>
+            {% else %}
+            <p>No members have claimed this region yet.</p>
+            {% endfor %}
+        </section>
+        <section class="card">
+            <h2>Community Feed</h2>
+            {% for message in region_messages %}
+            <p><strong>{{ message.display_name }}:</strong> {{ message.message }}</p>
+            {% else %}
+            <p>No regional chat yet.</p>
+            {% endfor %}
+        </section>
+        <section class="card">
+            <h2>Regional Newsletter</h2>
+            {% for issue in region_news %}
+            <p><strong>{{ issue.title }}</strong> — {{ issue.summary }}</p>
+            {% else %}
+            <p>No region-specific newsletters yet.</p>
+            {% endfor %}
+        </section>
+    </main>
+</body>
+</html>

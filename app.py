@@ -20,6 +20,8 @@ from flask_socketio import SocketIO, emit, join_room
 from google import genai
 from google.genai import types
 from whitenoise import WhiteNoise
+import cv2
+import numpy as np
 
 app = Flask(__name__)
 app.wsgi_app = WhiteNoise(app.wsgi_app, root=os.path.join(os.path.dirname(__file__), 'static'))
@@ -116,6 +118,26 @@ HJCHAT_PASSWORD = os.environ.get("HJCHAT_PASSWORD", "psc-chat-2026")
 LOAN_DURATION_DAYS = int(os.environ.get("LOAN_DURATION_DAYS", "7"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
+MEMBER_RANKS = [
+    {"name": "Recruit", "threshold": 0, "class_access": ["D"], "merch_note": "Sticker drops only"},
+    {"name": "Runner", "threshold": 4, "class_access": ["C", "D"], "merch_note": "Pins and patches unlocked"},
+    {"name": "Archivist", "threshold": 9, "class_access": ["B", "C", "D"], "merch_note": "Early merch preorders"},
+    {"name": "Curator", "threshold": 15, "class_access": ["A", "B", "C", "D"], "merch_note": "Premium merch access"},
+    {"name": "Legend", "threshold": 24, "class_access": ["A", "B", "C", "D"], "merch_note": "Founders vault access"},
+]
+REGION_LABELS = {
+    "global": "Global",
+    "north": "North PSC",
+    "south": "South PSC",
+    "east": "East PSC",
+    "west": "West PSC",
+    "central": "Central PSC",
+}
+PSC_DAY_INFO = {
+    "name": "PSC Day",
+    "date_label": "First Saturday of November",
+    "summary": "A yearly vault-open celebration for trades, rankings, reviews, games, and community awards.",
+}
 PSC_SYSTEM_PROMPT = (
     "You are PSC Assistant, the official chatbot for the Pen Storage Company (PSC). "
     "PSC helps members loan premium pens, donate pens, and manage their writing life through a secure catalog. "
@@ -611,6 +633,170 @@ def clear_sector_auth() -> None:
     for key in SECTOR_PASSWORD_HASHES.keys():
         session.pop(sector_session_key(key), None)
 
+
+def subscription_points(status: str) -> int:
+    return {
+        "Basic": 0,
+        "Gold": 2,
+        "Diamond": 5,
+        "Platinum": 7,
+        "Montblanc": 10,
+    }.get(status or "Basic", 0)
+
+
+def compute_member_rank(user) -> dict:
+    score = (
+        int(user.pens_donated or 0) * 2
+        + int(user.pens_loaned or 0)
+        + subscription_points(user.subscription_status)
+        + (3 if user.is_admin else 0)
+    )
+    current_rank = MEMBER_RANKS[0]
+    for rank in MEMBER_RANKS:
+        if score >= rank["threshold"]:
+            current_rank = rank
+    next_rank = None
+    for rank in MEMBER_RANKS:
+        if rank["threshold"] > current_rank["threshold"]:
+            next_rank = rank
+            break
+    return {
+        "score": score,
+        "name": current_rank["name"],
+        "class_access": current_rank["class_access"],
+        "merch_note": current_rank["merch_note"],
+        "next_rank": next_rank["name"] if next_rank else None,
+        "points_to_next": max((next_rank["threshold"] - score), 0) if next_rank else 0,
+    }
+
+
+def get_region_slug(region_value: str) -> str:
+    normalized = (region_value or "global").strip().lower()
+    return normalized if normalized in REGION_LABELS else "global"
+
+
+def get_pen_latest_donor(pen):
+    if not getattr(pen, "donations", None):
+        return None
+    ordered = sorted(pen.donations, key=lambda donation: donation.donation_date or utc_now(), reverse=True)
+    return ordered[0].donor if ordered else None
+
+
+def pen_is_famous(pen) -> bool:
+    return bool(getattr(pen, "famous", False) or (pen.prs or 0) >= 88 or getattr(pen, "archive_entries", []))
+
+
+def normalize_barcode(raw_barcode: str) -> str:
+    return "".join(ch for ch in (raw_barcode or "").strip() if ch.isdigit())
+
+
+def get_barcode_seed_data(barcode: str):
+    normalized = normalize_barcode(barcode)
+    if not normalized:
+        return normalized, None
+    existing_pen = Pens.query.filter_by(barcode=normalized).order_by(Pens.id.desc()).first()
+    if not existing_pen:
+        return normalized, None
+    return normalized, {
+        "name": existing_pen.name,
+        "description": existing_pen.description or "",
+        "ink_color": existing_pen.ink_color or "Black",
+        "ink_level": existing_pen.ink_level or 100,
+        "class_": existing_pen.class_ or "C",
+        "prs": existing_pen.prs or 50,
+        "location": existing_pen.location or "Vault Shelf A",
+    }
+
+
+def decode_barcode_from_upload(file_storage):
+    if not file_storage or not file_storage.filename:
+        return None, "No barcode image uploaded."
+    try:
+        image_bytes = file_storage.read()
+        file_storage.stream.seek(0)
+        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        if image is None:
+            return None, "The uploaded barcode image could not be read."
+
+        detector = None
+        if hasattr(cv2, "barcode_BarcodeDetector"):
+            detector = cv2.barcode_BarcodeDetector()
+        elif hasattr(cv2, "barcode") and hasattr(cv2.barcode, "BarcodeDetector"):
+            detector = cv2.barcode.BarcodeDetector()
+
+        if detector is None:
+            return None, "This OpenCV build does not include BarcodeDetector."
+
+        decoded_candidates = []
+        if hasattr(detector, "detectAndDecodeWithType"):
+            ok, decoded_info, decoded_type, points = detector.detectAndDecodeWithType(image)
+            if ok and decoded_info:
+                decoded_candidates = decoded_info
+        elif hasattr(detector, "detectAndDecode"):
+            decoded_info, points, straight_code = detector.detectAndDecode(image)
+            if isinstance(decoded_info, str) and decoded_info.strip():
+                decoded_candidates = [decoded_info]
+
+        normalized_candidates = [normalize_barcode(item) for item in decoded_candidates if normalize_barcode(item)]
+        if not normalized_candidates:
+            return None, "No barcode detected in the uploaded image."
+        return normalized_candidates[0], None
+    except Exception as exc:
+        return None, f"Barcode scan failed: {exc}"
+
+
+def seed_showcase_content() -> None:
+    if NewsletterIssue.query.count() == 0:
+        db.session.add_all(
+            [
+                NewsletterIssue(
+                    title="PSC Vault Report",
+                    summary="Monthly highlights from the pen vault, new arrivals, and community shout-outs.",
+                    body="This issue covers new premium arrivals, strongest donor streaks, and the best reviewed pens of the month.",
+                    region="global",
+                    issue_date=datetime.date.today(),
+                ),
+                NewsletterIssue(
+                    title="PSC Regional Dispatch",
+                    summary="Regional stories, meetups, and PSC Day prep from across the archive.",
+                    body="North, South, East, West, and Central PSC squads are preparing swap tables, review walls, and member spotlights.",
+                    region="north",
+                    issue_date=datetime.date.today() - datetime.timedelta(days=30),
+                ),
+            ]
+        )
+    if MerchItem.query.count() == 0:
+        db.session.add_all(
+            [
+                MerchItem(
+                    name="PSC Recruit Sticker Pack",
+                    description="Starter sticker set for new archive members.",
+                    required_rank="Recruit",
+                    required_donations=0,
+                    preorder_open=True,
+                    price_label="$6",
+                ),
+                MerchItem(
+                    name="Archivist Field Tee",
+                    description="Soft cotton regional tee with PSC archive seal.",
+                    required_rank="Archivist",
+                    required_donations=2,
+                    preorder_open=True,
+                    price_label="$28",
+                ),
+                MerchItem(
+                    name="Curator Vault Jacket",
+                    description="Limited pre-order jacket for heavy contributors and trusted curators.",
+                    required_rank="Curator",
+                    required_donations=5,
+                    preorder_open=True,
+                    price_label="$72",
+                ),
+            ]
+        )
+    db.session.commit()
+
 def require_sector(sector: str):
     def decorator(fn):
         @wraps(fn)
@@ -642,6 +828,10 @@ class Users(UserMixin, db.Model):
     subscription_status = db.Column(db.String(50), default="Basic") #Basic, Gold, Diamond, Platinum, Montblanc. Higher subscription status means better pen loaning limits and better pen class loans.
     is_admin = db.Column(db.Boolean, default=False)
     dob = db.Column(db.Date)
+    region = db.Column(db.String(100), default="Global")
+    member_title = db.Column(db.String(100), default="")
+    bio = db.Column(db.String(500), default="")
+    pronouns = db.Column(db.String(100), default="")
 
 
 #pens database
@@ -655,6 +845,11 @@ class Pens(db.Model):
     #A=premium(pilot, sarasa, parker, etc), B=premium economy(hauser XO, octane, etc), C=economy(flair, rorito, unknown ballpoint pens/decent pens with low ink), D(cheap pens, bad ink, reynolds trimax, etc)
     prs = db.Column(db.Integer, default=50) #pen rating score, out of 100. Based on CLIP model scoring.
     picture = db.Column(db.String(250), nullable=True) #filename of the pen picture
+    barcode = db.Column(db.String(64), nullable=True)
+    location = db.Column(db.String(120), default="Vault Shelf A")
+    retired = db.Column(db.Boolean, default=False)
+    retired_reason = db.Column(db.String(300), default="")
+    famous = db.Column(db.Boolean, default=False)
     donations = db.relationship('PenDonations', backref='pen', cascade="all, delete-orphan")
     loans = db.relationship('PenLoans', backref='pen', cascade="all, delete-orphan")
 
@@ -666,6 +861,7 @@ class PenLoans(db.Model):
     loan_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     return_date = db.Column(db.DateTime, nullable=True)#better membership status means longer loan periods, and better pen class loans.
     review = db.Column(db.String(500), nullable=True)#use textblob sentiment analysis to generate a score out of 100, which will be added to the pen's PRS.
+    meeting_point = db.Column(db.String(200), default="")
     borrower = db.relationship('Users', backref='borrowed_loans', foreign_keys=[borrower_id])
     lender = db.relationship('Users', backref='lent_loans', foreign_keys=[lender_id])
 
@@ -813,10 +1009,88 @@ class EmployeeAward(db.Model):
     employee_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     employee = db.relationship('Users')
+
+
+class LoanChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    loan_id = db.Column(db.Integer, db.ForeignKey("pen_loans.id"), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    message = db.Column(db.String(600), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    loan = db.relationship('PenLoans', backref='chat_messages')
+    sender = db.relationship('Users')
+
+
+class CommunityMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    display_name = db.Column(db.String(120), nullable=False)
+    region = db.Column(db.String(100), default="Global")
+    message = db.Column(db.String(400), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user = db.relationship('Users')
+
+
+class NewsletterIssue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    summary = db.Column(db.String(400), default="")
+    body = db.Column(db.String(2000), default="")
+    issue_date = db.Column(db.Date, default=datetime.date.today)
+    region = db.Column(db.String(100), default="global")
+    published = db.Column(db.Boolean, default=True)
+
+
+class PenReview(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    loan_id = db.Column(db.Integer, db.ForeignKey("pen_loans.id"), nullable=True)
+    rating = db.Column(db.Integer, default=5)
+    title = db.Column(db.String(160), default="")
+    body = db.Column(db.String(1000), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    pen = db.relationship('Pens', backref='community_reviews')
+    user = db.relationship('Users')
+    loan = db.relationship('PenLoans')
+
+
+class MerchItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(500), default="")
+    required_rank = db.Column(db.String(50), default="Recruit")
+    required_donations = db.Column(db.Integer, default=0)
+    preorder_open = db.Column(db.Boolean, default=True)
+    price_label = db.Column(db.String(50), default="$0")
 #create tables if they don't exist
+
+
+def ensure_schema_updates() -> None:
+    statements = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS region VARCHAR(100) DEFAULT 'Global'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS member_title VARCHAR(100) DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(500) DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS pronouns VARCHAR(100) DEFAULT ''",
+        "ALTER TABLE pens ADD COLUMN IF NOT EXISTS location VARCHAR(120) DEFAULT 'Vault Shelf A'",
+        "ALTER TABLE pens ADD COLUMN IF NOT EXISTS barcode VARCHAR(64)",
+        "ALTER TABLE pens ADD COLUMN IF NOT EXISTS retired BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE pens ADD COLUMN IF NOT EXISTS retired_reason VARCHAR(300) DEFAULT ''",
+        "ALTER TABLE pens ADD COLUMN IF NOT EXISTS famous BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE pen_loans ADD COLUMN IF NOT EXISTS meeting_point VARCHAR(200) DEFAULT ''",
+    ]
+    for statement in statements:
+        try:
+            db.session.execute(text(statement))
+        except Exception:
+            db.session.rollback()
+    db.session.commit()
 
 with app.app_context():
         db.create_all()
+        ensure_schema_updates()
+        db.create_all()
+        seed_showcase_content()
 
 
 @login_manager.user_loader
@@ -889,7 +1163,11 @@ def home():
             "loans_completed": loans_completed,
             "community_reviews": community_reviews,
             "standard_loan_days": LOAN_DURATION_DAYS,
+            "members": Users.query.count(),
+            "retired_pens": Pens.query.filter_by(retired=True).count(),
         },
+        featured_newsletters=NewsletterIssue.query.filter_by(published=True).order_by(NewsletterIssue.issue_date.desc()).limit(2).all(),
+        psc_day=PSC_DAY_INFO,
     )
 
 @app.route('/sitemap.xml')
@@ -1216,6 +1494,11 @@ def dashboard():
     employee_of_month = award.employee if award and award.employee else None
     first_user = Users.query.order_by(Users.id.asc()).first()
     can_set_employee = first_user and current_user.id == first_user.id
+    related_loans = (
+        PenLoans.query.filter(or_(PenLoans.borrower_id == current_user.id, PenLoans.lender_id == current_user.id))
+        .order_by(PenLoans.loan_date.desc())
+        .all()
+    )
     return render_template(
         "dashboard.html",
         loans=user_loans,
@@ -1224,6 +1507,12 @@ def dashboard():
         employee_of_month=employee_of_month,
         can_set_employee=can_set_employee,
         users=all_users,
+        rank=compute_member_rank(current_user),
+        recent_messages=CommunityMessage.query.order_by(CommunityMessage.created_at.desc()).limit(5).all(),
+        featured_newsletter=NewsletterIssue.query.filter_by(published=True).order_by(NewsletterIssue.issue_date.desc()).first(),
+        merch_items=MerchItem.query.order_by(MerchItem.required_donations.asc(), MerchItem.id.asc()).limit(3).all(),
+        related_loans=related_loans,
+        psc_day=PSC_DAY_INFO,
     )
 
 @app.route("/employee-of-month", methods=["POST"])
@@ -1242,6 +1531,229 @@ def set_employee_of_month():
     award.updated_at = datetime.datetime.utcnow()
     db.session.commit()
     return redirect(url_for("dashboard"))
+
+
+@app.route("/community", methods=["GET", "POST"])
+def community():
+    if request.method == "POST":
+        display_name = current_user.username if current_user.is_authenticated else (request.form.get("display_name") or "Guest Writer").strip()
+        message = (request.form.get("message") or "").strip()
+        region = get_region_slug(request.form.get("region"))
+        if message:
+            db.session.add(
+                CommunityMessage(
+                    user_id=current_user.id if current_user.is_authenticated else None,
+                    display_name=display_name[:120],
+                    region=REGION_LABELS.get(region, "Global"),
+                    message=message[:400],
+                )
+            )
+            db.session.commit()
+        return redirect(url_for("community"))
+
+    return render_template(
+        "community.html",
+        messages=CommunityMessage.query.order_by(CommunityMessage.created_at.desc()).limit(60).all(),
+        region_labels=REGION_LABELS,
+        latest_newsletters=NewsletterIssue.query.filter_by(published=True).order_by(NewsletterIssue.issue_date.desc()).limit(3).all(),
+        psc_day=PSC_DAY_INFO,
+    )
+
+
+@app.route("/newsletter")
+def newsletter():
+    issues = NewsletterIssue.query.filter_by(published=True).order_by(NewsletterIssue.issue_date.desc()).all()
+    return render_template("newsletter.html", issues=issues, region_labels=REGION_LABELS)
+
+
+@app.route("/members")
+@login_required
+def members():
+    user_cards = []
+    for user in Users.query.order_by(Users.pens_donated.desc(), Users.username.asc()).all():
+        user_cards.append({"user": user, "rank": compute_member_rank(user)})
+    return render_template("members.html", user_cards=user_cards)
+
+
+@app.route("/members/<int:user_id>")
+@login_required
+def member_profile(user_id):
+    user = Users.query.get(user_id)
+    if not user:
+        return redirect(url_for("members"))
+    recent_loans = (
+        PenLoans.query.filter(or_(PenLoans.borrower_id == user.id, PenLoans.lender_id == user.id))
+        .order_by(PenLoans.loan_date.desc())
+        .limit(10)
+        .all()
+    )
+    recent_donations = (
+        PenDonations.query.filter_by(donor_id=user.id)
+        .order_by(PenDonations.donation_date.desc())
+        .limit(10)
+        .all()
+    )
+    return render_template(
+        "member_profile.html",
+        member=user,
+        rank=compute_member_rank(user),
+        recent_loans=recent_loans,
+        recent_donations=recent_donations,
+    )
+
+
+@app.route("/merch")
+@login_required
+def merch():
+    rank = compute_member_rank(current_user)
+    rank_names = [item["name"] for item in MEMBER_RANKS]
+    user_rank_index = rank_names.index(rank["name"])
+    merch_rows = []
+    for item in MerchItem.query.order_by(MerchItem.required_donations.asc(), MerchItem.id.asc()).all():
+        required_index = rank_names.index(item.required_rank) if item.required_rank in rank_names else 0
+        eligible = user_rank_index >= required_index and current_user.pens_donated >= item.required_donations
+        merch_rows.append({"item": item, "eligible": eligible})
+    return render_template("merch.html", merch_rows=merch_rows, rank=rank)
+
+
+@app.route("/reviews")
+def reviews():
+    review_rows = []
+    reviews_query = PenReview.query.order_by(PenReview.created_at.desc()).all()
+    for review in reviews_query:
+        review_rows.append(review)
+    return render_template("pen_reviews.html", reviews=review_rows)
+
+
+@app.route("/regions")
+def regions():
+    region_cards = []
+    for slug, label in REGION_LABELS.items():
+        region_cards.append(
+            {
+                "slug": slug,
+                "label": label,
+                "members": Users.query.filter(Users.region.ilike(label)).count(),
+                "messages": CommunityMessage.query.filter(CommunityMessage.region.ilike(label)).count(),
+                "newsletters": NewsletterIssue.query.filter_by(region=slug).count(),
+            }
+        )
+    return render_template("regions.html", region_cards=region_cards)
+
+
+@app.route("/regions/<region_slug>")
+def region_detail(region_slug):
+    slug = get_region_slug(region_slug)
+    label = REGION_LABELS[slug]
+    region_members = Users.query.filter(Users.region.ilike(label)).order_by(Users.pens_donated.desc()).all()
+    region_messages = CommunityMessage.query.filter(CommunityMessage.region.ilike(label)).order_by(CommunityMessage.created_at.desc()).limit(25).all()
+    region_news = NewsletterIssue.query.filter_by(region=slug).order_by(NewsletterIssue.issue_date.desc()).all()
+    return render_template(
+        "region_detail.html",
+        region_label=label,
+        region_members=region_members,
+        region_messages=region_messages,
+        region_news=region_news,
+    )
+
+
+@app.route("/psc-day")
+def psc_day():
+    return render_template(
+        "psc_day.html",
+        psc_day=PSC_DAY_INFO,
+        top_members=Users.query.order_by(Users.pens_donated.desc(), Users.username.asc()).limit(5).all(),
+    )
+
+
+@app.route("/retired-pens")
+def retired_pens():
+    pens = Pens.query.filter_by(retired=True).order_by(Pens.name.asc()).all()
+    return render_template("retired_pens.html", pens=pens)
+
+
+@app.route("/history")
+@login_required
+def history():
+    past_loans = (
+        PenLoans.query.filter(or_(PenLoans.borrower_id == current_user.id, PenLoans.lender_id == current_user.id))
+        .order_by(PenLoans.loan_date.desc())
+        .all()
+    )
+    past_donations = PenDonations.query.filter_by(donor_id=current_user.id).order_by(PenDonations.donation_date.desc()).all()
+    return render_template("history.html", past_loans=past_loans, past_donations=past_donations)
+
+
+@app.route("/famous-pens")
+def famous_pens():
+    pens = [pen for pen in Pens.query.order_by(Pens.prs.desc(), Pens.name.asc()).all() if pen_is_famous(pen)]
+    return render_template("famous_pens.html", pens=pens)
+
+
+@app.route("/games")
+def games():
+    pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
+    return render_template("games.html", pens=pens)
+
+
+@app.route("/loans/<int:loan_id>/thread", methods=["GET", "POST"])
+@login_required
+def loan_thread(loan_id):
+    loan_record = PenLoans.query.get(loan_id)
+    if not loan_record:
+        return redirect(url_for("dashboard"))
+    if current_user.id not in {loan_record.borrower_id, loan_record.lender_id}:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        message = (request.form.get("message") or "").strip()
+        meeting_point = (request.form.get("meeting_point") or "").strip()
+        if meeting_point:
+            loan_record.meeting_point = meeting_point[:200]
+        if message:
+            db.session.add(
+                LoanChatMessage(
+                    loan_id=loan_record.id,
+                    sender_id=current_user.id,
+                    message=message[:600],
+                )
+            )
+        db.session.commit()
+        return redirect(url_for("loan_thread", loan_id=loan_id))
+
+    return render_template(
+        "loan_thread.html",
+        loan=loan_record,
+        messages=LoanChatMessage.query.filter_by(loan_id=loan_record.id).order_by(LoanChatMessage.created_at.asc()).all(),
+    )
+
+
+@app.route("/pens/<int:pen_id>/edit-community", methods=["GET", "POST"])
+@login_required
+def edit_pen_community(pen_id):
+    pen = Pens.query.get(pen_id)
+    if not pen:
+        return redirect(url_for("dashboard"))
+    latest_donor = get_pen_latest_donor(pen)
+    allowed = bool(current_user.is_admin or latest_donor is None or latest_donor.id == current_user.id or current_user.is_authenticated)
+    if not allowed:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        pen.name = request.form.get("name", pen.name)
+        pen.description = request.form.get("description", pen.description)
+        pen.ink_level = int(request.form.get("ink_level", pen.ink_level))
+        pen.ink_color = request.form.get("ink_color", pen.ink_color)
+        pen.class_ = request.form.get("class_", pen.class_)
+        pen.prs = int(request.form.get("prs", pen.prs))
+        pen.location = request.form.get("location", pen.location)
+        pen.retired = request.form.get("retired") == "on"
+        pen.retired_reason = request.form.get("retired_reason", pen.retired_reason)
+        pen.famous = request.form.get("famous") == "on"
+        db.session.commit()
+        return redirect(url_for("member_profile", user_id=current_user.id))
+
+    return render_template("pen_edit_community.html", pen=pen)
 @app.route("/loan", methods=["GET", "POST"])
 @login_required
 def loan():
@@ -1256,7 +1768,7 @@ def loan():
         }
 
         active_loan_pen_ids = db.session.query(PenLoans.pen_id).filter(PenLoans.return_date.is_(None))
-        query = Pens.query.filter(~Pens.id.in_(active_loan_pen_ids))
+        query = Pens.query.filter(~Pens.id.in_(active_loan_pen_ids), Pens.retired.is_(False))
 
         if filters["q"]:
             search = f"%{filters['q']}%"
@@ -1291,13 +1803,13 @@ def loan():
         pen = Pens.query.get(pen_id)
         if not pen:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found")
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found", rank=compute_member_rank(current_user))
 
         # Check if pen is available (not loaned)
         active_loan = PenLoans.query.filter_by(pen_id=pen_id, return_date=None).first()
         if active_loan:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen is already loaned")
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen is already loaned", rank=compute_member_rank(current_user))
 
         # Check subscription limits
         user = current_user
@@ -1309,16 +1821,27 @@ def loan():
             "Montblanc": {"max_loans": 20, "classes": ["A", "B", "C", "D"]}
         }
         limits = subscription_limits.get(user.subscription_status, {"max_loans": 0, "classes": []})
+        rank = compute_member_rank(user)
         current_loans = PenLoans.query.filter_by(borrower_id=user.id, return_date=None).count()
         if current_loans >= limits["max_loans"]:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription")
+            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription", rank=rank)
         if pen.class_ not in limits["classes"]:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription")
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription", rank=rank)
+        if pen.class_ not in rank["class_access"]:
+            pens, filters = filtered_loan_pens()
+            return render_template("loan.html", pens=pens, filters=filters, error=f"Your current rank ({rank['name']}) cannot borrow this class yet", rank=rank)
 
         # Create loan
-        loan = PenLoans(pen_id=pen_id, lender_id=pen.donations[0].donor_id if pen.donations else 1, borrower_id=user.id)  # Assuming lender is donor
+        meeting_point = (request.form.get("meeting_point") or "").strip()
+        lender = get_pen_latest_donor(pen)
+        loan = PenLoans(
+            pen_id=pen_id,
+            lender_id=lender.id if lender else user.id,
+            borrower_id=user.id,
+            meeting_point=meeting_point[:200],
+        )
         db.session.add(loan)
         user.pens_loaned += 1
         db.session.commit()
@@ -1326,7 +1849,7 @@ def loan():
 
     # GET: list available pens
     available_pens, filters = filtered_loan_pens()
-    return render_template("loan.html", pens=available_pens, filters=filters)
+    return render_template("loan.html", pens=available_pens, filters=filters, rank=compute_member_rank(current_user))
 
 @app.route("/donate", methods=["GET", "POST"])
 @login_required
@@ -1337,10 +1860,22 @@ def donate():
         ink_level = int(request.form.get("ink_level", 100))
         ink_color = request.form.get("ink_color", "Black")
         class_ = request.form.get("class_", "C")
-        prs = int(request.form.get("prs", 3))
+        prs = int(request.form.get("prs", 50))
+        location = request.form.get("location", "Vault Shelf A")
+        current_user.region = request.form.get("region", current_user.region or "Global")
+        if request.form.get("member_title"):
+            current_user.member_title = request.form.get("member_title")
 
         # Create pen
-        pen = Pens(name=name, description=description, ink_level=ink_level, ink_color=ink_color, class_=class_, prs=prs)
+        pen = Pens(
+            name=name,
+            description=description,
+            ink_level=ink_level,
+            ink_color=ink_color,
+            class_=class_,
+            prs=prs,
+            location=location,
+        )
         db.session.add(pen)
         db.session.flush()  # Get pen.id
 
@@ -1351,7 +1886,7 @@ def donate():
         db.session.commit()
         return redirect(url_for("dashboard"))
 
-    return render_template("donate.html")
+    return render_template("donate.html", region_labels=REGION_LABELS)
 
 @app.route("/subscription", methods=["GET", "POST"])
 @login_required
@@ -1381,15 +1916,28 @@ def return_loan(loan_id):
 
     if request.method == "POST":
         review_text = request.form.get("review")
+        rating = max(1, min(int(request.form.get("rating") or 5), 5))
         if review_text:
             # Use TextBlob for sentiment
             blob = TextBlob(review_text)
             sentiment_score = blob.sentiment.polarity  # -1 to 1
             pen = Pens.query.get(loan.pen_id)
-            pen.prs = (sentiment_score + 1) * 50
+            pen.prs = int(min(100, max(0, (sentiment_score + 1) * 50 + (rating - 3) * 8)))
             loan.review = review_text
+            db.session.add(
+                PenReview(
+                    pen_id=loan.pen_id,
+                    user_id=current_user.id,
+                    loan_id=loan.id,
+                    rating=rating,
+                    title=f"{loan.pen.name} review",
+                    body=review_text[:1000],
+                )
+            )
 
         loan.return_date = datetime.datetime.utcnow()
+        if current_user.pens_loaned > 0:
+            current_user.pens_loaned -= 1
         db.session.commit()
         return redirect(url_for("dashboard"))
 
@@ -1409,6 +1957,10 @@ def sector_update_pen(pen_id):
     pen.ink_color = request.form.get("ink_color", pen.ink_color)
     pen.class_ = request.form.get("class_", pen.class_)
     pen.prs = int(request.form.get("prs", pen.prs))
+    pen.location = request.form.get("location", pen.location)
+    pen.retired = request.form.get("retired") == "on"
+    pen.retired_reason = request.form.get("retired_reason", pen.retired_reason)
+    pen.famous = request.form.get("famous") == "on"
     db.session.commit()
     return redirect(url_for("sector_page", sector="sodac"))
 
@@ -1752,6 +2304,10 @@ def edit_pen(pen_id):
         pen.ink_color = request.form.get("ink_color", pen.ink_color)
         pen.class_ = request.form.get("class_", pen.class_)
         pen.prs = int(request.form.get("prs", pen.prs))
+        pen.location = request.form.get("location", pen.location)
+        pen.retired = request.form.get("retired") == "on"
+        pen.retired_reason = request.form.get("retired_reason", pen.retired_reason)
+        pen.famous = request.form.get("famous") == "on"
         picture_filename = save_pen_picture(request.files.get("picture"))
         if picture_filename:
             pen.picture = picture_filename
@@ -1805,25 +2361,83 @@ def add_pen():
     if not is_sector_authed("socac"):
         return redirect(url_for("sector_page", sector="socac"))
 
+    default_form_data = {
+        "barcode": "",
+        "name": "",
+        "description": "",
+        "ink_level": 100,
+        "ink_color": "Black",
+        "class_": "C",
+        "prs": 50,
+        "location": "Vault Shelf A",
+        "retired_reason": "",
+    }
+    form_data = dict(default_form_data)
+    barcode_notice = None
+    error = None
+
     if request.method == "POST":
+        for key in form_data.keys():
+            if key in request.form:
+                form_data[key] = request.form.get(key)
+        action = request.form.get("action", "create")
+        barcode_notice = None
+
+        if action == "scan":
+            scanned_barcode, scan_error = decode_barcode_from_upload(request.files.get("barcode_image"))
+            if scan_error:
+                error = scan_error
+                return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
+            form_data["barcode"] = scanned_barcode
+            barcode, barcode_metadata = get_barcode_seed_data(scanned_barcode)
+            if barcode_metadata:
+                for key, value in barcode_metadata.items():
+                    form_data[key] = value
+                barcode_notice = f"Barcode {barcode} was scanned from the image and matched an existing PSC pen record."
+            else:
+                barcode_notice = f"Barcode {scanned_barcode} was scanned successfully. Fill the remaining pen details and save."
+            return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=None)
+
+        barcode = normalize_barcode(request.form.get("barcode"))
+        form_data["barcode"] = barcode
+
+        if action == "lookup":
+            barcode, barcode_metadata = get_barcode_seed_data(barcode)
+            if barcode_metadata:
+                for key, value in barcode_metadata.items():
+                    form_data[key] = value
+                barcode_notice = f"Barcode {barcode} matched an existing PSC pen record and auto-filled the form."
+            else:
+                error = f"Barcode {barcode or 'blank'} is not in the PSC database yet. You can still complete the form manually."
+            return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
+
         name = request.form.get("name")
         description = request.form.get("description")
         ink_level = int(request.form.get("ink_level", 100))
         ink_color = request.form.get("ink_color", "Black")
         class_ = request.form.get("class_", "C")
         prs = int(request.form.get("prs", 50))
+        location = request.form.get("location", "Vault Shelf A")
+        retired = request.form.get("retired") == "on"
+        retired_reason = request.form.get("retired_reason", "")
+        famous = request.form.get("famous") == "on"
+
+        if barcode and Pens.query.filter_by(barcode=barcode).first():
+            error = f"Barcode {barcode} is already attached to another pen in PSC."
+            return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
 
         # Handle picture upload
         picture_filename = save_pen_picture(request.files.get("picture"))
 
         # Create pen
         pen = Pens(name=name, description=description, ink_level=ink_level,
-                   ink_color=ink_color, class_=class_, prs=prs, picture=picture_filename)
+                   ink_color=ink_color, class_=class_, prs=prs, picture=picture_filename,
+                   barcode=barcode or None, location=location, retired=retired, retired_reason=retired_reason, famous=famous)
         db.session.add(pen)
         db.session.commit()
         return redirect(url_for("sector_page", sector="socac"))
 
-    return render_template("add_pen.html")
+    return render_template("add_pen.html", form_data=form_data, barcode_notice=barcode_notice, error=error)
 @app.route("/partnerships")
 def partnerships():
     return render_template("partnerships.html")

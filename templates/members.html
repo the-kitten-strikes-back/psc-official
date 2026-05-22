@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSC Members</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:1100px;margin:0 auto;padding:40px 20px 80px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;box-shadow:0 18px 30px rgba(15,23,42,.06)}.meta{color:#64748b;font-size:14px}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('dashboard') }}">Dashboard</a></li><li><a href="{{ url_for('merch') }}">Merch</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>Member Directory</h1>
+        <div class="grid">
+            {% for row in user_cards %}
+            <a href="{{ url_for('member_profile', user_id=row.user.id) }}" class="card" style="text-decoration:none; color:inherit;">
+                <h2 style="font-size:1.2rem;">{{ row.user.username }}</h2>
+                <p class="meta">{{ row.rank.name }} • {{ row.user.region or "Global" }}</p>
+                <p>{{ row.user.member_title or "PSC member" }}</p>
+                <p class="meta">{{ row.user.pens_donated }} donated • {{ row.user.pens_loaned }} active loans</p>
+            </a>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

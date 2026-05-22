@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Famous Pens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>.wrap{max-width:1000px;margin:0 auto;padding:40px 20px 80px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 18px 30px rgba(15,23,42,.06)}</style>
+</head>
+<body>
+    <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('retired_pens') }}">Retired</a></li><li><a href="{{ url_for('reviews') }}">Reviews</a></li></ul></div></nav></header>
+    <main class="wrap">
+        <h1>Famous Pen List</h1>
+        {% for pen in pens %}
+        <div class="card">
+            <h2>{{ pen.name }}</h2>
+            <p>PRS {{ pen.prs }}/100 • Class {{ pen.class_ }} • {{ pen.location or "Vault shelf" }}</p>
+            <p>{{ pen.description or "A pen that earned its name the hard way." }}</p>
+        </div>
+        {% else %}
+        <p>No famous pens yet.</p>
+        {% endfor %}
+    </main>
+</body>
+</html>

@@ -7,7 +7,11 @@
   // Buffer to track typed characters
   let typeBuffer = '';
   const triggerPhrase = 'pen thief';
+  const glowPhrase = 'psc day';
   let alertActive = false;
+  let glowActive = false;
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+  let konamiBuffer = [];
 
   // Create the alert banner HTML
   function createAlertBanner() {
@@ -142,6 +146,53 @@
     }, 10000);
   }
 
+  function triggerVaultGlow() {
+    if (glowActive) return;
+    glowActive = true;
+    const badge = document.createElement('div');
+    badge.style.cssText = `
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+      color: white;
+      font-weight: 800;
+      z-index: 10001;
+      box-shadow: 0 18px 32px rgba(59, 130, 246, 0.35);
+    `;
+    badge.textContent = 'PSC DAY MODE ACTIVATED';
+    document.body.appendChild(badge);
+    document.body.style.transition = 'filter 0.35s ease';
+    document.body.style.filter = 'saturate(1.15) hue-rotate(-8deg)';
+    setTimeout(() => {
+      badge.remove();
+      document.body.style.filter = '';
+      glowActive = false;
+    }, 5000);
+  }
+
+  function triggerKonamiEgg() {
+    const stamp = document.createElement('div');
+    stamp.style.cssText = `
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10002;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 900;
+      color: rgba(15, 23, 42, 0.9);
+      text-shadow: 0 0 30px rgba(255,255,255,0.8);
+    `;
+    stamp.textContent = 'LEGENDARY PEN MODE';
+    document.body.appendChild(stamp);
+    setTimeout(() => stamp.remove(), 2800);
+  }
+
   // Listen for keyboard input
   document.addEventListener('keypress', (e) => {
     // Only track alphabetic and space characters
@@ -157,7 +208,21 @@
       if (typeBuffer.includes(triggerPhrase)) {
         triggerAlert();
         typeBuffer = ''; // Reset after trigger
+      } else if (typeBuffer.includes(glowPhrase)) {
+        triggerVaultGlow();
+        typeBuffer = '';
       }
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    konamiBuffer.push(e.key);
+    if (konamiBuffer.length > konamiCode.length) {
+      konamiBuffer = konamiBuffer.slice(-konamiCode.length);
+    }
+    if (konamiCode.every((key, index) => konamiBuffer[index] === key)) {
+      triggerKonamiEgg();
+      konamiBuffer = [];
     }
   });
 
