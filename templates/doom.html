@@ -47,7 +47,7 @@
 
             Dos(appEl, {
                 pathPrefix: "https://cdn.jsdelivr.net/npm/js-dos@8.3.20/dist/emulators/",
-                url: "https://cdn.dos.zone/custom/dos/doom.jsdos",
+                url: "{{ url_for('static', filename='doom.jsdos') }}",
                 onEvent: function (event, arg) {
                     if (event === "ci-ready") {
                         if (loadingEl) loadingEl.style.display = "none";
