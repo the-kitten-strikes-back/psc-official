@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DOOM - PSC Mini Games</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/js-dos@8.3.20/dist/js-dos.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; overflow: hidden; font-family: sans-serif; }
-        #dosbox { width: 100vw; height: 100vh; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
+        #app { width: 100%; height: 100%; }
         #loading {
             position: fixed; inset: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; background: #000; color: #fff;
@@ -19,77 +20,40 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         #loading p { color: #888; font-size: 14px; }
-        #loading .progress { color: #a00; font-size: 13px; margin-top: 4px; }
         #back-link {
-            position: fixed; top: 12px; left: 12px; z-index: 50;
+            position: fixed; top: 12px; left: 12px; z-index: 200;
             background: rgba(0,0,0,0.7); color: #ccc; text-decoration: none;
             padding: 6px 14px; border-radius: 6px; font-size: 13px; transition: color .2s;
         }
         #back-link:hover { color: #fff; }
-        #controls-hint {
-            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-            z-index: 50; background: rgba(0,0,0,0.7); color: #666; font-size: 12px;
-            padding: 6px 14px; border-radius: 6px; pointer-events: none;
-        }
     </style>
 </head>
 <body>
     <a id="back-link" href="{{ url_for('games') }}">&larr; Back to Games</a>
-    <div id="controls-hint">Click to lock mouse &middot; Ctrl+F12 to unlock</div>
 
     <div id="loading">
         <div class="spinner"></div>
         <h2>Loading DOOM</h2>
-        <p>Downloading DOSBox + WebAssembly emulator…</p>
-        <div class="progress" id="progress-text"></div>
+        <p>Downloading WebAssembly emulator and game bundle…</p>
     </div>
 
-    <div id="dosbox"></div>
+    <div id="app"></div>
 
-    <script src="https://js-dos.com/cdn/js-dos-api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-dos@8.3.20/dist/js-dos.min.js"></script>
     <script>
         (function () {
             var loadingEl = document.getElementById("loading");
-            var progressEl = document.getElementById("progress-text");
+            var appEl = document.getElementById("app");
 
-            function setProgress(msg) {
-                if (progressEl) progressEl.textContent = msg;
-            }
-
-            setProgress("Initialising emulator…");
-
-            var dosbox = document.getElementById("dosbox");
-            var emulator = Dos(dosbox, {
-                wdosboxUrl: "https://js-dos.com/cdn/7.22.1/wdosbox.js",
-                cycles: -1,
-                autolock: true,
-            });
-
-            emulator.on("progress", function (msg) {
-                if (loadingEl) setProgress(msg);
-            });
-
-            emulator.on("error", function (err) {
-                if (loadingEl) {
-                    loadingEl.innerHTML = '<h2 style="color:#a00">Failed to load</h2><p style="color:#888">' +
-                        String(err) + '</p><p style="color:#555;margin-top:12px">Try refreshing the page.</p>';
-                }
-            });
-
-            emulator.ready(function (fs, main) {
-                setProgress("Extracting DOOM1.WAD…");
-
-                var wadPath = "{{ url_for('static', filename='DOOM1.WAD') }}";
-
-                fs.extract("DOOM1.WAD", wadPath).then(function () {
-                    if (loadingEl) loadingEl.style.display = "none";
-                    main(["-fullscreen", "-iwad", "DOOM1.WAD"]);
-                }).catch(function (err) {
-                    if (loadingEl) {
-                        loadingEl.innerHTML = '<h2 style="color:#a00">WAD Load Failed</h2><p style="color:#888">' +
-                            String(err) + '</p>';
+            Dos(appEl, {
+                pathPrefix: "https://cdn.jsdelivr.net/npm/js-dos@8.3.20/dist/emulators/",
+                url: "https://cdn.dos.zone/custom/dos/doom.jsdos",
+                onEvent: function (event, arg) {
+                    if (event === "ci-ready") {
+                        if (loadingEl) loadingEl.style.display = "none";
+                        arg.setFullscreen(true);
                     }
-                });
+                }
             });
         })();
     </script>

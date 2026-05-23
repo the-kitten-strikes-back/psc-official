@@ -23,13 +23,11 @@
                 <p id="answer" style="margin-top:14px;"></p>
             </div>
 
-            {% if has_doom %}
             <div class="card doom-card">
                 <h2>DOOM</h2>
                 <p>WebAssembly-powered DOSBox port of the classic 1993 FPS.</p>
                 <a href="{{ url_for('doom') }}"><button>Play DOOM</button></a>
             </div>
-            {% endif %}
         </div>
     </main>
     <script>
