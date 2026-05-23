@@ -1722,7 +1722,14 @@ def famous_pens():
 @app.route("/games")
 def games():
     pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
-    return render_template("games.html", pens=pens)
+    has_doom = os.path.isfile(os.path.join(app.static_folder or "static", "DOOM1.WAD"))
+    return render_template("games.html", pens=pens, has_doom=has_doom)
+
+@app.route("/games/doom")
+def doom():
+    if not os.path.isfile(os.path.join(app.static_folder or "static", "DOOM1.WAD")):
+        return redirect(url_for("games"))
+    return render_template("doom.html")
 
 
 @app.route("/loans/<int:loan_id>/thread", methods=["GET", "POST"])
