@@ -2383,6 +2383,47 @@ def reject_donation(donation_id):
 
     return redirect(url_for("sector_page", sector="socac"))
 
+@app.route("/admin/socac/donate-on-behalf", methods=["GET", "POST"])
+@login_required
+def admin_donate_on_behalf():
+    if not is_sector_authed("socac"):
+        return redirect(url_for("sector_page", sector="socac"))
+
+    error = None
+    if request.method == "POST":
+        donor_username = request.form.get("donor_username", "").strip()
+        donor = Users.query.filter_by(username=donor_username).first()
+        if not donor:
+            error = f"User '{donor_username}' not found."
+        else:
+            name = request.form.get("name")
+            description = request.form.get("description")
+            ink_level = int(request.form.get("ink_level", 100))
+            ink_color = request.form.get("ink_color", "Black")
+            class_ = request.form.get("class_", "C")
+            prs = int(request.form.get("prs", 50))
+            location = request.form.get("location", "Vault Shelf A")
+
+            pen = Pens(
+                name=name,
+                description=description,
+                ink_level=ink_level,
+                ink_color=ink_color,
+                class_=class_,
+                prs=prs,
+                location=location,
+            )
+            db.session.add(pen)
+            db.session.flush()
+
+            donation = PenDonations(pen_id=pen.id, donor_id=donor.id)
+            db.session.add(donation)
+            donor.pens_donated += 1
+            db.session.commit()
+            return redirect(url_for("sector_page", sector="socac"))
+
+    return render_template("admin_donate_on_behalf.html", region_labels=REGION_LABELS, error=error)
+
 @app.route("/admin/loan/<int:loan_id>/approve", methods=["POST"])
 @login_required
 def approve_loan(loan_id):

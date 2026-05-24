@@ -190,6 +190,7 @@
     </div>
     <div style="display:flex; gap:10px; align-items:center;">
       <a href="{{ url_for('add_pen') }}" class="btn">+ Add Pen</a>
+      <a href="{{ url_for('admin_donate_on_behalf') }}" class="btn">Donate on Behalf</a>
       <form method="POST" action="{{ url_for('sector_lock', sector='socac') }}">
         <button class="btn" type="submit">Lock Sector</button>
       </form>
