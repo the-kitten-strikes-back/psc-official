@@ -308,6 +308,56 @@
       {% endif %}
     </div>
     <div class="panel">
+      <h2>📋 Loan Management — Pending Requests</h2>
+      {% if pending_loans %}
+      <div class="grid">
+        {% for loan in pending_loans %}
+        <div class="card">
+          <strong>{{ loan.pen.name }}</strong>
+          <div class="muted">Requested by {{ loan.borrower.username }}</div>
+          <p class="muted" style="margin-top:8px;">Meeting: {{ loan.meeting_point or "Not set" }}</p>
+          <div class="muted">Subscription: {{ loan.borrower.subscription_status }}</div>
+          <div class="muted">Active loans: {{ loan.borrower.pens_loaned }}</div>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <form method="POST" action="{{ url_for('approve_loan', loan_id=loan.id) }}">
+              <button class="save-btn" type="submit" style="background:#166534;">✓ Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('reject_loan', loan_id=loan.id) }}">
+              <button class="save-btn" type="submit" style="background:#991b1b;">✗ Reject</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No pending loan requests.</p>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <h2>📚 Active Loans</h2>
+      {% if active_loans %}
+      <div class="grid">
+        {% for loan in active_loans %}
+        <div class="card">
+          <strong>{{ loan.pen.name }}</strong>
+          <div class="muted">Borrowed by {{ loan.borrower.username }}</div>
+          <div class="muted">Loaned: {{ loan.loan_date.strftime('%Y-%m-%d') }}</div>
+          <div class="muted">Due: {{ loan.due_date.strftime('%Y-%m-%d') }}</div>
+          <div class="muted">Meeting: {{ loan.meeting_point or "Not set" }}</div>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <a href="{{ url_for('loan_thread', loan_id=loan.id) }}" class="save-btn" style="text-decoration:none; text-align:center;">💬 Thread</a>
+            <a href="{{ url_for('return_loan', loan_id=loan.id) }}" class="save-btn" style="text-decoration:none; text-align:center; background:#991b1b;">↩ Mark Returned</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No active loans.</p>
+      {% endif %}
+    </div>
+
+    <div class="panel">
       <h2>Launch Campaign</h2>
       <form method="POST" action="{{ url_for('sector_create_campaign') }}">
         <label>Campaign Title</label>

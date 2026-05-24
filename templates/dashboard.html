@@ -236,12 +236,12 @@
                 <div class="update-grid">
                     <div class="update-card">
                         <h3>Rank Access</h3>
-                        <p>{{ rank.name }} members can borrow classes {{ rank.class_access|join(", ") }}. {% if rank.next_rank %}{{ rank.points_to_next }} more points unlock {{ rank.next_rank }}.{% else %}Top rank reached.{% endif %}</p>
+                        <p>{{ current_user.subscription_status }} members can borrow up to {{ subscription_max_loans }} pens (classes {{ subscription_classes|join(", ") }}). {% if rank.next_rank %}{{ rank.points_to_next }} more points unlock {{ rank.next_rank }} rank.{% else %}Top rank reached.{% endif %}</p>
                         <a class="mini-link" href="{{ url_for('members') }}">Member directory</a>
                     </div>
                     <div class="update-card">
                         <h3>Merch Preorders</h3>
-                        <p>Merch is now tied to your rank and donation count, with early drops for stronger contributors.</p>
+                        <p>Merch is now tied to your membership and donation count, with early drops for stronger contributors.</p>
                         <a class="mini-link" href="{{ url_for('merch') }}">Open merch</a>
                     </div>
                     <div class="update-card">
@@ -300,32 +300,69 @@
             </div>
 
             <div class="loans-section">
-                <h2>📚 Your Loans</h2>
-                {% if loans %}
-                    {% for loan in loans %}
+                <h2>📋 Pending Requests</h2>
+                {% if pending_loans %}
+                    {% for loan in pending_loans %}
                     <div class="loan-item">
                         <div class="loan-details">
                             <strong>{{ loan.pen.name }}</strong>
-                            <small>Loaned on {{ loan.loan_date.strftime('%B %d, %Y') }}</small>
-                            {% if loan.return_date %}
-                                <small> • Returned on {{ loan.return_date.strftime('%B %d, %Y') }}</small>
-                                {% if loan.review %}<small> • Your review: "{{ loan.review }}"</small>{% endif %}
-                            {% else %}
-                                <small> • Due by {{ loan.due_date.strftime('%B %d, %Y') }}</small>
-                                <span class="status-badge status-pending">Active</span>
-                            {% endif %}
+                            <small>Requested — awaiting approval</small>
+                            <span class="status-badge status-pending">Pending</span>
                         </div>
-                        {% if not loan.return_date %}
-                        <div class="loan-actions">
-                            <a href="{{ url_for('loan_thread', loan_id=loan.id) }}">Thread & Meet</a>
-                            <a href="{{ url_for('return_loan', loan_id=loan.id) }}">Return Pen</a>
-                        </div>
-                        {% endif %}
                     </div>
                     {% endfor %}
                 {% else %}
                     <div class="empty-state">
-                        <p>You haven't loaned any pens yet. <a href="{{ url_for('loan') }}" style="color: #0066cc; font-weight: 600;">Start loaning now! →</a></p>
+                        <p>No pending loan requests.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="loans-section">
+                <h2>📚 Active Loans</h2>
+                {% if active_loans %}
+                    {% for loan in active_loans %}
+                    <div class="loan-item">
+                        <div class="loan-details">
+                            <strong>{{ loan.pen.name }}</strong>
+                            <small>Loaned on {{ loan.loan_date.strftime('%B %d, %Y') }}</small>
+                            <small> • Due by {{ loan.due_date.strftime('%B %d, %Y') }}</small>
+                            <span class="status-badge status-pending">Active</span>
+                        </div>
+                        <div class="loan-actions">
+                            <a href="{{ url_for('loan_thread', loan_id=loan.id) }}">Thread & Meet</a>
+                            <a href="{{ url_for('return_loan', loan_id=loan.id) }}">Review & Initiate Return</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No active loans.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="loans-section">
+                <h2>📜 Loan History</h2>
+                {% if history_loans %}
+                    {% for loan in history_loans %}
+                    <div class="loan-item">
+                        <div class="loan-details">
+                            <strong>{{ loan.pen.name }}</strong>
+                            {% if loan.status == "returned" %}
+                                <small>Returned on {{ loan.return_date.strftime('%B %d, %Y') }}</small>
+                                {% if loan.review %}<small> • Your review: "{{ loan.review }}"</small>{% endif %}
+                                <span class="status-badge status-accepted">Returned</span>
+                            {% elif loan.status == "rejected" %}
+                                <small>Request rejected{% if loan.rejection_reason %}: {{ loan.rejection_reason }}{% endif %}</small>
+                                <span class="status-badge status-rejected">Rejected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No loan history yet. <a href="{{ url_for('loan') }}" style="color: #0066cc; font-weight: 600;">Start loaning now! →</a></p>
                     </div>
                 {% endif %}
             </div>

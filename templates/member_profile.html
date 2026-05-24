@@ -22,7 +22,7 @@
                 <div class="row">Pens donated: {{ member.pens_donated }}</div>
                 <div class="row">Active loans: {{ member.pens_loaned }}</div>
                 <div class="row">Subscription: {{ member.subscription_status }}</div>
-                <div class="row">Borrow access: {{ rank.class_access|join(", ") }}</div>
+                <div class="row">Borrow access: {{ subscription_classes|join(", ") }} ({{ member.subscription_status }})</div>
             </section>
             <section class="card">
                 <h2>Recent Donations</h2>

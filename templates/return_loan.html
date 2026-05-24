@@ -163,14 +163,58 @@
 
     <main>
         <section class="page-section">
+            {% if is_admin %}
             <h1>Return a Pen 📤</h1>
-            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px; text-align: center;">Thank you for borrowing from our community! Please return your pen and share your experience.</p>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px; text-align: center;">Finalize the return of this pen on behalf of the borrower.</p>
 
             <div class="return-container">
                 <div class="pen-details">
-                    <h3>📖 Returning Pen</h3>
+                    <h3>📖 Pen Return — Admin</h3>
                     <p class="pen-name">{{ loan.pen.name }}</p>
-                    <p style="color: #64748b; margin-top: 6px;">Due by {{ loan.due_date.strftime('%B %d, %Y') }}</p>
+                    <p style="color: #64748b; margin-top: 6px;">Borrowed by {{ loan.borrower.username }} on {{ loan.loan_date.strftime('%B %d, %Y') }}</p>
+                    <p style="color: #64748b;">Due by {{ loan.due_date.strftime('%B %d, %Y') }}</p>
+                    {% if loan.review %}<p style="color: #64748b; margin-top: 6px;">Borrower's review: "{{ loan.review }}"</p>{% endif %}
+                    <p style="color: #64748b;">Meeting point: {{ loan.meeting_point or "Not set" }}</p>
+                </div>
+
+                <form method="POST">
+                    <div class="rating-section">
+                        <h4>✨ Pen Condition Notes</h4>
+                        <p style="color: #64748b; font-size: 14px; margin: 0 0 15px 0;">Record the pen's condition upon return.</p>
+                        <label for="rating" style="margin-bottom: 8px;">Condition Rating</label>
+                        <select id="rating" name="rating" style="width:100%; border:2px solid #10b981; border-radius:8px; padding:12px;">
+                            <option value="5">5 - Like new</option>
+                            <option value="4">4 - Good condition</option>
+                            <option value="3" selected>3 - Some wear</option>
+                            <option value="2">2 - Damaged</option>
+                            <option value="1">1 - Severely damaged</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="review">Return Notes (Optional)</label>
+                        <textarea
+                            id="review"
+                            name="review"
+                            placeholder="Describe the pen's condition, ink level, or any issues..."></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <a href="{{ url_for('sector_page', sector='sobab') }}" class="cancel-btn">← Back to Console</a>
+                        <button type="submit" class="submit-btn">✓ Mark as Returned</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <h1>Review Your Pen 📝</h1>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px; text-align: center;">Share your experience and return the pen to SoBAB staff to complete the process.</p>
+
+            <div class="return-container">
+                <div class="pen-details">
+                    <h3>📖 Your Loan</h3>
+                    <p class="pen-name">{{ loan.pen.name }}</p>
+                    <p style="color: #64748b; margin-top: 6px;">Loaned on {{ loan.loan_date.strftime('%B %d, %Y') }}</p>
+                    <p style="color: #64748b;">Due by {{ loan.due_date.strftime('%B %d, %Y') }}</p>
                 </div>
 
                 <form method="POST">
@@ -192,16 +236,17 @@
                         <textarea
                             id="review"
                             name="review"
-                            placeholder="Share your experience with this pen. How was the writing experience? Any feedback for the owner?"></textarea>
-                        <p class="review-help">💡 Helpful reviews include: writing comfort, ink consistency, durability, and overall impressions.</p>
+                            placeholder="Share your experience with this pen."></textarea>
+                        <p class="review-help">💡 Your review is saved now. Return the pen to SoBAB staff to complete the return.</p>
                     </div>
 
                     <div class="button-group">
                         <a href="{{ url_for('dashboard') }}" class="cancel-btn">← Cancel</a>
-                        <button type="submit" class="submit-btn">✓ Return & Submit</button>
+                        <button type="submit" class="submit-btn">✓ Submit Review</button>
                     </div>
                 </form>
             </div>
+            {% endif %}
         </section>
     </main>
 

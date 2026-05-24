@@ -15,7 +15,7 @@
             <section class="card">
                 <h2>Loan History</h2>
                 {% for loan in past_loans %}
-                <div class="row">{{ loan.pen.name }} • {% if loan.return_date %}returned{% else %}active{% endif %} • {{ loan.loan_date.strftime('%b %d, %Y') }}</div>
+                <div class="row">{{ loan.pen.name }} • {{ loan.status }} • {% if loan.loan_date %}{{ loan.loan_date.strftime('%b %d, %Y') }}{% else %}Pending{% endif %}{% if loan.status == 'returned' and loan.return_date %} • Returned {{ loan.return_date.strftime('%b %d, %Y') }}{% endif %}</div>
                 {% else %}
                 <p>No loan history yet.</p>
                 {% endfor %}

@@ -119,10 +119,18 @@ LOAN_DURATION_DAYS = int(os.environ.get("LOAN_DURATION_DAYS", "7"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 MEMBER_RANKS = [
-    {"name": "Recruit", "threshold": 0, "class_access": ["D"], "merch_note": "Sticker drops only"},
-    {"name": "Runner", "threshold": 4, "class_access": ["C", "D"], "merch_note": "Pins and patches unlocked"},
-    {"name": "Curator", "threshold": 9, "class_access": ["A", "B", "C", "D"], "merch_note": "Premium merch access"},
+    {"name": "Recruit", "threshold": 0},
+    {"name": "Runner", "threshold": 4},
+    {"name": "Curator", "threshold": 9},
 ]
+
+SUBSCRIPTION_LIMITS = {
+    "Basic": {"max_loans": 1, "classes": ["C", "D"]},
+    "Gold": {"max_loans": 3, "classes": ["B", "C", "D"]},
+    "Diamond": {"max_loans": 5, "classes": ["A", "B", "C", "D"]},
+    "Platinum": {"max_loans": 10, "classes": ["A", "B", "C", "D"]},
+    "Montblanc": {"max_loans": 20, "classes": ["A", "B", "C", "D"]}
+}
 REGION_LABELS = {
     "global": "Global",
     "north": "North PSC",
@@ -693,8 +701,6 @@ def compute_member_rank(user) -> dict:
     return {
         "score": score,
         "name": current_rank["name"],
-        "class_access": current_rank["class_access"],
-        "merch_note": current_rank["merch_note"],
         "next_rank": next_rank["name"] if next_rank else None,
         "points_to_next": max((next_rank["threshold"] - score), 0) if next_rank else 0,
     }
@@ -888,16 +894,20 @@ class PenLoans(db.Model):
     pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
     lender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     borrower_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    loan_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    return_date = db.Column(db.DateTime, nullable=True)#better membership status means longer loan periods, and better pen class loans.
-    review = db.Column(db.String(500), nullable=True)#use textblob sentiment analysis to generate a score out of 100, which will be added to the pen's PRS.
+    loan_date = db.Column(db.DateTime, nullable=True)
+    return_date = db.Column(db.DateTime, nullable=True)
+    review = db.Column(db.String(500), nullable=True)
     meeting_point = db.Column(db.String(200), default="")
+    status = db.Column(db.String(20), default="pending")
+    rejection_reason = db.Column(db.String(300), default="")
     borrower = db.relationship('Users', backref='borrowed_loans', foreign_keys=[borrower_id])
     lender = db.relationship('Users', backref='lent_loans', foreign_keys=[lender_id])
 
     @property
     def due_date(self):
-        return self.loan_date + datetime.timedelta(days=LOAN_DURATION_DAYS)
+        if self.loan_date:
+            return self.loan_date + datetime.timedelta(days=LOAN_DURATION_DAYS)
+        return None
 class PenDonations(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
@@ -1108,6 +1118,10 @@ def ensure_schema_updates() -> None:
         "ALTER TABLE pens ADD COLUMN IF NOT EXISTS retired_reason VARCHAR(300) DEFAULT ''",
         "ALTER TABLE pens ADD COLUMN IF NOT EXISTS famous BOOLEAN DEFAULT FALSE",
         "ALTER TABLE pen_loans ADD COLUMN IF NOT EXISTS meeting_point VARCHAR(200) DEFAULT ''",
+        "ALTER TABLE pen_loans ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending'",
+        "ALTER TABLE pen_loans ADD COLUMN IF NOT EXISTS rejection_reason VARCHAR(300) DEFAULT ''",
+        "UPDATE pen_loans SET status = 'active' WHERE return_date IS NULL AND status = 'pending'",
+        "UPDATE pen_loans SET status = 'returned' WHERE return_date IS NOT NULL AND status = 'pending'",
     ]
     for statement in statements:
         try:
@@ -1179,7 +1193,7 @@ def google_verify():
 @app.route("/")
 def home():
     pens_in_storage = Pens.query.count()
-    loans_completed = PenLoans.query.filter(PenLoans.return_date.isnot(None)).count()
+    loans_completed = PenLoans.query.filter(PenLoans.status == "returned").count()
     community_reviews = (
         PenLoans.query.filter(
             PenLoans.review.isnot(None),
@@ -1337,6 +1351,8 @@ def sector_page(sector):
         users = Users.query.all()
         email_users = [u for u in users if u.email]
         briefs = DesignBrief.query.order_by(DesignBrief.created_at.desc()).all()
+        pending_loans = PenLoans.query.filter_by(status="pending").order_by(PenLoans.id.desc()).all()
+        active_loans = PenLoans.query.filter_by(status="active").order_by(PenLoans.loan_date.desc()).all()
         return render_template(
             "sector_sobab.html",
             config=SECTOR_CONFIG[sector],
@@ -1349,6 +1365,8 @@ def sector_page(sector):
             campaigns=campaigns,
             briefs=briefs,
             users=users,
+            pending_loans=pending_loans,
+            active_loans=active_loans,
         )
 
     if sector == "sorasr":
@@ -1509,7 +1527,10 @@ def hjchat_lock():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    user_loans = PenLoans.query.filter_by(borrower_id=current_user.id).all()
+    user_loans = PenLoans.query.filter_by(borrower_id=current_user.id).order_by(PenLoans.id.desc()).all()
+    pending_loans = [l for l in user_loans if l.status == "pending"]
+    active_loans = [l for l in user_loans if l.status == "active"]
+    history_loans = [l for l in user_loans if l.status in ("returned", "rejected")]
     user_donations = PenDonations.query.filter_by(donor_id=current_user.id).all()
     all_users = Users.query.order_by(Users.username.asc()).all()
     top_donors = (
@@ -1526,15 +1547,21 @@ def dashboard():
         .order_by(PenLoans.loan_date.desc())
         .all()
     )
+    limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
     return render_template(
         "dashboard.html",
         loans=user_loans,
+        pending_loans=pending_loans,
+        active_loans=active_loans,
+        history_loans=history_loans,
         donations=user_donations,
         top_donors=top_donors,
         employee_of_month=employee_of_month,
         can_set_employee=can_set_employee,
         users=all_users,
         rank=compute_member_rank(current_user),
+        subscription_classes=limits["classes"],
+        subscription_max_loans=limits["max_loans"],
         recent_messages=CommunityMessage.query.order_by(CommunityMessage.created_at.desc()).limit(5).all(),
         featured_newsletter=NewsletterIssue.query.filter_by(published=True).order_by(NewsletterIssue.issue_date.desc()).first(),
         merch_items=MerchItem.query.order_by(MerchItem.required_donations.asc(), MerchItem.id.asc()).limit(3).all(),
@@ -1620,10 +1647,12 @@ def member_profile(user_id):
         .limit(10)
         .all()
     )
+    limits = SUBSCRIPTION_LIMITS.get(user.subscription_status, {"max_loans": 0, "classes": []})
     return render_template(
         "member_profile.html",
         member=user,
         rank=compute_member_rank(user),
+        subscription_classes=limits["classes"],
         recent_loans=recent_loans,
         recent_donations=recent_donations,
     )
@@ -1733,7 +1762,7 @@ def loan_thread(loan_id):
     loan_record = PenLoans.query.get(loan_id)
     if not loan_record:
         return redirect(url_for("dashboard"))
-    if current_user.id not in {loan_record.borrower_id, loan_record.lender_id}:
+    if current_user.id not in {loan_record.borrower_id, loan_record.lender_id} and not is_sector_authed("sobab"):
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
@@ -1759,32 +1788,6 @@ def loan_thread(loan_id):
     )
 
 
-@app.route("/pens/<int:pen_id>/edit-community", methods=["GET", "POST"])
-@login_required
-def edit_pen_community(pen_id):
-    pen = Pens.query.get(pen_id)
-    if not pen:
-        return redirect(url_for("dashboard"))
-    latest_donor = get_pen_latest_donor(pen)
-    allowed = bool(current_user.is_admin or latest_donor is None or latest_donor.id == current_user.id or current_user.is_authenticated)
-    if not allowed:
-        return redirect(url_for("dashboard"))
-
-    if request.method == "POST":
-        pen.name = request.form.get("name", pen.name)
-        pen.description = request.form.get("description", pen.description)
-        pen.ink_level = int(request.form.get("ink_level", pen.ink_level))
-        pen.ink_color = request.form.get("ink_color", pen.ink_color)
-        pen.class_ = request.form.get("class_", pen.class_)
-        pen.prs = int(request.form.get("prs", pen.prs))
-        pen.location = request.form.get("location", pen.location)
-        pen.retired = request.form.get("retired") == "on"
-        pen.retired_reason = request.form.get("retired_reason", pen.retired_reason)
-        pen.famous = request.form.get("famous") == "on"
-        db.session.commit()
-        return redirect(url_for("member_profile", user_id=current_user.id))
-
-    return render_template("pen_edit_community.html", pen=pen)
 @app.route("/loan", methods=["GET", "POST"])
 @login_required
 def loan():
@@ -1798,7 +1801,7 @@ def loan():
             "sort": request.args.get("sort", "name_asc").strip(),
         }
 
-        active_loan_pen_ids = db.session.query(PenLoans.pen_id).filter(PenLoans.return_date.is_(None))
+        active_loan_pen_ids = db.session.query(PenLoans.pen_id).filter(PenLoans.status.in_(["pending", "active"]))
         query = Pens.query.filter(~Pens.id.in_(active_loan_pen_ids), Pens.retired.is_(False))
 
         if filters["q"]:
@@ -1834,34 +1837,29 @@ def loan():
         pen = Pens.query.get(pen_id)
         if not pen:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found", rank=compute_member_rank(current_user))
+            limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found", rank=compute_member_rank(current_user), subscription_classes=limits["classes"])
 
-        # Check if pen is available (not loaned)
-        active_loan = PenLoans.query.filter_by(pen_id=pen_id, return_date=None).first()
-        if active_loan:
+        # Check if pen already has a pending or active loan
+        existing_loan = PenLoans.query.filter_by(pen_id=pen_id).filter(PenLoans.status.in_(["pending", "active"])).first()
+        if existing_loan:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen is already loaned", rank=compute_member_rank(current_user))
+            limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
+            return render_template("loan.html", pens=pens, filters=filters, error="This pen already has a pending or active loan request", rank=compute_member_rank(current_user), subscription_classes=limits["classes"])
 
-        # Check subscription limits
+        # Check subscription limits (only count active loans)
         user = current_user
-        subscription_limits = {
-            "Basic": {"max_loans": 1, "classes": ["C", "D"]},
-            "Gold": {"max_loans": 3, "classes": ["B", "C", "D"]},
-            "Diamond": {"max_loans": 5, "classes": ["A", "B", "C", "D"]},
-            "Platinum": {"max_loans": 10, "classes": ["A", "B", "C", "D"]},
-            "Montblanc": {"max_loans": 20, "classes": ["A", "B", "C", "D"]}
-        }
-        limits = subscription_limits.get(user.subscription_status, {"max_loans": 0, "classes": []})
+        limits = SUBSCRIPTION_LIMITS.get(user.subscription_status, {"max_loans": 0, "classes": []})
         rank = compute_member_rank(user)
-        current_loans = PenLoans.query.filter_by(borrower_id=user.id, return_date=None).count()
-        if current_loans >= limits["max_loans"]:
+        current_active = PenLoans.query.filter_by(borrower_id=user.id, status="active").count()
+        if current_active >= limits["max_loans"]:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription", rank=rank)
+            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription", rank=rank, subscription_classes=limits["classes"])
         if pen.class_ not in limits["classes"]:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription", rank=rank)
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription", rank=rank, subscription_classes=limits["classes"])
 
-        # Create loan
+        # Create pending loan request
         meeting_point = (request.form.get("meeting_point") or "").strip()
         lender = get_pen_latest_donor(pen)
         loan = PenLoans(
@@ -1869,15 +1867,16 @@ def loan():
             lender_id=lender.id if lender else user.id,
             borrower_id=user.id,
             meeting_point=meeting_point[:200],
+            status="pending",
         )
         db.session.add(loan)
-        user.pens_loaned += 1
         db.session.commit()
         return redirect(url_for("dashboard"))
 
     # GET: list available pens
     available_pens, filters = filtered_loan_pens()
-    return render_template("loan.html", pens=available_pens, filters=filters, rank=compute_member_rank(current_user))
+    limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
+    return render_template("loan.html", pens=available_pens, filters=filters, rank=compute_member_rank(current_user), subscription_classes=limits["classes"])
 
 @app.route("/donate", methods=["GET", "POST"])
 @login_required
@@ -1939,16 +1938,52 @@ def subscription():
 @login_required
 def return_loan(loan_id):
     loan = PenLoans.query.get(loan_id)
-    if not loan or loan.borrower_id != current_user.id or loan.return_date:
+    if not loan:
+        return redirect(url_for("dashboard"))
+
+    # Only the borrower or a SoBAB admin can access this page
+    if loan.borrower_id != current_user.id and not is_sector_authed("sobab"):
+        return redirect(url_for("dashboard"))
+
+    # If already returned, redirect
+    if loan.status == "returned":
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
-        review_text = request.form.get("review")
+        # If SoBAB admin is handling the return, finalize it
+        if is_sector_authed("sobab"):
+            review_text = request.form.get("review", "").strip()
+            rating = max(1, min(int(request.form.get("rating") or 5), 5))
+            if review_text:
+                blob = TextBlob(review_text)
+                sentiment_score = blob.sentiment.polarity
+                pen = Pens.query.get(loan.pen_id)
+                pen.prs = int(min(100, max(0, (sentiment_score + 1) * 50 + (rating - 3) * 8)))
+                loan.review = review_text
+                db.session.add(
+                    PenReview(
+                        pen_id=loan.pen_id,
+                        user_id=loan.borrower_id,
+                        loan_id=loan.id,
+                        rating=rating,
+                        title=f"{loan.pen.name} review",
+                        body=review_text[:1000],
+                    )
+                )
+            loan.return_date = datetime.datetime.utcnow()
+            loan.status = "returned"
+            borrower = Users.query.get(loan.borrower_id)
+            if borrower and borrower.pens_loaned > 0:
+                borrower.pens_loaned -= 1
+            db.session.commit()
+            return redirect(url_for("sector_page", sector="sobab"))
+
+        # Borrower is submitting a review (not finalizing return)
+        review_text = request.form.get("review", "").strip()
         rating = max(1, min(int(request.form.get("rating") or 5), 5))
         if review_text:
-            # Use TextBlob for sentiment
             blob = TextBlob(review_text)
-            sentiment_score = blob.sentiment.polarity  # -1 to 1
+            sentiment_score = blob.sentiment.polarity
             pen = Pens.query.get(loan.pen_id)
             pen.prs = int(min(100, max(0, (sentiment_score + 1) * 50 + (rating - 3) * 8)))
             loan.review = review_text
@@ -1962,14 +1997,10 @@ def return_loan(loan_id):
                     body=review_text[:1000],
                 )
             )
-
-        loan.return_date = datetime.datetime.utcnow()
-        if current_user.pens_loaned > 0:
-            current_user.pens_loaned -= 1
         db.session.commit()
         return redirect(url_for("dashboard"))
 
-    return render_template("return_loan.html", loan=loan)
+    return render_template("return_loan.html", loan=loan, is_admin=is_sector_authed("sobab"))
 
 @app.route("/sector/sodac/pen/<int:pen_id>/update", methods=["POST"])
 @login_required
@@ -2310,6 +2341,54 @@ def reject_donation(donation_id):
         db.session.commit()
 
     return redirect(url_for("sector_page", sector="socac"))
+
+@app.route("/admin/loan/<int:loan_id>/approve", methods=["POST"])
+@login_required
+def approve_loan(loan_id):
+    if not is_sector_authed("sobab"):
+        return redirect(url_for("sector_page", sector="sobab"))
+
+    loan = PenLoans.query.get(loan_id)
+    if loan and loan.status == "pending":
+        loan.status = "active"
+        loan.loan_date = datetime.datetime.utcnow()
+        borrower = Users.query.get(loan.borrower_id)
+        if borrower:
+            borrower.pens_loaned += 1
+        db.session.commit()
+
+    return redirect(url_for("sector_page", sector="sobab"))
+
+@app.route("/admin/loan/<int:loan_id>/reject", methods=["POST"])
+@login_required
+def reject_loan(loan_id):
+    if not is_sector_authed("sobab"):
+        return redirect(url_for("sector_page", sector="sobab"))
+
+    loan = PenLoans.query.get(loan_id)
+    if loan and loan.status == "pending":
+        loan.status = "rejected"
+        loan.rejection_reason = (request.form.get("reason") or "").strip()[:300]
+        db.session.commit()
+
+    return redirect(url_for("sector_page", sector="sobab"))
+
+@app.route("/admin/loan/<int:loan_id>/return", methods=["POST"])
+@login_required
+def return_loan_admin(loan_id):
+    if not is_sector_authed("sobab"):
+        return redirect(url_for("sector_page", sector="sobab"))
+
+    loan = PenLoans.query.get(loan_id)
+    if loan and loan.status == "active":
+        loan.return_date = datetime.datetime.utcnow()
+        loan.status = "returned"
+        borrower = Users.query.get(loan.borrower_id)
+        if borrower and borrower.pens_loaned > 0:
+            borrower.pens_loaned -= 1
+        db.session.commit()
+
+    return redirect(url_for("sector_page", sector="sobab"))
 
 @app.route("/admin/pen/<int:pen_id>/edit", methods=["GET", "POST"])
 @login_required

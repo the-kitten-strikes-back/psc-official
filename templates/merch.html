@@ -11,7 +11,7 @@
     <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('dashboard') }}">Dashboard</a></li><li><a href="{{ url_for('community') }}">Community</a></li></ul></div></nav></header>
     <main class="wrap">
         <h1>PSC Merch Vault</h1>
-        <p class="lead">Rank: {{ rank.name }} • Donations: {{ current_user.pens_donated }} • {{ rank.merch_note }}</p>
+        <p class="lead">Rank: {{ rank.name }} • {{ current_user.subscription_status }} • Donations: {{ current_user.pens_donated }}</p>
         <div class="grid">
             {% for row in merch_rows %}
             <div class="card">

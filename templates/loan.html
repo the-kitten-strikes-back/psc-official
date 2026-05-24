@@ -253,12 +253,12 @@
 
     <main>
         <section class="page-section">
-            <h1>Find & Loan a Pen 📖</h1>
-            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px;">Explore our collection of available pens and loan one for your needs.</p>
-            <p style="color: #64748b; font-size: 14px; margin-top: -18px; margin-bottom: 30px;">Loan period: 7 days from the date you borrow.</p>
+            <h1>Find & Request a Pen 📖</h1>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 30px;">Explore our collection and request a pen. SoBAB will review and approve your loan.</p>
+            <p style="color: #64748b; font-size: 14px; margin-top: -18px; margin-bottom: 30px;">Loan period: 7 days from approval.</p>
             <div class="filters-panel" style="margin-top: 0;">
-                <strong style="display:block; color:#1e293b;">Your current rank: {{ rank.name }}</strong>
-                <span style="color:#64748b; font-size: 14px;">Class access: {{ rank.class_access|join(", ") }}. {{ rank.merch_note }}.</span>
+                <strong style="display:block; color:#1e293b;">{{ current_user.subscription_status }} membership</strong>
+                <span style="color:#64748b; font-size: 14px;">Class access: {{ subscription_classes|join(", ") }}. Rank: {{ rank.name }}.</span>
             </div>
 
             {% if error %}
@@ -358,9 +358,9 @@
                         <form method="POST" style="margin-top: auto;">
                             <input type="hidden" name="pen_id" value="{{ pen.id }}">
                             <input type="text" name="meeting_point" placeholder="Optional meeting point" style="width:100%; margin-bottom:10px; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
-                            <button type="submit" class="loan-btn">Loan This Pen</button>
+                            <button type="submit" class="loan-btn">Request Loan</button>
                         </form>
-                        <a href="{{ url_for('edit_pen_community', pen_id=pen.id) }}" style="margin-top: 12px; text-align:center; color:#0066cc; font-weight:600; text-decoration:none;">Suggest or edit pen details</a>
+
                     </div>
                 </div>
                 {% endfor %}
