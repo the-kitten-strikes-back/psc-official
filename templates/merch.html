@@ -18,7 +18,7 @@
                 <span class="badge">{{ row.item.price_label }}</span>
                 <h2 style="margin-top:12px; font-size:1.2rem;">{{ row.item.name }}</h2>
                 <p>{{ row.item.description }}</p>
-                <p><strong>Requires:</strong> {{ row.item.required_rank }} rank + {{ row.item.required_donations }} donations</p>
+                <p><strong>Requires:</strong> {{ row.item.required_subscription }} subscription + {{ row.item.required_donations }} donations</p>
                 <p><strong>Status:</strong> {% if row.item.preorder_open %}Pre-order open{% else %}Closed{% endif %}</p>
                 <p style="font-weight:700; color:{% if row.eligible %}#166534{% else %}#991b1b{% endif %};">{% if row.eligible %}Eligible now{% else %}Keep climbing{% endif %}</p>
             </div>

@@ -121,9 +121,7 @@ GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 MEMBER_RANKS = [
     {"name": "Recruit", "threshold": 0, "class_access": ["D"], "merch_note": "Sticker drops only"},
     {"name": "Runner", "threshold": 4, "class_access": ["C", "D"], "merch_note": "Pins and patches unlocked"},
-    {"name": "Archivist", "threshold": 9, "class_access": ["B", "C", "D"], "merch_note": "Early merch preorders"},
-    {"name": "Curator", "threshold": 15, "class_access": ["A", "B", "C", "D"], "merch_note": "Premium merch access"},
-    {"name": "Legend", "threshold": 24, "class_access": ["A", "B", "C", "D"], "merch_note": "Founders vault access"},
+    {"name": "Curator", "threshold": 9, "class_access": ["A", "B", "C", "D"], "merch_note": "Premium merch access"},
 ]
 REGION_LABELS = {
     "global": "Global",
@@ -804,7 +802,7 @@ def seed_showcase_content() -> None:
                 MerchItem(
                     name="PSC Recruit Sticker Pack",
                     description="Starter sticker set for new archive members.",
-                    required_rank="Recruit",
+                    required_subscription="Basic",
                     required_donations=0,
                     preorder_open=True,
                     price_label="$6",
@@ -812,7 +810,7 @@ def seed_showcase_content() -> None:
                 MerchItem(
                     name="Archivist Field Tee",
                     description="Soft cotton regional tee with PSC archive seal.",
-                    required_rank="Archivist",
+                    required_subscription="Gold",
                     required_donations=2,
                     preorder_open=True,
                     price_label="$28",
@@ -820,7 +818,7 @@ def seed_showcase_content() -> None:
                 MerchItem(
                     name="Curator Vault Jacket",
                     description="Limited pre-order jacket for heavy contributors and trusted curators.",
-                    required_rank="Curator",
+                    required_subscription="Diamond",
                     required_donations=5,
                     preorder_open=True,
                     price_label="$72",
@@ -1091,7 +1089,7 @@ class MerchItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(500), default="")
-    required_rank = db.Column(db.String(50), default="Recruit")
+    required_subscription = db.Column(db.String(50), default="Basic")
     required_donations = db.Column(db.Integer, default=0)
     preorder_open = db.Column(db.Boolean, default=True)
     price_label = db.Column(db.String(50), default="$0")
@@ -1635,12 +1633,12 @@ def member_profile(user_id):
 @login_required
 def merch():
     rank = compute_member_rank(current_user)
-    rank_names = [item["name"] for item in MEMBER_RANKS]
-    user_rank_index = rank_names.index(rank["name"])
+    subscription_tiers = ["Basic", "Gold", "Diamond", "Platinum", "Montblanc"]
+    user_tier_index = subscription_tiers.index(current_user.subscription_status) if current_user.subscription_status in subscription_tiers else 0
     merch_rows = []
     for item in MerchItem.query.order_by(MerchItem.required_donations.asc(), MerchItem.id.asc()).all():
-        required_index = rank_names.index(item.required_rank) if item.required_rank in rank_names else 0
-        eligible = user_rank_index >= required_index and current_user.pens_donated >= item.required_donations
+        required_tier_index = subscription_tiers.index(item.required_subscription) if item.required_subscription in subscription_tiers else 0
+        eligible = user_tier_index >= required_tier_index and current_user.pens_donated >= item.required_donations
         merch_rows.append({"item": item, "eligible": eligible})
     return render_template("merch.html", merch_rows=merch_rows, rank=rank)
 
@@ -1862,9 +1860,6 @@ def loan():
         if pen.class_ not in limits["classes"]:
             pens, filters = filtered_loan_pens()
             return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription", rank=rank)
-        if pen.class_ not in rank["class_access"]:
-            pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error=f"Your current rank ({rank['name']}) cannot borrow this class yet", rank=rank)
 
         # Create loan
         meeting_point = (request.form.get("meeting_point") or "").strip()
