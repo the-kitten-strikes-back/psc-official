@@ -9,52 +9,127 @@
 
 <url>
   <loc>https://psc-official.onrender.com/</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/about</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/login?next=%2Floan</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/community</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/login?next=%2Fdonate</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/login</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/register</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/login?next=%2Fsectors</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/partnerships</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/newsletter</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/reviews</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/games</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/famous-pens</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/retired-pens</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/psc-day</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.64</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/login?next=%2Fdashboard</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.51</priority>
 </url>
 <url>
   <loc>https://psc-official.onrender.com/login?next=%2Flogout</loc>
-  <lastmod>2026-05-01T16:39:18+00:00</lastmod>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions/global</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions/north</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions/south</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions/east</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions/west</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/regions/central</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://psc-official.onrender.com/games/doom</loc>
+  <lastmod>2026-05-24T06:37:20+00:00</lastmod>
   <priority>0.51</priority>
 </url>
 
