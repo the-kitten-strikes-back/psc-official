@@ -67,6 +67,10 @@ SECTOR_PASSWORD_HASHES = {
         "SECTOR_PASSWORD_HASH_SOARC",
         "pbkdf2_sha256$260000$KKXaX43aY8GEmxvpzdz/mw==$4MbBjXEEjaiHNjiZL0/mM+BQ4P5jli+5nLpajVM8TjI=",
     ),
+    "socaj": os.environ.get(
+        "SECTOR_PASSWORD_HASH_SOCAJ",
+        "pbkdf2_sha256$260000$cde1n8OACPOOUvYq4boSGQ==$wRGy+UoqoioXGi+D6GtLGRXy1tFdHH5XIjIlasPT3gg=",
+    ),
 }
 
 SECTOR_CONFIG = {
@@ -105,6 +109,12 @@ SECTOR_CONFIG = {
         "full": "Sector of Archives and Records",
         "summary": "Maintain pen history, ownership lineage, legacy donors, and legendary profiles.",
         "accent": "#b8c7e6",
+    },
+    "socaj": {
+        "name": "SoCAJ",
+        "full": "Sector of Court And Justice",
+        "summary": "Adjudicate disputes, enforce PSC law, and maintain judicial records.",
+        "accent": "#f0d060",
     },
 }
 
@@ -1140,6 +1150,39 @@ class MerchItem(db.Model):
     required_donations = db.Column(db.Integer, default=0)
     preorder_open = db.Column(db.Boolean, default=True)
     price_label = db.Column(db.String(50), default="$0")
+
+class LegalCase(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    case_type = db.Column(db.String(100), default="")
+    status = db.Column(db.String(50), default="Open")
+    plaintiff = db.Column(db.String(200), default="")
+    defendant = db.Column(db.String(200), default="")
+    description = db.Column(db.String(1000), default="")
+    presiding_officer = db.Column(db.String(200), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+class CaseEvidence(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey("legal_case.id"), nullable=False)
+    filename = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(500), default="")
+    uploaded_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    uploaded_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    case = db.relationship('LegalCase', backref='evidence')
+    uploaded_by = db.relationship('Users')
+
+class CaseNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey("legal_case.id"), nullable=False)
+    note_type = db.Column(db.String(50), default="Note")
+    content = db.Column(db.String(2000), default="")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    case = db.relationship('LegalCase', backref='notes')
+    author = db.relationship('Users')
+
 #create tables if they don't exist
 
 
@@ -1474,6 +1517,25 @@ def sector_page(sector):
             archives=archives,
             legendary=legendary,
             events=events,
+        )
+
+    if sector == "socaj":
+        cases = LegalCase.query.order_by(LegalCase.updated_at.desc()).all()
+        evidence_count = CaseEvidence.query.count()
+        notes_count = CaseNote.query.count()
+        open_cases = len([c for c in cases if c.status == "Open"])
+        return render_template(
+            "sector_socaj.html",
+            config=SECTOR_CONFIG[sector],
+            authed=authed,
+            error=error,
+            stats={
+                "open_cases": open_cases,
+                "total_cases": len(cases),
+                "evidence": evidence_count,
+                "notes": notes_count,
+            },
+            cases=cases,
         )
 
     return redirect(url_for("sectors"))
@@ -2423,6 +2485,75 @@ def admin_donate_on_behalf():
             return redirect(url_for("sector_page", sector="socac"))
 
     return render_template("admin_donate_on_behalf.html", region_labels=REGION_LABELS, error=error)
+
+@app.route("/sector/socaj/cases", methods=["POST"])
+@login_required
+@require_sector("socaj")
+def sector_create_case():
+    title = request.form.get("title", "").strip()
+    if not title:
+        return redirect(url_for("sector_page", sector="socaj"))
+    case = LegalCase(
+        title=title,
+        case_type=request.form.get("case_type", ""),
+        status=request.form.get("status", "Open"),
+        plaintiff=request.form.get("plaintiff", ""),
+        defendant=request.form.get("defendant", ""),
+        description=request.form.get("description", ""),
+        presiding_officer=request.form.get("presiding_officer", ""),
+    )
+    db.session.add(case)
+    db.session.commit()
+    return redirect(url_for("sector_page", sector="socaj"))
+
+@app.route("/sector/socaj/cases/<int:case_id>/status", methods=["POST"])
+@login_required
+@require_sector("socaj")
+def sector_update_case_status(case_id):
+    case = LegalCase.query.get(case_id)
+    if case:
+        case.status = request.form.get("status", case.status)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="socaj"))
+
+@app.route("/sector/socaj/notes", methods=["POST"])
+@login_required
+@require_sector("socaj")
+def sector_create_case_note():
+    case_id = request.form.get("case_id")
+    content = request.form.get("content", "").strip()
+    if case_id and content:
+        note = CaseNote(
+            case_id=int(case_id),
+            note_type=request.form.get("note_type", "Note"),
+            content=content,
+            author_id=current_user.id,
+        )
+        db.session.add(note)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="socaj"))
+
+@app.route("/sector/socaj/evidence", methods=["POST"])
+@login_required
+@require_sector("socaj")
+def sector_upload_evidence():
+    case_id = request.form.get("case_id")
+    file = request.files.get("evidence_file")
+    description = request.form.get("description", "").strip()
+    if case_id and file and file.filename:
+        filename = secure_filename(file.filename)
+        timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_")
+        filename = "evidence_" + timestamp + filename
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        evidence = CaseEvidence(
+            case_id=int(case_id),
+            filename=filename,
+            description=description,
+            uploaded_by_id=current_user.id,
+        )
+        db.session.add(evidence)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="socaj"))
 
 @app.route("/admin/loan/<int:loan_id>/approve", methods=["POST"])
 @login_required

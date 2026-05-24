@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ config.name }} | PSC Sector Console</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#fdf6e3;
+      --muted:#c4b998;
+      --accent:{{ config.accent }};
+      --panel:rgba(30,24,12,0.82);
+      --line:rgba(240,208,96,0.3);
+      --shadow:0 30px 60px rgba(0,0,0,0.45);
+    }
+    body{
+      margin:0;
+      background:linear-gradient(180deg, #14110a 0%, #100d08 100%);
+      color:var(--ink);
+      font-family:"Space Grotesk", sans-serif;
+      letter-spacing:0.2px;
+      min-height:100vh;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:radial-gradient(circle at 20% 10%, rgba(200,170,80,0.12), transparent 45%);
+      opacity:0.35;
+      pointer-events:none;
+      z-index:0;
+    }
+    header{
+      padding:28px 32px;
+      border-bottom:1px solid var(--line);
+      background:rgba(20,16,10,0.92);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      position:sticky;
+      top:0;
+      z-index:2;
+      backdrop-filter:blur(6px);
+    }
+    h1{
+      margin:0;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:1px;
+    }
+    .subtitle{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 18px;
+      border-radius:999px;
+      border:1px solid rgba(200,170,80,0.4);
+      background:rgba(200,170,80,0.12);
+      color:var(--ink);
+      text-decoration:none;
+      font-weight:600;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+      font-size:12px;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(200,170,80,0.2);}
+    .layout{
+      max-width:1100px;
+      margin:30px auto 80px;
+      padding:0 24px;
+      position:relative;
+      z-index:1;
+    }
+    .panel{
+      background:rgba(26,22,14,0.9);
+      border:1px solid rgba(200,170,80,0.2);
+      border-radius:16px;
+      padding:24px;
+      box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+      position:relative;
+      overflow:hidden;
+      backdrop-filter:blur(8px);
+    }
+    .panel::before{display:none;}
+    .panel + .panel{
+      margin-top:20px;
+    }
+    .panel h2{
+      margin:0 0 14px;
+      font-family:"Orbitron", sans-serif;
+      letter-spacing:0.6px;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .stat{
+      background:rgba(22,18,10,0.9);
+      border:1px solid rgba(200,170,80,0.2);
+      border-radius:12px;
+      padding:14px;
+    }
+    .stat strong{
+      display:block;
+      font-size:18px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));
+      gap:16px;
+    }
+    .card{
+      background:rgba(22,18,10,0.9);
+      border:1px solid rgba(200,170,80,0.18);
+      border-radius:14px;
+      padding:18px;
+      box-shadow:inset 0 0 20px rgba(240,208,96,0.05);
+      transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover{transform:translateY(-3px);border-color:rgba(200,170,80,0.4);box-shadow:0 12px 26px rgba(60,50,30,0.35);}
+    .card strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
+    }
+    .card .case-title{
+      font-size:16px;
+      margin-bottom:6px;
+    }
+    .badge{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      margin-bottom:8px;
+    }
+    .badge-open{background:rgba(240,208,96,0.2);color:#f0d060;border:1px solid rgba(240,208,96,0.3);}
+    .badge-closed{background:rgba(100,200,100,0.15);color:#7cda7c;border:1px solid rgba(100,200,100,0.25);}
+    .badge-appealed{background:rgba(255,160,60,0.15);color:#ffa03c;border:1px solid rgba(255,160,60,0.25);}
+    .badge-dismissed{background:rgba(160,160,160,0.15);color:#b0b0b0;border:1px solid rgba(160,160,160,0.25);}
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .login{
+      max-width:480px;
+      margin:80px auto;
+      text-align:center;
+    }
+    .login input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(200,170,80,0.3);
+      background:rgba(10,14,20,0.9);
+      color:var(--ink);
+    }
+    .login button{
+      margin-top:14px;
+      width:100%;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+      text-transform:uppercase;
+      letter-spacing:0.6px;
+    }
+    input, textarea, select{
+      width:100%;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid rgba(200,170,80,0.3);
+      background:rgba(14,12,8,0.9);
+      color:var(--ink);
+      font-size:13px;
+      font-family:"Space Grotesk", sans-serif;
+      box-sizing:border-box;
+      transition:border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, textarea:focus, select:focus{
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 12px rgba(240,208,96,0.2);
+    }
+    textarea{
+      min-height:70px;
+      resize:vertical;
+    }
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .form-row-3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+    }
+    .action-btn{
+      margin-top:10px;
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid rgba(200,170,80,0.3);
+      background:rgba(200,170,80,0.12);
+      color:var(--ink);
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .action-btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(30,40,60,0.35);}
+    .subsection{
+      margin-top:14px;
+      padding-top:12px;
+      border-top:1px solid rgba(200,170,80,0.12);
+    }
+    .subsection h4{
+      margin:0 0 8px;
+      font-family:"Orbitron", sans-serif;
+      font-size:12px;
+      letter-spacing:0.5px;
+      color:var(--muted);
+    }
+    .evidence-img{
+      max-width:100%;
+      max-height:160px;
+      border-radius:8px;
+      margin-top:6px;
+      border:1px solid rgba(200,170,80,0.15);
+    }
+    .note-entry{
+      padding:8px 0;
+      border-bottom:1px solid rgba(200,170,80,0.08);
+    }
+    .note-entry:last-child{border-bottom:none;}
+    .note-type{
+      display:inline-block;
+      font-size:10px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      padding:1px 6px;
+      border-radius:4px;
+      margin-right:6px;
+    }
+    .note-speech{background:rgba(240,208,96,0.2);color:#f0d060;}
+    .note-data{background:rgba(100,180,255,0.2);color:#7cb8ff;}
+    .note-note{background:rgba(160,160,160,0.15);color:#b0b0b0;}
+    .note-verdict{background:rgba(100,200,100,0.15);color:#7cda7c;}
+    .inline-form{
+      display:flex;
+      gap:8px;
+      align-items:flex-end;
+      flex-wrap:wrap;
+    }
+    .inline-form input,
+    .inline-form select,
+    .inline-form textarea{
+      flex:1;
+      min-width:120px;
+    }
+    .inline-form .action-btn{
+      margin-top:0;
+      white-space:nowrap;
+    }
+    .file-input{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .file-input::-webkit-file-upload-button{
+      padding:6px 12px;
+      border-radius:6px;
+      border:1px solid rgba(200,170,80,0.3);
+      background:rgba(200,170,80,0.12);
+      color:var(--ink);
+      font-weight:600;
+      font-size:11px;
+      cursor:pointer;
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>{{ config.name }}</h1>
+      <div class="subtitle">{{ config.full }} — {{ config.summary }}</div>
+    </div>
+    <form method="POST" action="{{ url_for('sector_lock', sector='socaj') }}">
+      <button class="btn" type="submit">Lock Sector</button>
+    </form>
+  </header>
+
+  {% if not authed %}
+  <div class="panel login">
+    <h2>Sector Authentication</h2>
+    <p class="muted">Enter the SoCAJ password to access the court system.</p>
+    {% if error %}<p style="color:#f0d060;">{{ error }}</p>{% endif %}
+    <form method="POST">
+      <input type="password" name="sector_password" placeholder="SoCAJ Access Code" required>
+      <button class="btn" type="submit">Unlock Console</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="layout">
+    <div class="stats">
+      <div class="stat"><strong>{{ stats.open_cases }}</strong><span class="muted">Open Cases</span></div>
+      <div class="stat"><strong>{{ stats.total_cases }}</strong><span class="muted">Total Cases</span></div>
+      <div class="stat"><strong>{{ stats.evidence }}</strong><span class="muted">Evidence Files</span></div>
+      <div class="stat"><strong>{{ stats.notes }}</strong><span class="muted">Trial Notes</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Docket — New Case Filing</h2>
+      <form method="POST" action="{{ url_for('sector_create_case') }}">
+        <div class="form-row">
+          <div style="flex:2;">
+            <label>Case Title</label>
+            <input name="title" required placeholder="e.g., PSC vs. John Doe — Unauthorized Pen Removal">
+          </div>
+          <div style="flex:1;">
+            <label>Case Type</label>
+            <select name="case_type">
+              <option value="Theft">Theft</option>
+              <option value="Dispute">Dispute</option>
+              <option value="Violation">Violation</option>
+              <option value="Appeal">Appeal</option>
+              <option value="Inquiry">Inquiry</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Plaintiff</label>
+            <input name="plaintiff" placeholder="PSC, member name, or entity">
+          </div>
+          <div>
+            <label>Defendant</label>
+            <input name="defendant" placeholder="Accused member or party">
+          </div>
+        </div>
+        <div class="form-row">
+          <div style="flex:1;">
+            <label>Presiding Officer</label>
+            <input name="presiding_officer" placeholder="Judge or adjudicator">
+          </div>
+          <div style="flex:1;">
+            <label>Status</label>
+            <select name="status">
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+              <option value="Appealed">Appealed</option>
+              <option value="Dismissed">Dismissed</option>
+            </select>
+          </div>
+        </div>
+        <label>Description</label>
+        <textarea name="description" placeholder="Summary of the case, relevant PSC policies, and initial findings..."></textarea>
+        <button class="action-btn" type="submit">File Case</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Active Cases</h2>
+      {% if cases %}
+      <div class="grid">
+        {% for case in cases %}
+        <div class="card">
+          <div>
+            <span class="badge badge-{{ case.status.lower() }}">{{ case.status }}</span>
+            <span class="badge" style="background:rgba(200,170,80,0.1);border-color:rgba(200,170,80,0.2);">{{ case.case_type }}</span>
+          </div>
+          <strong class="case-title">{{ case.title }}</strong>
+          <div class="muted">Plaintiff: {{ case.plaintiff or 'N/A' }} &mdash; Defendant: {{ case.defendant or 'N/A' }}</div>
+          {% if case.presiding_officer %}
+          <div class="muted">Presiding: {{ case.presiding_officer }}</div>
+          {% endif %}
+          {% if case.description %}
+          <p class="muted" style="margin-top:6px;">{{ case.description }}</p>
+          {% endif %}
+          <div class="muted" style="margin-top:6px;">Filed: {{ case.created_at.strftime('%Y-%m-%d') }}</div>
+
+          <div class="subsection">
+            <h4>Update Status</h4>
+            <form method="POST" action="{{ url_for('sector_update_case_status', case_id=case.id) }}" class="inline-form">
+              <select name="status" style="flex:1;">
+                <option value="Open" {% if case.status == 'Open' %}selected{% endif %}>Open</option>
+                <option value="Closed" {% if case.status == 'Closed' %}selected{% endif %}>Closed</option>
+                <option value="Appealed" {% if case.status == 'Appealed' %}selected{% endif %}>Appealed</option>
+                <option value="Dismissed" {% if case.status == 'Dismissed' %}selected{% endif %}>Dismissed</option>
+              </select>
+              <button class="action-btn" type="submit">Update</button>
+            </form>
+          </div>
+
+          <div class="subsection">
+            <h4>Evidence ({{ case.evidence|length }})</h4>
+            {% if case.evidence %}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              {% for ev in case.evidence %}
+              <div>
+                <a href="{{ url_for('static', filename='pens/' + ev.filename) }}" target="_blank">
+                  <img src="{{ url_for('static', filename='pens/' + ev.filename) }}" alt="Evidence" class="evidence-img" loading="lazy">
+                </a>
+                <div class="muted" style="font-size:11px;margin-top:2px;">{{ ev.description }}</div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="muted">No evidence uploaded.</div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('sector_upload_evidence') }}" enctype="multipart/form-data" style="margin-top:10px;">
+              <input type="hidden" name="case_id" value="{{ case.id }}">
+              <div class="inline-form">
+                <input type="file" name="evidence_file" accept="image/*" class="file-input" required style="flex:2;">
+                <input name="description" placeholder="Description" style="flex:1;">
+                <button class="action-btn" type="submit">Upload</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="subsection">
+            <h4>Trial Notes ({{ case.notes|length }})</h4>
+            {% if case.notes %}
+            <div style="max-height:200px;overflow-y:auto;">
+              {% for note in case.notes %}
+              <div class="note-entry">
+                <span class="note-type note-{{ note.note_type.lower() }}">{{ note.note_type }}</span>
+                <span class="muted" style="font-size:11px;">{{ note.created_at.strftime('%Y-%m-%d %H:%M') }}{% if note.author %} by {{ note.author.username }}{% endif %}</span>
+                <div class="muted" style="margin-top:4px;">{{ note.content }}</div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="muted">No notes recorded.</div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('sector_create_case_note') }}" style="margin-top:10px;">
+              <input type="hidden" name="case_id" value="{{ case.id }}">
+              <div class="form-row" style="grid-template-columns:1fr 3fr;">
+                <select name="note_type">
+                  <option value="Note">Note</option>
+                  <option value="Speech">Speech</option>
+                  <option value="Data">Data</option>
+                  <option value="Verdict">Verdict</option>
+                </select>
+                <textarea name="content" placeholder="Add a note, speech, or data point..." style="min-height:50px;"></textarea>
+              </div>
+              <button class="action-btn" type="submit">Add Note</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No cases filed yet. Use the Docket panel to file a new case.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+  <div id="psc-chatbot-root"></div>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+</html>
