@@ -2,295 +2,180 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DOOM - PSC Mini Games</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        :root {
-            --stripe-pattern: repeating-linear-gradient(0deg, transparent, transparent 2px, #000 3px, #000 4px);
+        .wrap { max-width: 800px; margin: 0 auto; padding: 40px 20px 80px; }
+        .doom-layout { display: flex; flex-direction: column; gap: 16px; }
+        .game-container {
+            background: #000; border-radius: 18px; overflow: hidden;
+            position: relative; aspect-ratio: 640 / 400;
         }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 20px; min-height: 100vh;
-            background: #e5e5e5; color: #000;
-            font-family: Geneva, Verdana, sans-serif; font-size: 16px;
-            user-select: none; touch-action: none;
-        }
-        .window {
-            background: #fff; border: 2px solid #000;
-            box-shadow: 4px 4px 0 #000;
-            width: 100%; max-width: 660px; margin: 0 auto;
-            display: flex; flex-direction: column;
-        }
-        .title-bar {
-            height: 35px; border-bottom: 2px solid #000;
-            position: relative; background: #fff; flex-shrink: 0;
-        }
-        .title-stripes {
-            position: absolute; top: 4px; right: 4px; bottom: 4px; left: 4px;
-            background-image: var(--stripe-pattern);
-        }
-        .title-text {
-            position: absolute; top: 7px; left: 50%;
-            margin-left: -40px; width: 80px;
-            text-align: center; background: #fff;
-            font-weight: bold; text-transform: uppercase;
-        }
-        .close-box {
-            position: absolute; top: 7px; left: 10px;
-            width: 18px; height: 18px;
-            border: 2px solid #000; background: #fff;
-            text-align: center; line-height: 16px; font-weight: bold;
-            box-shadow: 2px 2px 0 #000;
-            font-family: sans-serif; font-size: 12px;
-            text-decoration: none; color: #000; cursor: pointer;
-        }
-        .window-content {
-            background: #000; position: relative;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 400px; overflow: hidden;
-        }
-        canvas { width: 100%; display: block; image-rendering: pixelated; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
         #status {
-            color: #aaa; font-family: monospace; position: absolute; z-index: 10;
-            font-size: 14px; text-align: center;
+            color: #888; font-family: monospace; font-size: 14px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            text-align: center; z-index: 10;
         }
-        .controls-container {
-            display: flex; flex-direction: column; align-items: center;
-            width: 100%; padding: 12px;
+        .controls { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .controls > div { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .dpad { display: flex; flex-direction: column; align-items: center; }
+        .dpad-row { display: flex; }
+        .ctrl-btn {
+            background: #fff; border: 1px solid var(--gray-200); border-radius: 10px;
+            font-weight: 700; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; user-select: none; touch-action: manipulation;
+            width: 56px; height: 56px; box-shadow: var(--shadow-sm); transition: var(--transition-fast);
         }
-        .controls-container > div { margin-bottom: 8px; }
-        .d-pad-row { display: flex; justify-content: center; }
-        .key-btn {
-            background: #fff; border: 2px solid #000; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 2px 2px 0 #000;
-            user-select: none; font-size: 1.2rem;
-            width: 60px; height: 60px; margin: 4px;
-            border-radius: 2px; touch-action: manipulation;
-        }
-        .key-btn:active, .key-btn.active {
-            background: #000; color: #fff;
-            transform: translate(1px, 1px); box-shadow: none;
-        }
-        .action-row {
-            display: flex; justify-content: center; align-items: center;
-            flex-wrap: wrap; gap: 6px; padding: 6px;
-            background: #eee; border: 1px solid #999; border-radius: 4px;
-        }
-        .action-btn { width: auto; padding: 0 14px; font-size: 0.95rem; height: 48px; }
-        .value-well {
-            background: #fff; border: 2px inset #999;
-            padding: 0 10px; font-family: monospace; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            min-width: 36px; height: 40px; font-size: 0.95rem;
-        }
+        .ctrl-btn:active { background: var(--gray-100); transform: scale(0.95); }
+        .ctrl-btn.wide { width: auto; padding: 0 18px; font-size: 0.85rem; height: 48px; }
+        .ctrl-btn:active.active { background: var(--primary); color: #fff; }
     </style>
 </head>
 <body>
-
-<div class="window">
-    <div class="title-bar">
-        <div class="title-stripes"></div>
-        <a class="close-box" href="{{ url_for('games') }}">x</a>
-        <div class="title-text">DOOM</div>
-    </div>
-    <div class="window-content">
-        <div id="status">Loading...</div>
-        <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    </div>
-
-    <div class="controls-container">
-        <div class="action-row">
-            <div id="renderModeBtn" class="key-btn action-btn" style="min-width:160px" onclick="cycleRenderMode()">
-                Mode: Color
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('games') }}">Back to Games</a></li>
+                </ul>
             </div>
-            <span style="font-weight:bold;font-size:0.8rem;text-transform:uppercase">Contrast</span>
-            <div class="key-btn action-btn" style="width:42px;height:42px;padding:0" onclick="changeContrast(-10)">-</div>
-            <div class="key-btn action-btn" style="width:42px;height:42px;padding:0" onclick="changeContrast(10)">+</div>
-            <div id="contrastValue" class="value-well" style="height:42px;min-width:36px">0</div>
+        </nav>
+    </header>
+
+    <main class="wrap">
+        <div class="doom-layout">
+            <h1>DOOM</h1>
+            <p style="color: var(--gray-500);">WebAssembly-powered native port. Press Enter to start.</p>
+
+            <div class="game-container card" style="padding:0">
+                <div id="status">Loading DOOM...</div>
+                <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+            </div>
+
+            <div class="card controls" style="padding:16px">
+                <div class="dpad">
+                    <div class="dpad-row">
+                        <span class="ctrl-btn" onpointerdown="simulateInput(38,true)" onpointerup="simulateInput(38,false)" onpointerleave="simulateInput(38,false)">&#9650;</span>
+                    </div>
+                    <div class="dpad-row">
+                        <span class="ctrl-btn" onpointerdown="simulateInput(37,true)" onpointerup="simulateInput(37,false)" onpointerleave="simulateInput(37,false)">&#9664;</span>
+                        <span class="ctrl-btn" onpointerdown="simulateInput(40,true)" onpointerup="simulateInput(40,false)" onpointerleave="simulateInput(40,false)">&#9660;</span>
+                        <span class="ctrl-btn" onpointerdown="simulateInput(39,true)" onpointerup="simulateInput(39,false)" onpointerleave="simulateInput(39,false)">&#9654;</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="ctrl-btn wide" onpointerdown="simulateInput(17,true)" onpointerup="simulateInput(17,false)" onpointerleave="simulateInput(17,false)">FIRE (Ctrl)</span>
+                    <span class="ctrl-btn wide" onpointerdown="simulateInput(32,true)" onpointerup="simulateInput(32,false)" onpointerleave="simulateInput(32,false)">USE (Space)</span>
+                    <span class="ctrl-btn wide" onpointerdown="simulateInput(13,true)" onpointerup="simulateInput(13,false)" onpointerleave="simulateInput(13,false)">ENTER</span>
+                    <span class="ctrl-btn wide" onpointerdown="simulateInput(27,true)" onpointerup="simulateInput(27,false)" onpointerleave="simulateInput(27,false)">ESC</span>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <div class="d-pad-row">
-            <div class="key-btn" onpointerdown="simulateInput(38,true)" onpointerup="simulateInput(38,false)" onpointerleave="simulateInput(38,false)">&#9650;</div>
-        </div>
-        <div class="d-pad-row">
-            <div class="key-btn" onpointerdown="simulateInput(37,true)" onpointerup="simulateInput(37,false)" onpointerleave="simulateInput(37,false)">&#9664;</div>
-            <div class="key-btn" onpointerdown="simulateInput(40,true)" onpointerup="simulateInput(40,false)" onpointerleave="simulateInput(40,false)">&#9660;</div>
-            <div class="key-btn" onpointerdown="simulateInput(39,true)" onpointerup="simulateInput(39,false)" onpointerleave="simulateInput(39,false)">&#9654;</div>
-        </div>
-        <div class="action-row">
-            <div class="key-btn action-btn" onpointerdown="simulateInput(17,true)" onpointerup="simulateInput(17,false)" onpointerleave="simulateInput(17,false)">FIRE (Ctrl)</div>
-            <div class="key-btn action-btn" onpointerdown="simulateInput(32,true)" onpointerup="simulateInput(32,false)" onpointerleave="simulateInput(32,false)">USE (Space)</div>
-            <div class="key-btn action-btn" onpointerdown="simulateInput(13,true)" onpointerup="simulateInput(13,false)" onpointerleave="simulateInput(13,false)">ENTER</div>
-            <div class="key-btn action-btn" onpointerdown="simulateInput(27,true)" onpointerup="simulateInput(27,false)" onpointerleave="simulateInput(27,false)" style="font-size:0.8rem">ESC</div>
-        </div>
-    </div>
-</div>
+    <script>
+        let wasmMemory = null;
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        const WIDTH = 640, HEIGHT = 400;
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        let scratchImageData = ctx.createImageData(WIDTH, HEIGHT);
+        let globalExports = null;
 
-<script>
-let wasmMemory = null;
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
-const WIDTH = 640, HEIGHT = 400;
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
-let scratchImageData = ctx.createImageData(WIDTH, HEIGHT);
-let globalExports = null;
-let renderMode = 0;
-let contrastBias = 0;
-const MODES = ["Color", "Bayer 4x4", "Bayer 8x8", "Blue Noise"];
-
-const bayer4x4 = [
-    0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5
-];
-const bayer8x8 = [
-    0,48,12,60,3,51,15,63,32,16,44,28,35,19,47,31,
-    8,56,4,52,11,59,7,55,40,24,36,20,43,27,39,23,
-    2,50,14,62,1,49,13,61,34,18,46,30,33,17,45,29,
-    10,58,6,54,9,57,5,53,42,26,38,22,41,25,37,21
-];
-const blueNoise16x16 = [
-    128,203,45,153,116,219,61,169,131,199,35,143,105,231,72,178,
-    75,243,13,107,182,30,248,94,151,83,222,56,163,18,121,240,
-    140,113,215,58,134,87,175,42,210,126,11,196,99,148,228,67,
-    32,185,48,158,237,69,16,123,64,189,51,145,207,27,80,171,
-    213,96,252,21,120,192,104,234,142,115,217,38,137,90,250,125,
-    63,166,155,77,226,53,150,25,180,47,160,71,191,59,168,14,
-    130,247,34,141,111,198,85,244,117,225,136,102,239,24,114,205,
-    19,109,187,66,254,40,129,173,57,149,22,183,62,165,88,211,
-    217,52,133,92,212,73,10,201,154,139,98,245,132,33,194,146,
-    82,157,238,29,161,242,122,224,44,214,68,110,218,172,55,251,
-    49,118,54,216,81,15,179,39,190,12,164,241,41,89,127,23,
-    249,206,147,103,233,135,195,112,144,230,86,204,138,197,65,159,
-    93,26,70,188,60,167,46,253,124,43,31,119,20,101,221,79,
-    177,229,156,17,141,246,97,170,78,220,64,215,152,181,37,244,
-    36,114,208,128,76,184,50,137,193,11,162,115,232,126,95,209,
-    142,255,8,227,213,91,248,28,100,236,74,202,42,176,219,174
-];
-
-function cycleRenderMode() {
-    renderMode = (renderMode + 1) % MODES.length;
-    document.getElementById('renderModeBtn').innerText = 'Mode: ' + MODES[renderMode];
-    const btn = document.getElementById('renderModeBtn');
-    btn.style.background = renderMode === 0 ? 'white' : 'black';
-    btn.style.color = renderMode === 0 ? 'black' : 'white';
-}
-function changeContrast(d) {
-    contrastBias = Math.max(-128, Math.min(128, contrastBias + d));
-    document.getElementById('contrastValue').innerText = contrastBias;
-}
-
-function readString(offset, length) {
-    return new TextDecoder("utf8").decode(new Uint8Array(wasmMemory.buffer, offset, length));
-}
-
-function getDoomKey(keyCode) {
-    switch (keyCode) {
-        case 8: return 127;
-        case 17: return 0x80 + 0x1d;
-        case 18: return 0x80 + 0x38;
-        case 37: return 0xac;
-        case 38: return 0xad;
-        case 39: return 0xae;
-        case 40: return 0xaf;
-        default:
-            if (keyCode >= 65 && keyCode <= 90) return keyCode + 32;
-            if (keyCode >= 112 && keyCode <= 123) return keyCode + 75;
-            return keyCode;
-    }
-}
-
-function setupInput(exports) {
-    const handleKey = (e, isDown) => {
-        let code = e.keyCode;
-        if (e.key === "Control") code = 17;
-        if (e.key === "Alt") code = 18;
-        if (e.key === "Enter") code = 13;
-        if (e.key === " ") code = 32;
-        if ([37,38,39,40,32,17,18].includes(code)) e.preventDefault();
-        exports.add_browser_event(isDown ? 0 : 1, getDoomKey(code));
-    };
-    window.addEventListener('keydown', (e) => handleKey(e, true));
-    window.addEventListener('keyup', (e) => handleKey(e, false));
-    canvas.focus();
-}
-
-function simulateInput(keyCode, isDown) {
-    if (!globalExports) return;
-    globalExports.add_browser_event(isDown ? 0 : 1, getDoomKey(keyCode));
-}
-
-async function initDoom() {
-    const status = document.getElementById('status');
-    try {
-        if (typeof WebAssembly === 'undefined') {
-            status.innerText = 'WebAssembly not supported on this device.';
-            status.style.color = 'red';
-            return;
+        function readString(offset, length) {
+            return new TextDecoder("utf8").decode(new Uint8Array(wasmMemory.buffer, offset, length));
         }
-        wasmMemory = new WebAssembly.Memory({ initial: 108 });
-        status.innerText = 'Downloading game data...';
-        const resp = await fetch("{{ url_for('static', filename='doom.wasm') }}");
-        if (!resp.ok) throw new Error('Failed to load doom.wasm: ' + resp.status);
-        const buffer = await resp.arrayBuffer();
-        status.innerText = 'Initializing...';
 
-        const imports = {
-            js: {
-                js_console_log: (offset, len) => console.log("[Doom]", readString(offset, len)),
-                js_stdout: (offset, len) => console.log("[Doom]", readString(offset, len)),
-                js_stderr: (offset, len) => console.error("[Doom]", readString(offset, len)),
-                js_milliseconds_since_start: () => performance.now(),
-                js_draw_screen: (ptr) => {
-                    const src = new Uint8ClampedArray(wasmMemory.buffer, ptr, WIDTH * HEIGHT * 4);
-                    const data = scratchImageData.data;
-                    if (renderMode === 0) {
-                        data.set(src);
-                    } else {
-                        let p = 0;
-                        for (let y = 0; y < HEIGHT; y++) {
-                            for (let x = 0; x < WIDTH; x++) {
-                                const luma = (src[p]*77 + src[p+1]*150 + src[p+2]*29) >> 8;
-                                let output = 0;
-                                if (renderMode === 1) {
-                                    output = (luma > ((bayer4x4[(x&3)+((y&3)<<2)]<<4)+8+contrastBias)) ? 255 : 0;
-                                } else if (renderMode === 2) {
-                                    output = (luma > ((bayer8x8[(x&7)+((y&7)<<3)]<<2)+2+contrastBias)) ? 255 : 0;
-                                } else {
-                                    output = (luma > (blueNoise16x16[(x&15)+((y&15)<<4)]+contrastBias)) ? 255 : 0;
-                                }
-                                data[p] = data[p+1] = data[p+2] = output;
-                                data[p+3] = 255;
-                                p += 4;
-                            }
-                        }
-                    }
-                    ctx.putImageData(scratchImageData, 0, 0);
+        function getDoomKey(keyCode) {
+            switch (keyCode) {
+                case 8: return 127;
+                case 17: return 0x80 + 0x1d;
+                case 18: return 0x80 + 0x38;
+                case 37: return 0xac;
+                case 38: return 0xad;
+                case 39: return 0xae;
+                case 40: return 0xaf;
+                default:
+                    if (keyCode >= 65 && keyCode <= 90) return keyCode + 32;
+                    if (keyCode >= 112 && keyCode <= 123) return keyCode + 75;
+                    return keyCode;
+            }
+        }
+
+        function setupInput(exports) {
+            const handleKey = (e, isDown) => {
+                let code = e.keyCode;
+                if (e.key === "Control") code = 17;
+                if (e.key === "Alt") code = 18;
+                if (e.key === "Enter") code = 13;
+                if (e.key === " ") code = 32;
+                if ([37,38,39,40,32,17,18].includes(code)) e.preventDefault();
+                exports.add_browser_event(isDown ? 0 : 1, getDoomKey(code));
+            };
+            window.addEventListener('keydown', (e) => handleKey(e, true));
+            window.addEventListener('keyup', (e) => handleKey(e, false));
+            canvas.focus();
+        }
+
+        function simulateInput(keyCode, isDown) {
+            if (!globalExports) return;
+            globalExports.add_browser_event(isDown ? 0 : 1, getDoomKey(keyCode));
+        }
+
+        async function initDoom() {
+            const status = document.getElementById('status');
+            try {
+                if (typeof WebAssembly === 'undefined') {
+                    status.innerText = 'WebAssembly not supported on this device.';
+                    status.style.color = 'red';
+                    return;
                 }
-            },
-            env: { memory: wasmMemory }
-        };
+                wasmMemory = new WebAssembly.Memory({ initial: 108 });
+                status.innerText = 'Downloading game data...';
+                const resp = await fetch("{{ url_for('static', filename='doom.wasm') }}");
+                if (!resp.ok) throw new Error('Failed to load doom.wasm: ' + resp.status);
+                const buffer = await resp.arrayBuffer();
+                status.innerText = 'Initializing...';
 
-        const { instance } = await WebAssembly.instantiate(buffer, imports);
-        status.style.display = 'none';
-        globalExports = instance.exports;
-        instance.exports.main();
-        setupInput(instance.exports);
+                const imports = {
+                    js: {
+                        js_console_log: (offset, len) => console.log("[Doom]", readString(offset, len)),
+                        js_stdout: (offset, len) => console.log("[Doom]", readString(offset, len)),
+                        js_stderr: (offset, len) => console.error("[Doom]", readString(offset, len)),
+                        js_milliseconds_since_start: () => performance.now(),
+                        js_draw_screen: (ptr) => {
+                            const src = new Uint8ClampedArray(wasmMemory.buffer, ptr, WIDTH * HEIGHT * 4);
+                            scratchImageData.data.set(src);
+                            ctx.putImageData(scratchImageData, 0, 0);
+                        }
+                    },
+                    env: { memory: wasmMemory }
+                };
 
-        const step = () => {
-            instance.exports.doom_loop_step();
-            requestAnimationFrame(step);
-        };
-        requestAnimationFrame(step);
+                const { instance } = await WebAssembly.instantiate(buffer, imports);
+                status.style.display = 'none';
+                globalExports = instance.exports;
+                instance.exports.main();
+                setupInput(instance.exports);
 
-    } catch (err) {
-        status.innerText = 'Error: ' + (err.message || String(err));
-        status.style.color = 'red';
-        console.error(err);
-    }
-}
+                const step = () => {
+                    instance.exports.doom_loop_step();
+                    requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
 
-window.onload = initDoom;
-</script>
+            } catch (err) {
+                status.innerText = 'Error: ' + (err.message || String(err));
+                status.style.color = 'red';
+                console.error(err);
+            }
+        }
+
+        window.onload = initDoom;
+    </script>
 </body>
 </html>
