@@ -726,22 +726,59 @@ def normalize_barcode(raw_barcode: str) -> str:
     return "".join(ch for ch in (raw_barcode or "").strip() if ch.isdigit())
 
 
+def lookup_upcitemdb(barcode: str) -> dict | None:
+    try:
+        resp = requests.get(
+            f"https://api.upcitemdb.com/prod/trial/lookup?upc={barcode}",
+            headers={"User-Agent": "PSC/1.0"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        if data.get("code") != "OK" or not data.get("items"):
+            return None
+        item = data["items"][0]
+        return {
+            "name": (item.get("title") or "").strip()[:250],
+            "description": (item.get("description") or "").strip()[:500],
+            "brand": (item.get("brand") or "").strip(),
+            "category": (item.get("category") or "").strip(),
+        }
+    except Exception:
+        return None
+
+
 def get_barcode_seed_data(barcode: str):
     normalized = normalize_barcode(barcode)
     if not normalized:
         return normalized, None
+
     existing_pen = Pens.query.filter_by(barcode=normalized).order_by(Pens.id.desc()).first()
-    if not existing_pen:
-        return normalized, None
-    return normalized, {
-        "name": existing_pen.name,
-        "description": existing_pen.description or "",
-        "ink_color": existing_pen.ink_color or "Black",
-        "ink_level": existing_pen.ink_level or 100,
-        "class_": existing_pen.class_ or "C",
-        "prs": existing_pen.prs or 50,
-        "location": existing_pen.location or "Vault Shelf A",
-    }
+    if existing_pen:
+        return normalized, {
+            "name": existing_pen.name,
+            "description": existing_pen.description or "",
+            "ink_color": existing_pen.ink_color or "Black",
+            "ink_level": existing_pen.ink_level or 100,
+            "class_": existing_pen.class_ or "C",
+            "prs": existing_pen.prs or 50,
+            "location": existing_pen.location or "Vault Shelf A",
+        }
+
+    external = lookup_upcitemdb(normalized)
+    if external:
+        return normalized, {
+            "name": external["name"],
+            "description": external["description"],
+            "ink_color": "Black",
+            "ink_level": 100,
+            "class_": "C",
+            "prs": 50,
+            "location": "Vault Shelf A",
+        }
+
+    return normalized, None
 
 
 def decode_barcode_from_upload(file_storage):
@@ -1122,6 +1159,10 @@ def ensure_schema_updates() -> None:
         "ALTER TABLE pen_loans ADD COLUMN IF NOT EXISTS rejection_reason VARCHAR(300) DEFAULT ''",
         "UPDATE pen_loans SET status = 'active' WHERE return_date IS NULL AND status = 'pending'",
         "UPDATE pen_loans SET status = 'returned' WHERE return_date IS NOT NULL AND status = 'pending'",
+        "ALTER TABLE merch_item ADD COLUMN IF NOT EXISTS required_subscription VARCHAR(50) DEFAULT 'Basic'",
+        "ALTER TABLE merch_item ADD COLUMN IF NOT EXISTS required_donations INTEGER DEFAULT 0",
+        "ALTER TABLE merch_item ADD COLUMN IF NOT EXISTS preorder_open BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE merch_item ADD COLUMN IF NOT EXISTS price_label VARCHAR(50) DEFAULT '$0'",
     ]
     for statement in statements:
         try:
