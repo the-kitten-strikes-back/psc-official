@@ -1268,6 +1268,36 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
+@app.route("/change-password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        current_password = request.form.get("current_password")
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+
+        if not current_password or not new_password or not confirm_password:
+            return render_template("change_password.html", error="All fields are required.")
+
+        if not check_password_hash(current_user.password, current_password):
+            return render_template("change_password.html", error="Current password is incorrect.")
+
+        if new_password != confirm_password:
+            return render_template("change_password.html", error="New passwords do not match.")
+
+        if len(new_password) < 6:
+            return render_template("change_password.html", error="New password must be at least 6 characters.")
+
+        if current_password == new_password:
+            return render_template("change_password.html", error="New password must be different from your current password.")
+
+        current_user.password = generate_password_hash(new_password, method="pbkdf2:sha256")
+        db.session.commit()
+
+        return render_template("change_password.html", success="Password changed successfully!")
+
+    return render_template("change_password.html")
+
 @app.route("/google3e4f534e8aec0991.html")
 def google_verify():
     return render_template("google3e4f534e8aec0991.html")
