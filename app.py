@@ -1879,10 +1879,10 @@ def famous_pens():
     return render_template("famous_pens.html", pens=pens)
 
 
-@app.route("/games")
+@app.route("/entertainmentsystem")
 def games():
     pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
-    return render_template("games.html", pens=pens)
+    return render_template("entertainmentsystem.html", pens=pens)
 
 @app.route("/games/doom")
 def doom():
