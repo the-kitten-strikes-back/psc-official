@@ -1884,7 +1884,7 @@ def games():
     pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
     return render_template("entertainmentsystem.html", pens=pens)
 
-@app.route("/games/doom")
+@app.route("/entertainmentsystem/doom")
 def doom():
     return render_template("doom.html")
 
