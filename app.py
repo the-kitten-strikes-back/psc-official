@@ -1934,8 +1934,32 @@ def loan():
             "sort": request.args.get("sort", "name_asc").strip(),
         }
 
+        # Get the latest donation ID for each pen (to check approval status)
+        latest_donation_ids = db.session.query(
+            db.func.max(PenDonations.id)
+        ).group_by(PenDonations.pen_id).subquery()
+
+        # Get pen IDs where the latest donation has status "Accepted"
+        approved_pen_ids = db.session.query(PenDonations.pen_id).filter(
+            PenDonations.id.in_(latest_donation_ids),
+            PenDonations.status == "Accepted"
+        ).all()
+
+        # Get pen IDs with no donations (admin-added pens, automatically approved)
+        no_donation_pen_ids = db.session.query(Pens.id).filter(
+            ~Pens.id.in_(db.session.query(PenDonations.pen_id).distinct())
+        ).all()
+
+        # Combine both sets of approved pens
+        valid_pen_ids = set([row[0] for row in approved_pen_ids] + [row[0] for row in no_donation_pen_ids])
+
+        # Filter out pens in active/pending loans
         active_loan_pen_ids = db.session.query(PenLoans.pen_id).filter(PenLoans.status.in_(["pending", "active"]))
-        query = Pens.query.filter(~Pens.id.in_(active_loan_pen_ids), Pens.retired.is_(False))
+        query = Pens.query.filter(
+            Pens.id.in_(valid_pen_ids),
+            ~Pens.id.in_(active_loan_pen_ids),
+            Pens.retired.is_(False)
+        )
 
         if filters["q"]:
             search = f"%{filters['q']}%"
@@ -2470,7 +2494,21 @@ def reject_donation(donation_id):
 
     donation = PenDonations.query.get(donation_id)
     if donation:
-        donation.status = "Rejected"
+        pen_id = donation.pen_id
+        # Check if the pen has any active or pending loans
+        active_loans = PenLoans.query.filter_by(pen_id=pen_id).filter(
+            PenLoans.status.in_(["pending", "active"])
+        ).first()
+        
+        if active_loans:
+            # Don't delete pen if it has active loans - admin should cancel those first
+            donation.status = "Rejected"
+        else:
+            # Safe to delete the pen - cascade will delete PenDonations and PenLoans
+            pen = Pens.query.get(pen_id)
+            if pen:
+                db.session.delete(pen)
+        
         db.session.commit()
 
     return redirect(url_for("sector_page", sector="socac"))
