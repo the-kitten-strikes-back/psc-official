@@ -152,7 +152,7 @@ REGION_LABELS = {
 PSC_DAY_INFO = {
     "name": "PSC Day",
     "date_label": "First Saturday of November",
-    "summary": "A yearly vault-open celebration for trades, rankings, reviews, games, and community awards.",
+    "summary": "A yearly vault-open celebration for trades, rankings, reviews, activities, and community awards.",
 }
 PSC_SYSTEM_PROMPT = (
     "You are PSC Assistant, the official chatbot for the Pen Storage Company (PSC). "
@@ -1880,7 +1880,7 @@ def famous_pens():
 
 
 @app.route("/entertainmentsystem")
-def games():
+def entertainment_system():
     pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
     return render_template("entertainmentsystem.html", pens=pens)
 

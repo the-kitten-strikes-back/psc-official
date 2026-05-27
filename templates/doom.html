@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOOM - PSC Mini Games</title>
+    <title>DOOM - PSC Mini Activities</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         .wrap { max-width: 800px; margin: 0 auto; padding: 40px 20px 80px; }
         .doom-layout { display: flex; flex-direction: column; gap: 16px; }
-        .game-container {
+        .activity-container {
             background: #000; border-radius: 18px; overflow: hidden;
             position: relative; aspect-ratio: 640 / 400;
         }
@@ -39,7 +39,7 @@
             <div class="nav-container">
                 <a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a>
                 <ul class="nav-links">
-                    <li><a href="{{ url_for('games') }}">Back to Games</a></li>
+                    <li><a href="{{ url_for('entertainment_system') }}">Back to Activities</a></li>
                 </ul>
             </div>
         </nav>
@@ -50,7 +50,7 @@
             <h1>DOOM</h1>
             <p style="color: var(--gray-500);">WebAssembly-powered native port. Press Enter to start.</p>
 
-            <div class="game-container card" style="padding:0">
+            <div class="activity-container card" style="padding:0">
                 <div id="status">Loading DOOM...</div>
                 <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
             </div>
@@ -135,7 +135,7 @@
                     return;
                 }
                 wasmMemory = new WebAssembly.Memory({ initial: 108 });
-                status.innerText = 'Downloading game data...';
+                status.innerText = 'Downloading activity data...';
                 const resp = await fetch("{{ url_for('static', filename='doom.wasm') }}");
                 if (!resp.ok) throw new Error('Failed to load doom.wasm: ' + resp.status);
                 const buffer = await resp.arrayBuffer();

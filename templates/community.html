@@ -23,7 +23,7 @@
     <header><nav><div class="nav-container"><a href="{{ url_for('home') }}" class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">PSC</a><ul class="nav-links"><li><a href="{{ url_for('home') }}">Home</a></li><li><a href="{{ url_for('newsletter') }}">Newsletter</a></li><li><a href="{{ url_for('reviews') }}">Reviews</a></li><li><a href="{{ url_for('members') if current_user.is_authenticated else url_for('login') }}">Members</a></li></ul></div></nav></header>
     <main class="wrap">
         <h1>PSC Community Hub</h1>
-        <p class="lead">General chat, region energy, newsletter access, easter eggs, mini games, and a more welcoming community front door.</p>
+        <p class="lead">General chat, region energy, newsletter access, easter eggs, mini activities, and a more welcoming community front door.</p>
         <div class="grid">
             <section class="card">
                 <h2>General Chat</h2>
@@ -59,7 +59,7 @@
                 <div class="quick-links">
                     <a href="{{ url_for('merch') if current_user.is_authenticated else url_for('login') }}">Merch Drops</a>
                     <a href="{{ url_for('regions') }}">Region Pages</a>
-                    <a href="{{ url_for('games') }}">Mini Games</a>
+                    <a href="{{ url_for('entertainment_system') }}">Mini Activities</a>
                     <a href="{{ url_for('famous_pens') }}">Famous Pens</a>
                     <a href="{{ url_for('retired_pens') }}">Retired Pens</a>
                     <a href="{{ url_for('psc_day') }}">PSC Day</a>
