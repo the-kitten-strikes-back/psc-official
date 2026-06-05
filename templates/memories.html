@@ -6,9 +6,52 @@
     <title>Memories Archive | PSC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='memories.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+      .marquee-bar{
+        background:rgba(15,20,25,0.95);
+        border-bottom:1px solid rgba(184,149,106,0.2);
+        padding:6px 0;
+        font-size:12px;
+        color:var(--text-muted);
+        font-family:'JetBrains Mono',monospace;
+        letter-spacing:2px;
+        position:relative;
+        z-index:2;
+      }
+      .image-banner{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        gap:40px;
+        margin-bottom:40px;
+        padding:20px;
+        background:rgba(26,37,50,0.5);
+        border:1px solid rgba(184,149,106,0.2);
+        position:relative;
+        z-index:2;
+        max-width:900px;
+        margin-left:auto;
+        margin-right:auto;
+      }
+      .banner-img{
+        height:80px;
+        width:auto;
+        border-radius:4px;
+        object-fit:contain;
+      }
+    </style>
 </head>
 <body>
+    <div class="marquee-bar">
+        <marquee>PSC MEMBERS: [add names here]</marquee>
+    </div>
     <div class="dust-particles"></div>
+
+    <div class="image-banner">
+        <img class="banner-img" src="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTt_fdO5Zv6Na-UQDpG-ApHLGqnHQgksbFflTcZzQYGnIobPHt4VgzHRHfaDez503EMZ_cujLKPTvOHOaOn541LFViylowRr9kadPOIDYYJS5Q3e7NAOnAUVM0uLXxpEt_TjgtpS6v3rwk&usqp=CAc" alt="Pen image 1">
+        <img class="banner-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3NT1fOoDaS7MULn8L7xgw87fZXXajiowKAQ&s" alt="Pen image 2">
+        <img class="banner-img" src="{{ url_for('static', filename='logo.png') }}" alt="PSC Logo">
+    </div>
 
     <!-- Arrival Experience Section -->
     <section class="memories-header fade-in">

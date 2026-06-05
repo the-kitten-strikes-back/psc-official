@@ -133,6 +133,28 @@
       font-size:13px;
     }
     textarea{min-height:90px;}
+    .actions{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .action-btn{
+      border-radius:8px;
+      padding:8px 12px;
+      border:1px solid rgba(120,150,200,0.3);
+      background:rgba(120,150,200,0.12);
+      color:var(--ink);
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .action-btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(30,40,60,0.35);}
+    .action-danger{
+      border-color:rgba(255,59,92,0.5);
+      background:rgba(255,59,92,0.15);
+    }
     .save-btn{
       margin-top:12px;
       padding:8px 12px;
@@ -180,6 +202,7 @@
       <div class="stat"><strong>{{ stats.archives }}</strong><span class="muted">Archive Entries</span></div>
       <div class="stat"><strong>{{ stats.legendary }}</strong><span class="muted">Legendary Pens</span></div>
       <div class="stat"><strong>{{ stats.pens }}</strong><span class="muted">Total Pens</span></div>
+      <div class="stat"><strong>{{ stats.pending_memories }}</strong><span class="muted">Pending Memories</span></div>
     </div>
 
     <div class="panel">
@@ -263,6 +286,27 @@
       </div>
       {% else %}
       <p class="muted">No archive entries created yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <h2>Founder Memories — Pending Approval</h2>
+      {% if pending_memories %}
+      <div class="grid">
+        {% for memory in pending_memories %}
+        <div class="card">
+          <strong style="font-style:italic; font-weight:400;">&ldquo;{{ memory.text }}&rdquo;</strong>
+          <div class="muted" style="margin-top:8px;">Submitted by {{ memory.submitted_by.username }}</div>
+          <div class="muted">{{ memory.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          <div class="actions">
+            <button class="action-btn" onclick="fetch('/founder-memory/approve/{{ memory.id }}',{method:'POST'}).then(r=>r.ok?location.reload():alert('Unauthorized'))">Approve</button>
+            <button class="action-btn action-danger" onclick="fetch('/founder-memory/reject/{{ memory.id }}',{method:'POST'}).then(r=>r.ok?location.reload():alert('Unauthorized'))">Reject</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No pending founder memories to review.</p>
       {% endif %}
     </div>
   </div>

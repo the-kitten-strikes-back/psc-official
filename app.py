@@ -1617,6 +1617,7 @@ def sector_page(sector):
         archives = PenArchive.query.order_by(PenArchive.updated_at.desc()).all()
         legendary = [a for a in archives if a.legendary]
         events = ArchiveEvent.query.order_by(ArchiveEvent.created_at.desc()).all()
+        pending_memories = FounderMemory.query.filter_by(status="pending").order_by(FounderMemory.created_at.asc()).all()
         return render_template(
             "sector_soarc.html",
             config=SECTOR_CONFIG[sector],
@@ -1626,11 +1627,13 @@ def sector_page(sector):
                 "archives": len(archives),
                 "legendary": len(legendary),
                 "pens": len(pens),
+                "pending_memories": len(pending_memories),
             },
             pens=pens,
             archives=archives,
             legendary=legendary,
             events=events,
+            pending_memories=pending_memories,
         )
 
     if sector == "socaj":
