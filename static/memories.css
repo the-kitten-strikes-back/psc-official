@@ -1117,6 +1117,124 @@ body {
     height: 200px;
 }
 
+/* ========== ENTRY GLITCH — BODY JITTER ========== */
+.body-glitching {
+    animation: entry-jitter 2.2s ease-out forwards;
+}
+
+@keyframes entry-jitter {
+    0% { transform: translate(0); }
+    3% { transform: translate(-12px, 6px) scale(1.01); }
+    5% { transform: translate(9px, -4px) scale(0.99) skewX(1deg); }
+    7% { transform: translate(-6px, 2px) scale(1.02) skewX(-2deg); }
+    9% { transform: translate(15px, -8px) scale(0.98); }
+    11% { transform: translate(-3px, 1px); }
+    13% { transform: translate(8px, -3px) skewX(3deg); }
+    16% { transform: translate(-10px, 5px) scale(1.01); }
+    19% { transform: translate(4px, -2px); }
+    22% { transform: translate(-7px, 3px) skewX(-1deg); }
+    26% { transform: translate(12px, -6px) scale(0.99); }
+    30% { transform: translate(-2px, 1px); }
+    35% { transform: translate(5px, -2px) skewX(1deg); }
+    40% { transform: translate(-4px, 2px); }
+    50% { transform: translate(2px, -1px); }
+    60% { transform: translate(-1px, 1px); }
+    75% { transform: translate(0); }
+    100% { transform: translate(0); }
+}
+
+/* ========== ENTRY GLITCH — SCREEN FLASH ========== */
+.glitch-screen-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+    background: #fff;
+    animation: entry-flash 2.5s ease-out forwards;
+}
+
+@keyframes entry-flash {
+    0% { opacity: 0.6; }
+    2% { opacity: 0.9; }
+    4% { opacity: 0.3; }
+    6% { opacity: 0.85; }
+    8% { opacity: 0.15; }
+    10% { opacity: 0.7; }
+    12% { opacity: 0.1; }
+    15% { opacity: 0.5; }
+    18% { opacity: 0.05; }
+    22% { opacity: 0.3; }
+    26% { opacity: 0; }
+    50% { opacity: 0.08; }
+    55% { opacity: 0; }
+    80% { opacity: 0.03; }
+    100% { opacity: 0; }
+}
+
+/* ========== ENTRY GLITCH — CORRUPTION NOISE ========== */
+.glitch-noise {
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    pointer-events: none;
+    opacity: 0;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(255, 255, 255, 0.03) 3px,
+            rgba(255, 255, 255, 0.03) 4px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 8px,
+            rgba(0, 0, 0, 0.04) 8px,
+            rgba(0, 0, 0, 0.04) 10px
+        );
+}
+
+.body-glitching .glitch-noise {
+    animation: noise-on 2.2s ease-out forwards;
+}
+
+@keyframes noise-on {
+    0% { opacity: 0; }
+    5% { opacity: 0.5; }
+    10% { opacity: 0.8; }
+    15% { opacity: 0.4; }
+    20% { opacity: 0.7; }
+    25% { opacity: 0.2; }
+    30% { opacity: 0.5; }
+    40% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+    60% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* ========== ENTRY GLITCH — RGB SPLIT ON TITLES ========== */
+.entry-rgb-split {
+    animation: rgb-split-decay 2.8s ease-out forwards;
+    position: relative;
+}
+
+@keyframes rgb-split-decay {
+    0% { text-shadow: -18px 0 #ff3b5c, 18px 0 #3b9eff, 0 0 rgba(255,255,255,0.3); letter-spacing: 12px; }
+    4% { text-shadow: -22px 3px #ff3b5c, 22px -3px #3b9eff, 0 0 rgba(255,255,255,0.3); }
+    8% { text-shadow: -14px -2px #ff3b5c, 14px 2px #3b9eff; }
+    12% { text-shadow: -18px 4px #ff3b5c, 18px -4px #3b9eff, 0 0 rgba(255,255,255,0.2); }
+    16% { text-shadow: -10px 1px #ff3b5c, 10px -1px #3b9eff; }
+    20% { text-shadow: -14px -3px #ff3b5c, 14px 3px #3b9eff; letter-spacing: 8px; }
+    25% { text-shadow: -6px 2px #ff3b5c, 6px -2px #3b9eff; }
+    30% { text-shadow: -10px -1px #ff3b5c, 10px 1px #3b9eff; }
+    35% { text-shadow: -4px 0 #ff3b5c, 4px 0 #3b9eff; letter-spacing: 4px; }
+    45% { text-shadow: -2px 1px #ff3b5c, 2px -1px #3b9eff; }
+    55% { text-shadow: -1px 0 #ff6b6b, 1px 0 #6bb5ff; }
+    70% { text-shadow: 0 0 transparent; letter-spacing: inherit; }
+    100% { text-shadow: 0 0 transparent; letter-spacing: inherit; }
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .archive-title {

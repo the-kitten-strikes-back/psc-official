@@ -287,8 +287,37 @@ function initializeFlickerBurst() {
     }, 8000);
 }
 
+/**
+ * Massive entry glitch sequence on page load
+ */
+function initializeEntryGlitch() {
+    var body = document.body;
+    var flash = document.getElementById('entry-flash');
+
+    // Body jitter + noise overlay (triggered via .body-glitching)
+    body.classList.add('body-glitching');
+
+    // RGB split on all major headings
+    var targets = document.querySelectorAll(
+        '.archive-title, .founder-hero h2, .section-title, .record-header, .oath-header, .status-value'
+    );
+    for (var i = 0; i < targets.length; i++) {
+        targets[i].classList.add('entry-rgb-split');
+    }
+
+    // Cleanup after animation completes
+    setTimeout(function() {
+        body.classList.remove('body-glitching');
+        for (var i = 0; i < targets.length; i++) {
+            targets[i].classList.remove('entry-rgb-split');
+        }
+        if (flash) flash.remove();
+    }, 3200);
+}
+
 // Initialize memory features when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    initializeEntryGlitch();
     loadFounderMemories();
     initializeMemoryForm();
     initializeArchiveRoom();
