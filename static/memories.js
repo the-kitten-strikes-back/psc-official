@@ -125,3 +125,111 @@ deskItems.forEach(item => {
         }
     });
 });
+
+/**
+ * Load approved founder memories from API
+ */
+async function loadFounderMemories() {
+    try {
+        const response = await fetch('/founder-memory/list');
+        if (!response.ok) throw new Error('Failed to load memories');
+        
+        const memories = await response.json();
+        renderMemoryCards(memories);
+    } catch (error) {
+        console.error('Error loading memories:', error);
+    }
+}
+
+/**
+ * Render memory cards in the Memory Wall
+ */
+function renderMemoryCards(memories) {
+    const container = document.getElementById('memory-wall');
+    if (!container) return;
+    
+    if (memories.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Memories will appear here as they are shared and approved.</p>';
+        return;
+    }
+    
+    container.innerHTML = memories.map((memory, index) => `
+        <div class="memory-card">
+            <div class="memory-id">MEMORY #${String(index + 1).padStart(3, '0')}</div>
+            <p class="memory-quote">"${memory.text}"</p>
+        </div>
+    `).join('');
+}
+
+/**
+ * Initialize memory submission form
+ */
+function initializeMemoryForm() {
+    const form = document.getElementById('memory-form');
+    const textarea = document.getElementById('memory-text');
+    const message = document.getElementById('submission-message');
+    
+    if (!form) return; // Form only appears for logged-in users
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const text = textarea.value.trim();
+        
+        if (!text || text.length < 10 || text.length > 500) {
+            message.textContent = 'Memory must be 10-500 characters';
+            message.style.color = '#ff6b6b';
+            return;
+        }
+        
+        try {
+            const response = await fetch('/founder-memory/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            });
+            
+            if (response.ok) {
+                message.textContent = '✓ Memory submitted for review. Thank you!';
+                message.style.color = '#8bc34a';
+                textarea.value = '';
+                setTimeout(() => {
+                    message.textContent = '';
+                }, 3000);
+            } else {
+                message.textContent = 'Error submitting memory. Please try again.';
+                message.style.color = '#ff6b6b';
+            }
+        } catch (error) {
+            console.error('Error submitting memory:', error);
+            message.textContent = 'Error submitting memory';
+            message.style.color = '#ff6b6b';
+        }
+    });
+}
+
+/**
+ * Initialize archive room scroll effect
+ */
+function initializeArchiveRoom() {
+    const archiveRoom = document.querySelector('.final-archive-room');
+    if (!archiveRoom) return;
+    
+    window.addEventListener('scroll', () => {
+        const rect = archiveRoom.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const scrollPercent = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+            const fade = Math.min(scrollPercent, 1);
+            archiveRoom.style.opacity = fade;
+        }
+    });
+}
+
+// Initialize memory features when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    loadFounderMemories();
+    initializeMemoryForm();
+    initializeArchiveRoom();
+});

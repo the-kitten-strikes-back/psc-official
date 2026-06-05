@@ -1183,6 +1183,15 @@ class CaseNote(db.Model):
     case = db.relationship('LegalCase', backref='notes')
     author = db.relationship('Users')
 
+class FounderMemory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(500), nullable=False)
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    status = db.Column(db.String(20), default="pending")  # pending, approved, rejected
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    submitted_by = db.relationship('Users')
+
 #create tables if they don't exist
 
 
@@ -1382,6 +1391,72 @@ def about():
 @app.route("/memories")
 def memories():
     return render_template("memories.html")
+
+@app.route("/founder-memory/submit", methods=["POST"])
+@login_required
+def submit_founder_memory():
+    data = request.get_json(silent=True) or {}
+    text = (data.get("text") or "").strip()
+    
+    if not text or len(text) < 10 or len(text) > 500:
+        return jsonify({"error": "Memory must be 10-500 characters"}), 400
+    
+    memory = FounderMemory(text=text, submitted_by_id=current_user.id)
+    db.session.add(memory)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Memory submitted for review"}), 201
+
+@app.route("/founder-memory/list", methods=["GET"])
+def list_founder_memories():
+    memories = FounderMemory.query.filter_by(status="approved").order_by(FounderMemory.created_at.asc()).all()
+    return jsonify([{
+        "id": m.id,
+        "text": m.text,
+        "created_at": m.created_at.isoformat()
+    } for m in memories]), 200
+
+@app.route("/founder-memory/approve/<int:memory_id>", methods=["POST"])
+@login_required
+def approve_founder_memory(memory_id):
+    if current_user.username != "PSC Official":
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    memory = FounderMemory.query.get(memory_id)
+    if not memory:
+        return jsonify({"error": "Memory not found"}), 404
+    
+    memory.status = "approved"
+    memory.approved_at = datetime.datetime.utcnow()
+    db.session.commit()
+    return jsonify({"success": True}), 200
+
+@app.route("/founder-memory/reject/<int:memory_id>", methods=["POST"])
+@login_required
+def reject_founder_memory(memory_id):
+    if current_user.username != "PSC Official":
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    memory = FounderMemory.query.get(memory_id)
+    if not memory:
+        return jsonify({"error": "Memory not found"}), 404
+    
+    db.session.delete(memory)
+    db.session.commit()
+    return jsonify({"success": True}), 200
+
+@app.route("/founder-memory/pending", methods=["GET"])
+@login_required
+def list_pending_founder_memories():
+    if current_user.username != "PSC Official":
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    memories = FounderMemory.query.filter_by(status="pending").order_by(FounderMemory.created_at.asc()).all()
+    return jsonify([{
+        "id": m.id,
+        "text": m.text,
+        "submitted_by": m.submitted_by.username,
+        "created_at": m.created_at.isoformat()
+    } for m in memories]), 200
 
 @app.route("/contact")
 def contact():

@@ -668,6 +668,241 @@ body {
     font-style: italic;
 }
 
+/* ========== GROWTH GRAPH SECTION ========== */
+.growth-graph-section {
+    max-width: 1000px;
+    margin: 100px auto;
+    padding: 60px 40px;
+    background: rgba(26, 37, 50, 0.5);
+    border: 1px solid rgba(184, 149, 106, 0.2);
+    border-radius: 4px;
+}
+
+.growth-graph-container {
+    width: 100%;
+    margin: 40px 0;
+    overflow-x: auto;
+    padding: 20px 0;
+}
+
+.growth-graph {
+    width: 100%;
+    min-width: 500px;
+    height: 400px;
+}
+
+.graph-caption {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 1.1rem;
+    color: var(--cream);
+    line-height: 1.6;
+}
+
+/* ========== MEMORY WALL SECTION ========== */
+.memory-wall-section {
+    max-width: 1000px;
+    margin: 100px auto;
+    padding: 60px 40px;
+}
+
+.wall-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 50px;
+    font-style: italic;
+}
+
+.memory-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.memory-card {
+    background: rgba(26, 37, 50, 0.5);
+    border: 1px solid rgba(184, 149, 106, 0.3);
+    border-radius: 2px;
+    padding: 30px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.memory-card:hover {
+    background: rgba(26, 37, 50, 0.7);
+    border-color: rgba(184, 149, 106, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(184, 149, 106, 0.1);
+}
+
+.memory-id {
+    font-size: 0.85rem;
+    color: var(--faded-gold);
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.memory-quote {
+    font-size: 1.05rem;
+    color: var(--cream);
+    line-height: 1.7;
+    font-style: italic;
+}
+
+/* ========== MEMORY SUBMISSION FORM ========== */
+.memory-submission {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 40px;
+    background: rgba(26, 37, 50, 0.6);
+    border: 1px solid rgba(184, 149, 106, 0.2);
+    border-radius: 2px;
+}
+
+.memory-submission h3 {
+    font-size: 1.3rem;
+    margin-bottom: 25px;
+    color: var(--faded-gold);
+    text-align: center;
+}
+
+.memory-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#memory-text {
+    background: rgba(15, 20, 25, 0.5);
+    border: 1px solid rgba(184, 149, 106, 0.2);
+    color: var(--cream);
+    padding: 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#memory-text::placeholder {
+    color: var(--text-muted);
+}
+
+.submit-btn {
+    background: rgba(184, 149, 106, 0.8);
+    color: var(--navy-dark);
+    border: none;
+    padding: 12px 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.submit-btn:hover {
+    background: rgba(184, 149, 106, 1);
+    transform: scale(1.02);
+}
+
+#submission-message {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #8bc34a;
+    min-height: 20px;
+}
+
+/* ========== ARCHIVE ROOM SECTION ========== */
+.final-archive-room {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0a0a0a;
+    margin-top: 100px;
+}
+
+.archive-room-fade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
+    pointer-events: none;
+}
+
+.archive-room-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+}
+
+.archive-room-scene {
+    width: 90%;
+    max-width: 600px;
+    height: auto;
+    margin-bottom: 40px;
+    opacity: 0.85;
+}
+
+.archive-room-text {
+    position: relative;
+    z-index: 20;
+}
+
+.archive-room-quote {
+    font-size: 1.4rem;
+    line-height: 2;
+    color: var(--cream);
+    margin-bottom: 50px;
+    max-width: 700px;
+}
+
+.archive-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 60px;
+}
+
+.status-label {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.status-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--faded-gold);
+    text-transform: uppercase;
+}
+
+/* ========== PRESERVED CHAMBER EXPLANATION ========== */
+.chamber-explanation {
+    text-align: center;
+    max-width: 700px;
+    margin: 30px auto 40px;
+    font-size: 1.1rem;
+    color: var(--cream);
+    line-height: 1.8;
+}
+
 /* ========== FINAL SPACE ========== */
 .final-space {
     height: 200px;
