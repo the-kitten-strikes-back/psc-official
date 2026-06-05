@@ -903,6 +903,215 @@ body {
     line-height: 1.8;
 }
 
+/* ========== SORROW VIGNETTE ========== */
+.vignette-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(5, 3, 8, 0.7) 100%);
+    animation: sorrow-breathe 6s ease-in-out infinite;
+}
+
+@keyframes sorrow-breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* ========== CRT SCANLINES ========== */
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.08) 2px,
+        rgba(0, 0, 0, 0.08) 4px
+    );
+}
+
+.scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 5, 15, 0.03);
+    animation: scanline-flicker 8s steps(1) infinite;
+}
+
+@keyframes scanline-flicker {
+    0%, 95% { opacity: 0; }
+    96% { opacity: 0.15; }
+    97% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* ========== GLITCH EFFECT — TITLE ========== */
+.archive-title {
+    position: relative;
+    animation: glitch-fade 10s ease-in-out infinite;
+}
+
+.archive-title::before,
+.archive-title::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.archive-title::before {
+    color: #ff6b6b;
+    clip-path: inset(0 0 70% 0);
+    animation: glitch-shift-red 4s ease-in-out infinite;
+}
+
+.archive-title::after {
+    color: #6bb5ff;
+    clip-path: inset(70% 0 0 0);
+    animation: glitch-shift-blue 4s ease-in-out infinite;
+}
+
+@keyframes glitch-shift-red {
+    0%, 85%, 100% { transform: translate(0); opacity: 0; }
+    86% { transform: translate(-3px, 1px); opacity: 0.7; }
+    88% { transform: translate(2px, -1px); opacity: 0.3; }
+    90% { transform: translate(-1px, 2px); opacity: 0; }
+}
+
+@keyframes glitch-shift-blue {
+    0%, 85%, 100% { transform: translate(0); opacity: 0; }
+    86% { transform: translate(3px, -1px); opacity: 0.7; }
+    88% { transform: translate(-2px, 1px); opacity: 0.3; }
+    90% { transform: translate(1px, -2px); opacity: 0; }
+}
+
+@keyframes glitch-fade {
+    0%, 100% { text-shadow: 0 0 0 transparent; }
+    85% { text-shadow: 0 0 0 transparent; opacity: 1; }
+    87% { text-shadow: -2px 0 #ff6b6b, 2px 0 #6bb5ff; opacity: 0.9; }
+    89% { text-shadow: 1px 0 #ff6b6b, -1px 0 #6bb5ff; opacity: 0.95; }
+    91% { text-shadow: 0 0 0 transparent; opacity: 1; }
+}
+
+/* ========== GLITCH — FOUNDER NAME ========== */
+.founder-hero h2 {
+    position: relative;
+    transition: text-shadow 0.3s ease;
+}
+
+.founder-hero h2::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    pointer-events: none;
+}
+
+.founder-hero h2:hover {
+    text-shadow: -1px 0 rgba(255, 107, 107, 0.3), 1px 0 rgba(107, 181, 255, 0.3);
+}
+
+.founder-hero h2:hover::after {
+    animation: founder-glitch 0.6s ease-in-out forwards;
+}
+
+@keyframes founder-glitch {
+    0% { transform: translate(0); color: transparent; }
+    10% { transform: translate(-2px, -1px); color: rgba(255, 107, 107, 0.4); }
+    20% { transform: translate(2px, 1px); color: rgba(107, 181, 255, 0.4); }
+    30% { transform: translate(-1px, 2px); color: transparent; }
+    40% { transform: translate(1px, -2px); color: rgba(255, 107, 107, 0.2); }
+    50% { transform: translate(-3px, 0); color: transparent; }
+    60%, 100% { transform: translate(0); color: transparent; }
+}
+
+/* ========== GLITCH CORNER MARK ========== */
+.glitch-mark {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 5;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(184, 149, 106, 0.15);
+    letter-spacing: 3px;
+    pointer-events: none;
+    animation: mark-flicker 12s steps(1) infinite;
+    text-transform: uppercase;
+}
+
+.glitch-mark span {
+    display: inline-block;
+    animation: mark-glitch 7s ease-in-out infinite;
+}
+
+@keyframes mark-flicker {
+    0%, 94%, 100% { opacity: 1; }
+    95% { opacity: 0.3; }
+    96% { opacity: 1; }
+    97% { opacity: 0.1; }
+    98% { opacity: 0.8; }
+}
+
+@keyframes mark-glitch {
+    0%, 90%, 100% { transform: translate(0); }
+    92% { transform: translate(-5px, 2px); }
+    94% { transform: translate(3px, -1px); }
+    96% { transform: translate(0); }
+}
+
+/* ========== SORROWFUL SCROLL REVEAL OVERLAY ========== */
+.sorrow-reveal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40vh;
+    pointer-events: none;
+    z-index: 3;
+    background: linear-gradient(to top, rgba(5, 3, 8, 0.9) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+
+.sorrow-reveal.active {
+    opacity: 1;
+}
+
+/* ========== TEAR DROP ========== */
+.tear {
+    position: fixed;
+    width: 2px;
+    height: 12px;
+    background: linear-gradient(to bottom, rgba(184, 149, 106, 0.4), transparent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+    animation: tear-fall 4s ease-in infinite;
+}
+
+.tear:nth-child(1) { left: 15%; animation-delay: 0s; animation-duration: 3.5s; }
+.tear:nth-child(2) { left: 35%; animation-delay: 1.2s; animation-duration: 4s; }
+.tear:nth-child(3) { left: 55%; animation-delay: 2.5s; animation-duration: 3.8s; }
+.tear:nth-child(4) { left: 75%; animation-delay: 0.8s; animation-duration: 4.2s; }
+.tear:nth-child(5) { left: 90%; animation-delay: 3s; animation-duration: 3.6s; }
+
+@keyframes tear-fall {
+    0% { transform: translateY(-20px); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(100vh); opacity: 0; }
+}
+
 /* ========== FINAL SPACE ========== */
 .final-space {
     height: 200px;

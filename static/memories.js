@@ -227,9 +227,72 @@ function initializeArchiveRoom() {
     });
 }
 
+/**
+ * Scroll-triggered sorrow reveal
+ */
+function initializeSorrowReveal() {
+    const sorrow = document.getElementById('sorrow-reveal');
+    if (!sorrow) return;
+
+    const departure = document.querySelector('.departure-record');
+    if (!departure) return;
+
+    window.addEventListener('scroll', function() {
+        const rect = departure.getBoundingClientRect();
+        const isPast = rect.bottom < window.innerHeight;
+        sorrow.classList.toggle('active', isPast);
+    });
+}
+
+/**
+ * Periodic glitch burst on archive title
+ */
+function initializeGlitchBurst() {
+    const title = document.querySelector('.archive-title');
+    if (!title) return;
+
+    function burst() {
+        title.style.animation = 'none';
+        void title.offsetWidth;
+        title.style.animation = 'glitch-fade 10s ease-in-out infinite';
+    }
+
+    // Random bursts every 15-30 seconds
+    function scheduleBurst() {
+        const delay = 15000 + Math.random() * 15000;
+        setTimeout(function() {
+            burst();
+            scheduleBurst();
+        }, delay);
+    }
+    scheduleBurst();
+}
+
+/**
+ * Periodic scanline flicker burst
+ */
+function initializeFlickerBurst() {
+    const scanlines = document.querySelector('.scanlines');
+    if (!scanlines) return;
+
+    function flicker() {
+        scanlines.style.opacity = '0.7';
+        setTimeout(function() {
+            scanlines.style.opacity = '1';
+        }, 150);
+    }
+
+    setInterval(function() {
+        if (Math.random() < 0.15) flicker();
+    }, 8000);
+}
+
 // Initialize memory features when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     loadFounderMemories();
     initializeMemoryForm();
     initializeArchiveRoom();
+    initializeSorrowReveal();
+    initializeGlitchBurst();
+    initializeFlickerBurst();
 });
