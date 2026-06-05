@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memories Archive | PSC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='memories.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="dust-particles"></div>
+
+    <!-- Arrival Experience Section -->
+    <section class="memories-header fade-in">
+        <div class="header-content">
+            <h1 class="archive-title">MEMORIES ARCHIVE</h1>
+            <p class="archive-subtitle">SoARC Historical Preservation Record</p>
+            <div class="archive-metadata">
+                <span>Access Level: <strong>Public</strong></span>
+                <span class="separator">•</span>
+                <span>Status: <strong>Protected Record</strong></span>
+                <span class="separator">•</span>
+                <span>Last Modified: <strong>Never</strong></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hero Section with Desk Silhouette -->
+    <section class="hero-section">
+        <div class="desk-container">
+            <svg class="desk-silhouette" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                <!-- Desk surface -->
+                <rect x="50" y="180" width="300" height="80" fill="#3d4a5c" opacity="0.7"/>
+                <!-- Desk front -->
+                <rect x="40" y="260" width="320" height="40" fill="#2a3847"/>
+                
+                <!-- Left desk leg -->
+                <rect x="60" y="260" width="15" height="40" fill="#1a2532"/>
+                <!-- Right desk leg -->
+                <rect x="325" y="260" width="15" height="40" fill="#1a2532"/>
+                
+                <!-- Desk lamp -->
+                <circle cx="80" cy="160" r="8" fill="#8b7355" opacity="0.8"/>
+                <line x1="80" y1="152" x2="80" y2="110" stroke="#8b7355" stroke-width="3" opacity="0.6"/>
+                <circle cx="80" cy="100" r="12" fill="#b8956a" opacity="0.7"/>
+                
+                <!-- Stack of documents -->
+                <g opacity="0.7">
+                    <rect x="180" y="140" width="45" height="8" fill="#c9a876" transform="rotate(-5 202.5 144)"/>
+                    <rect x="182" y="150" width="45" height="8" fill="#b8956a" transform="rotate(-2 204.5 154)"/>
+                    <rect x="183" y="160" width="45" height="8" fill="#a68560"/>
+                    <rect x="181" y="170" width="45" height="8" fill="#9b7a55" transform="rotate(2 203.5 174)"/>
+                </g>
+                
+                <!-- PSC Identification Card -->
+                <g opacity="0.8">
+                    <rect x="250" y="165" width="35" height="50" fill="#b8956a" stroke="#8b7355" stroke-width="1"/>
+                    <circle cx="267.5" cy="180" r="6" fill="#8b7355" opacity="0.6"/>
+                    <line x1="250" y1="200" x2="285" y2="200" stroke="#8b7355" stroke-width="1" opacity="0.5"/>
+                    <text x="267.5" y="212" font-size="6" fill="#8b7355" opacity="0.6" text-anchor="middle">PSC</text>
+                </g>
+                
+                <!-- Notebook left open -->
+                <g opacity="0.7">
+                    <rect x="130" y="155" width="35" height="45" fill="#c9a876"/>
+                    <rect x="165" y="155" width="35" height="45" fill="#b8956a"/>
+                    <line x1="165" y1="155" x2="165" y2="200" stroke="#8b7355" stroke-width="0.5" opacity="0.4"/>
+                </g>
+                
+                <!-- Fountain pen on desk -->
+                <g opacity="0.8">
+                    <ellipse cx="120" cy="185" rx="3" ry="8" fill="#8b7355" transform="rotate(-30 120 185)"/>
+                    <ellipse cx="118" cy="192" rx="2" ry="4" fill="#8b7355" transform="rotate(-30 118 192)"/>
+                </g>
+            </svg>
+        </div>
+        
+        <div class="hero-caption">
+            <p class="caption-quote">Some departures leave empty chairs.<br/>Others leave foundations.</p>
+        </div>
+        
+        <div class="founder-hero">
+            <h2>Har Vansh Reddy Gutha</h2>
+            <p class="founder-title">Co-Founder of the Pen Storage Company</p>
+        </div>
+    </section>
+
+    <!-- Historical Record Card -->
+    <section class="historical-record">
+        <div class="record-card">
+            <div class="record-header">HISTORICAL RECORD</div>
+            
+            <div class="record-item">
+                <div class="record-label">Founder Designation</div>
+                <div class="record-value">Co-Founder</div>
+            </div>
+            
+            <div class="record-item">
+                <div class="record-label">Service Classification</div>
+                <div class="record-value">Founding Era Personnel</div>
+            </div>
+            
+            <div class="record-item">
+                <div class="record-label">Current Status</div>
+                <div class="record-value">Departed from Active PSC Operations</div>
+            </div>
+            
+            <div class="record-item">
+                <div class="record-label">Archive Classification</div>
+                <div class="record-value">Permanent Historical Record</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Founding Years -->
+    <section class="founding-years">
+        <h2 class="section-title">The Founding Years</h2>
+        
+        <!-- Before PSC -->
+        <div class="timeline-section scroll-fade">
+            <h3 class="timeline-heading">Before PSC</h3>
+            <p>
+                Before the Pen Storage Company existed, there were conversations. Ideas shared between friends who saw something others didn't. In the hallways of Class 8B, during those formative months of 2025, a vision began to take shape. Not a business plan. Not a profit model. Simply a realization: that pens, those small instruments of thought and creativity, deserved better stewardship. That they mattered.
+            </p>
+            <p>
+                Har Vansh Reddy Gutha was part of those early conversations. His contributions to these foundational discussions would later become embedded in PSC's DNA—the belief that organization, care, and community could transform something as simple as pen storage into something meaningful.
+            </p>
+        </div>
+        
+        <!-- The Formation -->
+        <div class="timeline-section scroll-fade">
+            <h3 class="timeline-heading">The Formation</h3>
+            <p>
+                The moment came when ideas transformed into action. The Pen Storage Company was established, formally claiming its place in the world. What could have remained theoretical became tangible. The first systems were drafted. The first structures were built. The founding vision was committed to paper and code.
+            </p>
+            <p>
+                Har Vansh Reddy Gutha stood among those who made this transition possible. His role in shaping these initial frameworks—in choosing which principles would guide the organization, in deciding what PSC would value and protect—set the tone for everything that would follow.
+            </p>
+        </div>
+        
+        <!-- Building the Foundation -->
+        <div class="timeline-section scroll-fade">
+            <h3 class="timeline-heading">Building the Foundation</h3>
+            <p>
+                The early days of PSC demanded more than enthusiasm. They demanded precision. Systems needed to be built. Organization needed structure. Direction needed clarity. Har Vansh Reddy Gutha was instrumental in establishing the foundational layers upon which PSC's operations would rest.
+            </p>
+            <p>
+                The sectors emerged. The classification systems took form. The values that would guide community interactions were established. These were not inevitable developments. They came from decisions made by individuals who cared enough to think deeply about what PSC should become. PSC was not inevitable. People built it. And Har Vansh Reddy Gutha was among those builders.
+            </p>
+        </div>
+    </section>
+
+    <!-- The Empty Desk Section -->
+    <section class="empty-desk-section">
+        <h2 class="section-title">The Preserved Chamber</h2>
+        <p class="section-subtitle">A desk remains untouched in the archives</p>
+        
+        <div class="interactive-desk">
+            <div class="desk-item notebook" data-memory="Ideas become institutions when someone believes in them long enough.">
+                <div class="item-label">Notebook</div>
+            </div>
+            
+            <div class="desk-item badge" data-memory="Founder access revoked. Founder status retained.">
+                <div class="item-label">Badge</div>
+            </div>
+            
+            <div class="desk-item pen" data-memory="The signatures remain.">
+                <div class="item-label">Pen</div>
+            </div>
+        </div>
+        
+        <div class="memory-reveal"></div>
+    </section>
+
+    <!-- Sector Responses -->
+    <section class="sector-responses">
+        <h2 class="section-title">Departmental Recognition</h2>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #b8c7e6;">
+            <h3 class="sector-name">SoARC - Archives & Records</h3>
+            <p>"The co-founder's contributions to early archival philosophy remain preserved within our records. We continue to maintain historical accuracy and permanent preservation in his honor."</p>
+        </div>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #7cf9ff;">
+            <h3 class="sector-name">SoCAC - Intake & Compilation</h3>
+            <p>"Early intake systems and compilation protocols established during the founding era bear the mark of careful consideration. These processes remain in operation today."</p>
+        </div>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #34f5ff;">
+            <h3 class="sector-name">SoDAC - Distribution & Analysis</h3>
+            <p>"Classification frameworks and data architecture originating from the founding period continue to guide our analytical work. The foundations remain sound."</p>
+        </div>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #ff7bf5;">
+            <h3 class="sector-name">SoBAB - Brand & Business</h3>
+            <p>"Our campaign strategies and community engagement methods reflect the collaborative spirit established in those early years. The human element of PSC remains vital to who we are."</p>
+        </div>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #ffb347;">
+            <h3 class="sector-name">SoRASR - Repair & Supply Recovery</h3>
+            <p>"Legacy systems established during the founding remain integral to our operations. We maintain and preserve these systems with the same care they were built with."</p>
+        </div>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #ff3b5c;">
+            <h3 class="sector-name">SoSAS - Security & Surveillance</h3>
+            <p>"Historical security protocols and access records pertaining to the founding era are permanently protected. This archival record is maintained with the highest confidentiality protocols."</p>
+        </div>
+        
+        <div class="sector-statement scroll-fade" style="border-left-color: #f0d060;">
+            <h3 class="sector-name">SoCAJ - Court & Justice</h3>
+            <p>"The principles of justice and record-keeping established during the founding continue to guide our judicial and archival work. The commitment to truth remains unchanged."</p>
+        </div>
+    </section>
+
+    <!-- Archive Corridor / Milestones -->
+    <section class="archive-corridor">
+        <h2 class="section-title">The Archive Corridor</h2>
+        <p class="section-subtitle">PSC milestones and the founding legacy</p>
+        
+        <div class="milestones">
+            <div class="milestone scroll-fade">
+                <div class="milestone-marker"></div>
+                <div class="milestone-content">
+                    <h4>PSC Founded in Class 8B</h4>
+                    <p class="milestone-year">2025</p>
+                    <span class="founder-tag">Founder Present</span>
+                </div>
+            </div>
+            
+            <div class="milestone scroll-fade">
+                <div class="milestone-marker"></div>
+                <div class="milestone-content">
+                    <h4>Sector System Established</h4>
+                    <p class="milestone-year">Early Operations</p>
+                    <span class="founder-tag">Founder Involved</span>
+                </div>
+            </div>
+            
+            <div class="milestone scroll-fade">
+                <div class="milestone-marker"></div>
+                <div class="milestone-content">
+                    <h4>Classification Framework Created</h4>
+                    <p class="milestone-year">Foundational Period</p>
+                    <span class="founder-tag">Founder Involved</span>
+                </div>
+            </div>
+            
+            <div class="milestone scroll-fade">
+                <div class="milestone-marker"></div>
+                <div class="milestone-content">
+                    <h4>Partnership Network Expanded</h4>
+                    <p class="milestone-year">Growth Phase</p>
+                    <span class="founder-tag">Founder Involved</span>
+                </div>
+            </div>
+            
+            <div class="milestone scroll-fade">
+                <div class="milestone-marker"></div>
+                <div class="milestone-content">
+                    <h4>Community Values Solidified</h4>
+                    <p class="milestone-year">Institutional Development</p>
+                    <span class="founder-tag">Founder Legacy</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Departure Record -->
+    <section class="departure-record">
+        <h2 class="section-title">The Departure Record</h2>
+        
+        <div class="departure-text">
+            <p>
+                At a later stage in PSC history, Har Vansh Reddy Gutha departed from active PSC operations. His departure marked the end of an era within the organization, but not the end of his place within it.
+            </p>
+            <p>
+                The systems he helped shape. The structures he helped establish. The memories attached to the founding years. All remain preserved within PSC archives. His contributions to the early vision and direction of the Pen Storage Company are recorded in permanent institutional memory.
+            </p>
+            <p>
+                This is not an ending. It is a transition. The work continues. The legacy persists.
+            </p>
+        </div>
+    </section>
+
+    <!-- Preservation Oath -->
+    <section class="preservation-oath">
+        <div class="oath-charter">
+            <div class="oath-header">SOARC PRESERVATION CHARTER</div>
+            
+            <div class="oath-content">
+                <p>
+                    The Pen Storage Company recognizes the service of its co-founder, Har Vansh Reddy Gutha.
+                </p>
+                
+                <p>
+                    His contributions shall remain recorded within official archives.
+                </p>
+                
+                <p>
+                    His role in the founding era shall not be removed from company history.
+                </p>
+                
+                <p>
+                    This record is maintained by SoARC and protected as a permanent historical archive.
+                </p>
+            </div>
+            
+            <div class="oath-seal">
+                <div class="seal-circle">
+                    SOARC<br/><span class="seal-subtitle">ARCHIVAL AUTHORITY</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final Contemplative Section -->
+    <section class="final-contemplation">
+        <div class="contemplation-text">
+            <p class="contemplation-quote">
+                Organizations are remembered through records.<br/>
+                <br/>
+                People are remembered through memories.
+            </p>
+            <p class="contemplation-statement">
+                PSC preserves both.
+            </p>
+        </div>
+        
+        <div class="founder-name-final">
+            <h3>Har Vansh Reddy Gutha</h3>
+            <p class="founder-role">Co-Founder</p>
+        </div>
+        
+        <div class="archive-note">
+            <p>This archive remains open indefinitely.</p>
+        </div>
+    </section>
+
+    <div class="final-space"></div>
+
+    <script src="{{ url_for('static', filename='memories.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+/* Memories Archive - Memorial Page Styling */
+
+:root {
+    --navy-dark: #0f1419;
+    --navy-mid: #1a2532;
+    --charcoal: #2a3847;
+    --faded-gold: #b8956a;
+    --bronze: #8b7355;
+    --bronze-light: #a68560;
+    --cream: #e8e4d8;
+    --text-muted: #c9c3b8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, var(--navy-dark) 0%, #1a1f2e 50%, var(--charcoal) 100%);
+    color: var(--cream);
+    line-height: 1.8;
+    overflow-x: hidden;
+}
+
+/* ========== DUST PARTICLES ANIMATION ========== */
+.dust-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.dust-particles::before,
+.dust-particles::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, rgba(184, 149, 106, 0.3), transparent),
+        radial-gradient(2px 2px at 60px 70px, rgba(184, 149, 106, 0.2), transparent),
+        radial-gradient(1px 1px at 50px 50px, rgba(184, 149, 106, 0.4), transparent),
+        radial-gradient(1px 1px at 130px 80px, rgba(184, 149, 106, 0.3), transparent),
+        radial-gradient(2px 2px at 90px 10px, rgba(184, 149, 106, 0.2), transparent);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: dust-drift 20s linear infinite;
+}
+
+.dust-particles::after {
+    animation: dust-drift 30s linear infinite reverse;
+    opacity: 0.5;
+}
+
+@keyframes dust-drift {
+    0% { transform: translateY(0px); opacity: 0.1; }
+    50% { opacity: 0.3; }
+    100% { transform: translateY(-20px); opacity: 0.1; }
+}
+
+/* ========== FADE IN ANIMATION ========== */
+.fade-in {
+    animation: fadeInSlow 2s ease-in-out forwards;
+}
+
+@keyframes fadeInSlow {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.scroll-fade {
+    opacity: 0;
+    animation: fadeInOnScroll 1s ease-in-out forwards;
+}
+
+@keyframes fadeInOnScroll {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== MEMORIES HEADER ========== */
+.memories-header {
+    padding: 80px 40px;
+    text-align: center;
+    border-bottom: 1px solid rgba(184, 149, 106, 0.2);
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 2;
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.archive-title {
+    font-size: 3.5rem;
+    font-weight: 300;
+    letter-spacing: 8px;
+    color: var(--faded-gold);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.archive-subtitle {
+    font-size: 1.3rem;
+    color: var(--bronze-light);
+    letter-spacing: 3px;
+    margin-bottom: 30px;
+    font-weight: 300;
+}
+
+.archive-metadata {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.archive-metadata strong {
+    color: var(--faded-gold);
+}
+
+.separator {
+    opacity: 0.5;
+}
+
+/* ========== HERO SECTION ========== */
+.hero-section {
+    padding: 60px 40px;
+    text-align: center;
+    margin-bottom: 80px;
+    position: relative;
+    z-index: 2;
+}
+
+.desk-container {
+    max-width: 600px;
+    margin: 0 auto 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.desk-silhouette {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+    animation: gentleFloat 4s ease-in-out infinite;
+}
+
+@keyframes gentleFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.hero-caption {
+    margin: 40px 0 60px;
+}
+
+.caption-quote {
+    font-size: 1.4rem;
+    color: var(--faded-gold);
+    font-style: italic;
+    line-height: 1.8;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+.founder-hero {
+    margin-top: 60px;
+}
+
+.founder-hero h2 {
+    font-size: 2.5rem;
+    color: var(--cream);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
+
+.founder-title {
+    font-size: 1.1rem;
+    color: var(--bronze-light);
+    letter-spacing: 1px;
+    font-weight: 300;
+}
+
+/* ========== HISTORICAL RECORD CARD ========== */
+.historical-record {
+    max-width: 700px;
+    margin: 0 auto 80px;
+    padding: 40px;
+}
+
+.record-card {
+    background: linear-gradient(135deg, rgba(42, 56, 71, 0.6) 0%, rgba(26, 37, 50, 0.6) 100%);
+    border: 1px solid rgba(184, 149, 106, 0.3);
+    border-radius: 2px;
+    padding: 40px;
+    box-shadow: inset 0 1px 0 rgba(184, 149, 106, 0.1), 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.record-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    color: var(--faded-gold);
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(184, 149, 106, 0.2);
+    padding-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.record-item {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.record-label {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: var(--bronze-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.record-value {
+    font-size: 1.1rem;
+    color: var(--cream);
+    padding-left: 15px;
+    border-left: 2px solid var(--faded-gold);
+    font-weight: 300;
+}
+
+/* ========== SECTION TITLES ========== */
+.section-title {
+    font-size: 2.2rem;
+    color: var(--faded-gold);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 400;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: var(--bronze-light);
+    font-style: italic;
+    margin-bottom: 50px;
+    font-size: 1rem;
+}
+
+/* ========== FOUNDING YEARS SECTION ========== */
+.founding-years {
+    max-width: 900px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+}
+
+.timeline-section {
+    margin-bottom: 60px;
+    padding: 30px;
+    background: rgba(42, 56, 71, 0.3);
+    border-left: 3px solid var(--faded-gold);
+    border-radius: 0;
+}
+
+.timeline-heading {
+    font-size: 1.4rem;
+    color: var(--faded-gold);
+    margin-bottom: 20px;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.timeline-section p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.9;
+    margin-bottom: 15px;
+}
+
+.timeline-section p:last-child {
+    margin-bottom: 0;
+}
+
+/* ========== EMPTY DESK SECTION ========== */
+.empty-desk-section {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 60px 40px;
+    text-align: center;
+    background: rgba(15, 20, 25, 0.8);
+    border: 1px solid rgba(184, 149, 106, 0.2);
+    border-radius: 0;
+}
+
+.interactive-desk {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 40px;
+    margin: 60px 0;
+    justify-items: center;
+}
+
+.desk-item {
+    width: 140px;
+    height: 140px;
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.4) 0%, rgba(166, 133, 96, 0.3) 100%);
+    border: 2px solid var(--faded-gold);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+.desk-item:hover {
+    background: linear-gradient(135deg, rgba(184, 149, 106, 0.5) 0%, rgba(166, 133, 96, 0.4) 100%);
+    box-shadow: 0 0 20px rgba(184, 149, 106, 0.3), inset 0 0 20px rgba(184, 149, 106, 0.1);
+    transform: translateY(-5px);
+}
+
+.item-label {
+    font-size: 0.9rem;
+    color: var(--faded-gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.memory-reveal {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    color: var(--faded-gold);
+    font-style: italic;
+    font-size: 1.1rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.memory-reveal.active {
+    opacity: 1;
+}
+
+/* ========== SECTOR RESPONSES ========== */
+.sector-responses {
+    max-width: 900px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+}
+
+.sector-statement {
+    background: rgba(42, 56, 71, 0.3);
+    border-left: 4px solid;
+    padding: 30px;
+    margin-bottom: 30px;
+    border-radius: 0;
+    transition: all 0.4s ease;
+}
+
+.sector-statement:hover {
+    background: rgba(42, 56, 71, 0.5);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.sector-name {
+    font-size: 1.1rem;
+    color: var(--cream);
+    margin-bottom: 15px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.sector-statement p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+/* ========== ARCHIVE CORRIDOR ========== */
+.archive-corridor {
+    max-width: 900px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+}
+
+.milestones {
+    position: relative;
+    padding: 40px 0;
+}
+
+.milestones::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--faded-gold), transparent);
+    transform: translateX(-1px);
+}
+
+.milestone {
+    margin-bottom: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.milestone:nth-child(odd) {
+    flex-direction: row-reverse;
+}
+
+.milestone-marker {
+    width: 16px;
+    height: 16px;
+    background: var(--faded-gold);
+    border: 3px solid var(--navy-mid);
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    box-shadow: 0 0 10px rgba(184, 149, 106, 0.4);
+}
+
+.milestone-content {
+    width: calc(50% - 40px);
+    padding: 20px;
+    background: rgba(42, 56, 71, 0.3);
+    border: 1px solid rgba(184, 149, 106, 0.2);
+    border-radius: 0;
+}
+
+.milestone-content h4 {
+    color: var(--faded-gold);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.milestone-year {
+    color: var(--bronze-light);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.founder-tag {
+    display: inline-block;
+    background: rgba(184, 149, 106, 0.2);
+    color: var(--faded-gold);
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    border-radius: 0;
+    text-transform: uppercase;
+    border: 1px solid rgba(184, 149, 106, 0.3);
+}
+
+@media (max-width: 768px) {
+    .milestones::before {
+        left: 0;
+    }
+    
+    .milestone {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .milestone:nth-child(odd) {
+        flex-direction: column;
+    }
+    
+    .milestone-marker {
+        left: 0;
+        transform: translateX(-8px);
+    }
+    
+    .milestone-content {
+        width: 100%;
+        margin-left: 20px;
+    }
+}
+
+/* ========== DEPARTURE RECORD ========== */
+.departure-record {
+    max-width: 800px;
+    margin: 0 auto 80px;
+    padding: 60px 40px;
+    text-align: center;
+}
+
+.departure-text {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 2;
+    margin-bottom: 0;
+}
+
+.departure-text p {
+    margin-bottom: 25px;
+}
+
+.departure-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* ========== PRESERVATION OATH ========== */
+.preservation-oath {
+    max-width: 800px;
+    margin: 0 auto 80px;
+    padding: 60px 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.oath-charter {
+    background: linear-gradient(135deg, rgba(184, 149, 106, 0.1) 0%, rgba(139, 115, 85, 0.1) 100%);
+    border: 2px solid var(--faded-gold);
+    padding: 50px;
+    text-align: center;
+    max-width: 600px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.oath-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    color: var(--faded-gold);
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+.oath-content {
+    color: var(--cream);
+    font-size: 1rem;
+    line-height: 2;
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.oath-content p {
+    margin-bottom: 20px;
+}
+
+.oath-seal {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.seal-circle {
+    width: 120px;
+    height: 120px;
+    border: 2px solid var(--faded-gold);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--faded-gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.seal-subtitle {
+    font-size: 0.6rem;
+    display: block;
+    margin-top: 3px;
+}
+
+/* ========== FINAL CONTEMPLATION ========== */
+.final-contemplation {
+    max-width: 700px;
+    margin: 0 auto 100px;
+    padding: 60px 40px;
+    text-align: center;
+    border-top: 1px solid rgba(184, 149, 106, 0.2);
+    border-bottom: 1px solid rgba(184, 149, 106, 0.2);
+}
+
+.contemplation-text {
+    margin-bottom: 60px;
+}
+
+.contemplation-quote {
+    font-size: 1.3rem;
+    color: var(--faded-gold);
+    line-height: 2;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    margin-bottom: 30px;
+}
+
+.contemplation-statement {
+    font-size: 1.5rem;
+    color: var(--cream);
+    font-weight: 300;
+    letter-spacing: 1px;
+}
+
+.founder-name-final {
+    margin: 60px 0;
+}
+
+.founder-name-final h3 {
+    font-size: 2rem;
+    color: var(--faded-gold);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
+
+.founder-role {
+    color: var(--bronze-light);
+    font-size: 1rem;
+    letter-spacing: 1px;
+    font-weight: 300;
+}
+
+.archive-note {
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(184, 149, 106, 0.2);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+/* ========== FINAL SPACE ========== */
+.final-space {
+    height: 200px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .archive-title {
+        font-size: 2.5rem;
+        letter-spacing: 4px;
+    }
+    
+    .archive-subtitle {
+        font-size: 1rem;
+        letter-spacing: 2px;
+    }
+    
+    .memories-header {
+        padding: 60px 20px;
+    }
+    
+    .founder-hero h2 {
+        font-size: 1.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .caption-quote {
+        font-size: 1.1rem;
+    }
+    
+    .interactive-desk {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .timeline-section {
+        margin-bottom: 40px;
+        padding: 20px;
+    }
+    
+    .oath-charter {
+        padding: 30px;
+    }
+    
+    .contemplation-quote {
+        font-size: 1.1rem;
+    }
+    
+    .contemplation-statement {
+        font-size: 1.2rem;
+    }
+}

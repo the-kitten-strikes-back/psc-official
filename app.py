@@ -1379,6 +1379,10 @@ def about():
 
     return render_template("about.html")
 
+@app.route("/memories")
+def memories():
+    return render_template("memories.html")
+
 @app.route("/contact")
 def contact():
     return redirect("mailto:PSC.Official@outlook.com")
