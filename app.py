@@ -2608,19 +2608,17 @@ def sector_upload_evidence():
     case_id = request.form.get("case_id")
     file = request.files.get("evidence_file")
     description = request.form.get("description", "").strip()
-    if case_id and file and file.filename:
-        filename = secure_filename(file.filename)
-        timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_")
-        filename = "evidence_" + timestamp + filename
-        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        evidence = CaseEvidence(
-            case_id=int(case_id),
-            filename=filename,
-            description=description,
-            uploaded_by_id=current_user.id,
-        )
-        db.session.add(evidence)
-        db.session.commit()
+    if case_id and file:
+        filename = save_evidence_file(file)
+        if filename:
+            evidence = CaseEvidence(
+                case_id=int(case_id),
+                filename=filename,
+                description=description,
+                uploaded_by_id=current_user.id,
+            )
+            db.session.add(evidence)
+            db.session.commit()
     return redirect(url_for("sector_page", sector="socaj"))
 
 @app.route("/admin/loan/<int:loan_id>/approve", methods=["POST"])
@@ -2740,6 +2738,16 @@ def save_pen_picture(file):
     filename = secure_filename(file.filename)
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_")
     filename = timestamp + filename
+    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    return filename
+
+def save_evidence_file(file):
+    if not file or not file.filename or not allowed_file(file.filename):
+        return None
+
+    filename = secure_filename(file.filename)
+    timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_")
+    filename = "evidence_" + timestamp + filename
     file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
 
