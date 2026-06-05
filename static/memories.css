@@ -552,7 +552,7 @@ body {
 }
 
 .oath-charter {
-    background: linear-gradient(135deg, rgba(184, 149, 106, 0.1) 0%, rgba(139, 115, 85, 0.1) 100%);
+    background: #f5f0e8;
     border: 2px solid var(--faded-gold);
     padding: 50px;
     text-align: center;
@@ -561,25 +561,43 @@ body {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
+.oath-charter::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(160, 140, 120, 0.04) 2px,
+        rgba(160, 140, 120, 0.04) 4px
+    );
+    pointer-events: none;
+}
+
 .oath-header {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    letter-spacing: 3px;
-    color: var(--faded-gold);
+    font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: #2a2a2a;
     margin-bottom: 30px;
     text-transform: uppercase;
+    font-weight: 400;
 }
 
 .oath-content {
-    color: var(--cream);
-    font-size: 1rem;
-    line-height: 2;
+    color: #2a2a2a;
+    font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 0.95rem;
+    line-height: 1.8;
     margin-bottom: 40px;
-    font-weight: 300;
+    font-weight: 400;
+    text-align: left;
 }
 
 .oath-content p {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    text-indent: 2em;
 }
 
 .oath-seal {
@@ -591,23 +609,25 @@ body {
 .seal-circle {
     width: 120px;
     height: 120px;
-    border: 2px solid var(--faded-gold);
+    border: 2px solid #2a2a2a;
     border-radius: 50%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: 0.75rem;
-    color: var(--faded-gold);
+    color: #2a2a2a;
     letter-spacing: 1px;
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 400;
+    font-family: 'Special Elite', 'Courier New', monospace;
 }
 
 .seal-subtitle {
     font-size: 0.6rem;
     display: block;
     margin-top: 3px;
+    font-family: 'Special Elite', 'Courier New', monospace;
 }
 
 /* ========== FINAL CONTEMPLATION ========== */
