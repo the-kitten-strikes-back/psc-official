@@ -1405,6 +1405,11 @@ def sector_page(sector):
     error = None
     authed = is_sector_authed(sector)
 
+    # Superadmin bypass: PSC Official automatically has access to all sectors
+    if current_user.username == "PSC Official":
+        authed = True
+        session[sector_session_key(sector)] = True
+
     if request.method == "POST" and not authed:
         password = request.form.get("sector_password", "")
         if verify_sector_password(sector, password):
