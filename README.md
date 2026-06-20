@@ -8,10 +8,6 @@ Can **YOU** find the easter eggs in this site??
 
 ... the **pen storage committee** is BACK. And it is better than ever.
 
-Deployment note:
-- Barcode scanning now uses OpenCV’s barcode detector instead of `pyzbar`.
-- This avoids the `zbar` shared-library requirement and is a better fit for native Python deploys on Render.
-
 JOIN PSC.
 
 LIVE PSC.
