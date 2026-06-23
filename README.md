@@ -12,5 +12,5 @@ JOIN PSC.
 
 LIVE PSC.
 
-**The pen is mightier than the sword.®**
+**CALAMUS GLADIO POTENTIOR EST.**
 <img width="947" height="710" alt="image" src="https://github.com/user-attachments/assets/c15921bb-c263-4f82-abe3-874cb674e132" />
