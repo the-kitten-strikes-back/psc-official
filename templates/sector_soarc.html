@@ -310,6 +310,31 @@
       {% endif %}
     </div>
 
+    <div class="panel">
+      <h2>Pen of the Week</h2>
+      {% if current_potw %}
+      <div class="card" style="margin-bottom:16px;border-color:rgba(56,189,248,0.3);">
+        <strong>{{ current_potw.pen.name }}</strong>
+        {% if current_potw.blurb %}<p class="muted" style="margin-top:6px;">{{ current_potw.blurb }}</p>{% endif %}
+        <div class="muted" style="margin-top:6px;">Set by {{ current_potw.set_by.username if current_potw.set_by else '—' }} • {{ current_potw.set_at.strftime('%Y-%m-%d') }} • Expires in 7 days</div>
+      </div>
+      {% else %}
+      <p class="muted">No active Pen of the Week.</p>
+      {% endif %}
+      <form method="POST" action="{{ url_for('sector_set_pen_of_week') }}">
+        <label>Select Pen</label>
+        <select name="pen_id" required>
+          <option value="">— Choose a pen —</option>
+          {% for pen in pens %}
+            <option value="{{ pen.id }}">{{ pen.name }} (Class {{ pen.class_ }}, PRS {{ pen.prs }})</option>
+          {% endfor %}
+        </select>
+        <label>Blurb</label>
+        <textarea name="blurb" placeholder="Why this pen deserves the spotlight this week..." maxlength="400"></textarea>
+        <button class="save-btn" type="submit">Set as Pen of the Week</button>
+      </form>
+    </div>
+
     <div class="panel" style="border-color:rgba(255,59,92,0.3);">
       <h2 style="color:#ff8b8b;">Purge Old Chat Messages</h2>
       <p class="muted">Delete community chat messages older than a specified number of days. This action is irreversible.</p>

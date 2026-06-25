@@ -265,6 +265,17 @@
                 <div class="error-message">{{ error }}</div>
             {% endif %}
 
+            {% if pen_of_the_week %}
+            <div class="potw-banner" style="background:linear-gradient(135deg,rgba(56,189,248,0.1),rgba(14,165,233,0.05));border:1px solid rgba(56,189,248,0.3);border-radius:14px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+              <div>
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#38bdf8;">Pen of the Week</span>
+                <h3 style="margin:4px 0 2px;color:#1e293b;">{{ pen_of_the_week.pen.name }}</h3>
+                <span style="color:#64748b;font-size:13px;">Class {{ pen_of_the_week.pen.class_ }} • PRS {{ pen_of_the_week.pen.prs }}</span>
+                {% if pen_of_the_week.blurb %}<p style="color:#64748b;font-size:13px;margin:4px 0 0;">{{ pen_of_the_week.blurb }}</p>{% endif %}
+              </div>
+            </div>
+            {% endif %}
+
             <form method="GET" class="filters-panel">
                 <div class="filters-grid">
                     <div class="filter-field">

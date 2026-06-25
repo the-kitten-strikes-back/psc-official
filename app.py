@@ -1083,6 +1083,23 @@ class ArchiveEvent(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     pen = db.relationship('Pens', backref='archive_events')
 
+class PenOfTheWeek(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pen_id = db.Column(db.Integer, db.ForeignKey("pens.id"), nullable=False)
+    blurb = db.Column(db.String(400), default="")
+    set_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    set_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    pen = db.relationship('Pens')
+    set_by = db.relationship('Users')
+
+
+def get_pen_of_the_week():
+    potw = PenOfTheWeek.query.order_by(PenOfTheWeek.set_at.desc()).first()
+    if potw and (datetime.datetime.utcnow() - potw.set_at).days < 7:
+        return potw
+    return None
+
+
 class SectorAccessLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sector = db.Column(db.String(20), nullable=False)
@@ -1334,6 +1351,7 @@ def home():
             "members": Users.query.count(),
             "retired_pens": Pens.query.filter_by(retired=True).count(),
         },
+        pen_of_the_week=get_pen_of_the_week(),
         featured_newsletters=NewsletterIssue.query.filter_by(published=True).order_by(NewsletterIssue.issue_date.desc()).limit(2).all(),
         psc_day=PSC_DAY_INFO,
     )
@@ -1635,6 +1653,7 @@ def sector_page(sector):
             legendary=legendary,
             events=events,
             pending_memories=pending_memories,
+            current_potw=get_pen_of_the_week(),
         )
 
     if sector == "socaj":
@@ -1788,6 +1807,7 @@ def dashboard():
         merch_items=MerchItem.query.order_by(MerchItem.required_donations.asc(), MerchItem.id.asc()).limit(3).all(),
         related_loans=related_loans,
         psc_day=PSC_DAY_INFO,
+        pen_of_the_week=get_pen_of_the_week(),
     )
 
 @app.route("/employee-of-month", methods=["POST"])
@@ -2088,14 +2108,14 @@ def loan():
         if not pen:
             pens, filters = filtered_loan_pens()
             limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found", rank=compute_member_rank(current_user), subscription_classes=limits["classes"])
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen not found", rank=compute_member_rank(current_user), subscription_classes=limits["classes"], pen_of_the_week=get_pen_of_the_week())
 
         # Check if pen already has a pending or active loan
         existing_loan = PenLoans.query.filter_by(pen_id=pen_id).filter(PenLoans.status.in_(["pending", "active"])).first()
         if existing_loan:
             pens, filters = filtered_loan_pens()
             limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
-            return render_template("loan.html", pens=pens, filters=filters, error="This pen already has a pending or active loan request", rank=compute_member_rank(current_user), subscription_classes=limits["classes"])
+            return render_template("loan.html", pens=pens, filters=filters, error="This pen already has a pending or active loan request", rank=compute_member_rank(current_user), subscription_classes=limits["classes"], pen_of_the_week=get_pen_of_the_week())
 
         # Check subscription limits (only count active loans)
         user = current_user
@@ -2104,10 +2124,10 @@ def loan():
         current_active = PenLoans.query.filter_by(borrower_id=user.id, status="active").count()
         if current_active >= limits["max_loans"]:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription", rank=rank, subscription_classes=limits["classes"])
+            return render_template("loan.html", pens=pens, filters=filters, error="Loan limit reached for your subscription", rank=rank, subscription_classes=limits["classes"], pen_of_the_week=get_pen_of_the_week())
         if pen.class_ not in limits["classes"]:
             pens, filters = filtered_loan_pens()
-            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription", rank=rank, subscription_classes=limits["classes"])
+            return render_template("loan.html", pens=pens, filters=filters, error="Pen class not allowed for your subscription", rank=rank, subscription_classes=limits["classes"], pen_of_the_week=get_pen_of_the_week())
 
         # Create pending loan request
         meeting_point = (request.form.get("meeting_point") or "").strip()
@@ -2126,7 +2146,7 @@ def loan():
     # GET: list available pens
     available_pens, filters = filtered_loan_pens()
     limits = SUBSCRIPTION_LIMITS.get(current_user.subscription_status, {"max_loans": 0, "classes": []})
-    return render_template("loan.html", pens=available_pens, filters=filters, rank=compute_member_rank(current_user), subscription_classes=limits["classes"])
+    return render_template("loan.html", pens=available_pens, filters=filters, rank=compute_member_rank(current_user), subscription_classes=limits["classes"], pen_of_the_week=get_pen_of_the_week())
 
 @app.route("/donate", methods=["GET", "POST"])
 @login_required
@@ -2547,6 +2567,22 @@ def sector_create_archive_event():
             event_date=event_date,
         )
         db.session.add(event)
+        db.session.commit()
+    return redirect(url_for("sector_page", sector="soarc"))
+
+@app.route("/sector/soarc/pen-of-week", methods=["POST"])
+@login_required
+@require_sector("soarc")
+def sector_set_pen_of_week():
+    pen_id = request.form.get("pen_id", type=int)
+    blurb = (request.form.get("blurb") or "").strip()
+    if pen_id and Pens.query.get(pen_id):
+        record = PenOfTheWeek(
+            pen_id=pen_id,
+            blurb=blurb[:400],
+            set_by_id=current_user.id,
+        )
+        db.session.add(record)
         db.session.commit()
     return redirect(url_for("sector_page", sector="soarc"))
 

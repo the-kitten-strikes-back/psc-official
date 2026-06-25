@@ -293,6 +293,26 @@
     </div>
   </section>
 
+  {% if pen_of_the_week %}
+  <section class="section">
+    <div class="section-container">
+      <div class="potw-card fade-in-up" style="background:linear-gradient(135deg,rgba(56,189,248,0.08),rgba(14,165,233,0.05));border:1px solid rgba(56,189,248,0.25);border-radius:18px;padding:30px;text-align:center;">
+        <span style="display:inline-block;padding:4px 14px;border-radius:999px;background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#051226;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Pen of the Week</span>
+        <h2 style="margin:0 0 6px;">{{ pen_of_the_week.pen.name }}</h2>
+        <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px;">
+          <span style="padding:2px 10px;border-radius:6px;background:rgba(99,102,241,0.12);color:#6366f1;font-weight:700;font-size:13px;">Class {{ pen_of_the_week.pen.class_ }}</span>
+          <span style="padding:2px 10px;border-radius:6px;background:rgba(16,185,129,0.12);color:#10b981;font-weight:700;font-size:13px;">PRS {{ pen_of_the_week.pen.prs }}</span>
+        </div>
+        {% if pen_of_the_week.blurb %}
+        <p style="color:#64748b;max-width:500px;margin:0 auto 14px;">{{ pen_of_the_week.blurb }}</p>
+        {% endif %}
+        <div style="color:#94a3b8;font-size:13px;">Curated by SoARC • {{ pen_of_the_week.set_at.strftime('%b %d, %Y') }}</div>
+        <div style="margin-top:16px;"><a href="{{ url_for('loan') }}" style="display:inline-block;padding:10px 24px;border-radius:999px;background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#051226;font-weight:700;text-decoration:none;">Loan This Pen</a></div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
   <section class="section">
     <div class="section-container">
       <h2>Major PSC Update</h2>
