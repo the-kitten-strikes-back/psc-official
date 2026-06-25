@@ -26,7 +26,7 @@ import numpy as np
 app = Flask(__name__)
 app.wsgi_app = WhiteNoise(app.wsgi_app, root=os.path.join(os.path.dirname(__file__), 'static'))
 socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")
-db_uri = "postgresql://database_5std_user:qPrNxScDaLhYvv8YyApQdxlYunmeInOJ@dpg-d85gg8j7uimc739giccg-a/database_5std"
+db_uri = "postgresql://database_d3iw_user:cMMP052oFxqADlt4x6wO03wD3YjK6TC2@dpg-d8r9so67r5hc73e40le0-a/database_d3iw"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 280,
@@ -1980,10 +1980,7 @@ def entertainment_system():
     pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
     return render_template("entertainmentsystem.html", pens=pens)
 
-@app.route("/entertainmentsystem/doom")
-def doom():
-    return render_template("doom.html")
-
+#THIS WAS THE PLACE WHERE DOOM ONCE STOOD.
 
 @app.route("/loans/<int:loan_id>/thread", methods=["GET", "POST"])
 @login_required
