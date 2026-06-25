@@ -377,6 +377,11 @@ body {
   color: var(--muted);
 }
 
+.chat-input-error {
+  outline-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
 @media (max-width: 768px) {
   .chat-app {
     grid-template-columns: 1fr;

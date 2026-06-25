@@ -6,11 +6,26 @@
   const welcomeEl = document.getElementById('chat-welcome');
   const loadingEl = document.getElementById('chat-loading');
 
-  if (!logEl || typeof io === 'undefined') return;
+  if (!logEl) return;
+
+  if (typeof io === 'undefined') {
+    if (loadingEl) {
+      loadingEl.innerHTML =
+        '<i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:12px;display:block;color:#ef4444"></i> Failed to connect. Please refresh.';
+    }
+    return;
+  }
 
   const displayName = logEl.dataset.displayName || 'Guest';
-
   const socket = io({ transports: ['websocket', 'polling'] });
+  let connected = false;
+
+  const loadingTimeout = setTimeout(() => {
+    if (loadingEl && loadingEl.style.display !== 'none') {
+      loadingEl.innerHTML =
+        '<i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:12px;display:block;color:#ef4444"></i> Could not load messages. <button onclick="location.reload()" style="display:block;margin:12px auto 0;padding:8px 20px;border:none;border-radius:8px;background:var(--accent,#6366f1);color:#fff;cursor:pointer">Retry</button>';
+    }
+  }, 10000);
 
   const makeTime = () => {
     const now = new Date();
@@ -57,6 +72,7 @@
   };
 
   socket.on('connect', () => {
+    connected = true;
     if (statusEl) {
       statusEl.innerHTML = '<span class="chat-online-dot"></span> Connected';
     }
@@ -64,17 +80,31 @@
   });
 
   socket.on('disconnect', () => {
+    connected = false;
     if (statusEl) {
       statusEl.textContent = 'Reconnecting...';
     }
   });
 
+  socket.on('connect_error', () => {
+    connected = false;
+    clearTimeout(loadingTimeout);
+    if (loadingEl && loadingEl.style.display !== 'none') {
+      loadingEl.innerHTML =
+        '<i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:12px;display:block;color:#ef4444"></i> Connection failed. <button onclick="location.reload()" style="display:block;margin:12px auto 0;padding:8px 20px;border:none;border-radius:8px;background:var(--accent,#6366f1);color:#fff;cursor:pointer">Retry</button>';
+    }
+    if (statusEl) {
+      statusEl.textContent = 'Connection failed';
+    }
+  });
+
   socket.on('community_history', (payload) => {
+    clearTimeout(loadingTimeout);
     if (loadingEl) loadingEl.style.display = 'none';
     if (welcomeEl) welcomeEl.style.display = 'none';
 
     if (payload?.messages && Array.isArray(payload.messages)) {
-      payload.messages.reverse().forEach((entry) => appendMessage(entry));
+      payload.messages.forEach((entry) => appendMessage(entry));
     }
   });
 
@@ -93,6 +123,17 @@
       e.preventDefault();
       const message = (inputEl?.value || '').trim();
       if (!message) return;
+
+      if (!connected) {
+        const orig = inputEl.placeholder;
+        inputEl.placeholder = 'Not connected - try again...';
+        inputEl.classList.add('chat-input-error');
+        setTimeout(() => {
+          inputEl.placeholder = orig;
+          inputEl.classList.remove('chat-input-error');
+        }, 2000);
+        return;
+      }
 
       socket.emit('community_message', { message });
       inputEl.value = '';
