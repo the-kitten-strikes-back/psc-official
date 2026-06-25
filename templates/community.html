@@ -26,32 +26,11 @@
         <p class="lead">General chat, region energy, newsletter access, easter eggs, mini activities, and a more welcoming community front door.</p>
         <div class="grid">
             <section class="card">
-                <h2>General Chat</h2>
-                <form method="POST">
-                    {% if not current_user.is_authenticated %}
-                    <label>Display Name<input type="text" name="display_name" placeholder="Guest Writer"></label>
-                    {% endif %}
-                    <label>Region
-                        <select name="region">
-                            {% for slug, label in region_labels.items() %}
-                            <option value="{{ slug }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                    <label>Message<textarea name="message" rows="4" placeholder="Talk pens, swaps, meetups, reviews, or hidden easter eggs..."></textarea></label>
-                    <button type="submit">Post Message</button>
-                </form>
-                <div style="margin-top: 20px;">
-                    {% for message in messages %}
-                    <div class="message">
-                        <strong>{{ message.display_name }}</strong>
-                        <div class="meta">{{ message.region }} • {{ message.created_at.strftime('%b %d, %Y %H:%M') }}</div>
-                        <p style="margin-top:8px;">{{ message.message }}</p>
-                    </div>
-                    {% else %}
-                    <p>No community messages yet.</p>
-                    {% endfor %}
-                </div>
+                <h2>Community Chat</h2>
+                <p>Join the real-time community chat — talk pens, swaps, meetups, reviews, and everything PSC.</p>
+                <a href="{{ url_for('chat_page') }}" class="chat-cta" style="display:inline-block;margin-top:12px;padding:12px 24px;background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#051226;font-weight:700;border-radius:12px;text-decoration:none;">
+                    <i class="fas fa-comments"></i> Open Chat
+                </a>
             </section>
             <aside class="card">
                 <h2>What’s New</h2>

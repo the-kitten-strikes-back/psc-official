@@ -119,6 +119,7 @@ SECTOR_CONFIG = {
 }
 
 SOBAB_CHAT_ROOMS = {}
+COMMUNITY_ROOM_ID = "community_room"
 HJCHAT_ROOM_ID = "hjchat_public_room"
 HJCHAT_SESSION_KEY = "hjchat_authed"
 HJCHAT_NAME_KEY = "hjchat_name"
@@ -1807,6 +1808,14 @@ def set_employee_of_month():
     return redirect(url_for("dashboard"))
 
 
+@app.route("/chat")
+def chat_page():
+    if current_user.is_authenticated:
+        display_name = current_user.username
+    else:
+        display_name = f"Guest-{uuid.uuid4().hex[:6]}"
+    return render_template("chat.html", display_name=display_name)
+
 @app.route("/community", methods=["GET", "POST"])
 def community():
     if request.method == "POST":
@@ -2544,6 +2553,18 @@ def sector_create_archive_event():
         db.session.commit()
     return redirect(url_for("sector_page", sector="soarc"))
 
+@app.route("/sector/soarc/purge-chat", methods=["POST"])
+@login_required
+@require_sector("soarc")
+def sector_purge_chat():
+    days = request.form.get("days", 30, type=int)
+    if days < 1:
+        days = 30
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=days)
+    deleted = CommunityMessage.query.filter(CommunityMessage.created_at < cutoff).delete()
+    db.session.commit()
+    return redirect(url_for("sector_page", sector="soarc"))
+
 @app.route("/sector/sosas/user/<int:user_id>/status", methods=["POST"])
 @login_required
 @require_sector("sosas")
@@ -3066,6 +3087,54 @@ def handle_hjchat_message(data):
         del HJCHAT_MESSAGES[:-HJCHAT_MAX_MESSAGES]
 
     emit("hjchat_message", payload, room=HJCHAT_ROOM_ID)
+
+@socketio.on("community_join")
+def handle_community_join(data):
+    name = (data or {}).get("name") or "Guest"
+    join_room(COMMUNITY_ROOM_ID)
+    messages = (
+        CommunityMessage.query.order_by(CommunityMessage.created_at.desc()).limit(100).all()
+    )
+    messages.reverse()
+    history = [
+        {
+            "sender": msg.display_name,
+            "message": msg.message,
+            "timestamp": msg.created_at.strftime("%H:%M") if msg.created_at else "",
+        }
+        for msg in messages
+    ]
+    emit("community_history", {"messages": history})
+    emit("community_system", {"message": f"{name} joined."}, room=COMMUNITY_ROOM_ID)
+
+
+@socketio.on("community_message")
+def handle_community_message(data):
+    message = (data or {}).get("message", "").strip()
+    if not message:
+        return
+    if current_user.is_authenticated:
+        display_name = current_user.username
+    else:
+        display_name = f"Guest-{uuid.uuid4().hex[:6]}"
+
+    payload = {
+        "sender": display_name,
+        "message": message,
+        "timestamp": datetime.datetime.utcnow().strftime("%H:%M"),
+    }
+
+    db.session.add(
+        CommunityMessage(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            display_name=display_name[:120],
+            region="Global",
+            message=message[:400],
+        )
+    )
+    db.session.commit()
+
+    emit("community_message", payload, room=COMMUNITY_ROOM_ID)
 
 # Easter Egg Routes
 @app.route("/vault")

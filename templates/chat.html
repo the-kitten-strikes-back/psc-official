@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Chat | PSC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
+</head>
+<body>
+  <main class="chat-app">
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        <div class="chat-avatar">PSC</div>
+        <div class="chat-profile">
+          <h2>Community</h2>
+          <p class="chat-online-dot" style="display:inline-block">Online</p>
+        </div>
+      </div>
+      <nav class="chat-sidebar-nav">
+        <a href="{{ url_for('home') }}" class="chat-nav-item"><i class="fas fa-home"></i> Home</a>
+        <a href="{{ url_for('chat_page') }}" class="chat-nav-item active"><i class="fas fa-comments"></i> Chat</a>
+        <a href="{{ url_for('community') }}" class="chat-nav-item"><i class="fas fa-globe"></i> Community Hub</a>
+        <a href="{{ url_for('loan') }}" class="chat-nav-item"><i class="fas fa-hand-holding-heart"></i> Browse Pens</a>
+        <a href="{{ url_for('donate') }}" class="chat-nav-item"><i class="fas fa-gift"></i> Donate</a>
+        <a href="{{ url_for('members') if current_user.is_authenticated else url_for('login') }}" class="chat-nav-item"><i class="fas fa-users"></i> Members</a>
+      </nav>
+      <div class="chat-sidebar-footer">
+        <span style="display:flex;align-items:center;gap:6px">
+          <i class="fas fa-circle" style="color:#22c55e;font-size:8px"></i>
+          {{ current_user.username if current_user.is_authenticated else 'Guest' }}
+        </span>
+      </div>
+    </aside>
+
+    <section class="chat-panel">
+      <header class="chat-header">
+        <div>
+          <h1><i class="fas fa-comments" style="margin-right:8px;color:var(--accent)"></i> Community Chat</h1>
+          <div id="chat-status" class="chat-header-status">
+            <span class="chat-online-dot"></span> Connecting...
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <a href="{{ url_for('community') }}" class="chat-btn"><i class="fas fa-globe"></i> Hub</a>
+        </div>
+      </header>
+
+      <div id="chat-log" class="chat-log" data-display-name="{{ display_name }}">
+        <div id="chat-loading" class="chat-loading">
+          <i class="fas fa-spinner fa-pulse" style="font-size:24px;margin-bottom:12px;display:block"></i>
+          Loading messages...
+        </div>
+        <div id="chat-welcome" class="chat-welcome" style="display:none">
+          <i class="fas fa-comments"></i>
+          <h2>Welcome to Community Chat</h2>
+          <p>Talk pens, swaps, meetups, reviews, and everything PSC with fellow members.</p>
+        </div>
+      </div>
+
+      <form id="chat-form" class="chat-compose" autocomplete="off">
+        <input
+          id="chat-input"
+          type="text"
+          placeholder="Type a message..."
+          maxlength="400"
+          required
+          autofocus
+        >
+        <button type="submit"><i class="fas fa-paper-plane"></i> Send</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='chat.js') }}"></script>
+</body>
+</html>

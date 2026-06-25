@@ -309,6 +309,21 @@
       <p class="muted">No pending founder memories to review.</p>
       {% endif %}
     </div>
+
+    <div class="panel" style="border-color:rgba(255,59,92,0.3);">
+      <h2 style="color:#ff8b8b;">Purge Old Chat Messages</h2>
+      <p class="muted">Delete community chat messages older than a specified number of days. This action is irreversible.</p>
+      <form method="POST" action="{{ url_for('sector_purge_chat') }}">
+        <label>Delete messages older than</label>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
+          <input type="number" name="days" value="30" min="1" style="width:100px;">
+          <span class="muted">days</span>
+        </div>
+        <div class="actions">
+          <button class="action-btn action-danger" type="submit">Purge Messages</button>
+        </div>
+      </form>
+    </div>
   </div>
   {% endif %}
   <div id="psc-chatbot-root"></div>
