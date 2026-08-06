@@ -27,7 +27,7 @@ import numpy as np
 app = Flask(__name__)
 app.wsgi_app = WhiteNoise(app.wsgi_app, root=os.path.join(os.path.dirname(__file__), 'static'))
 socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
-db_uri = "postgresql://database_d3iw_user:cMMP052oFxqADlt4x6wO03wD3YjK6TC2@dpg-d8r9so67r5hc73e40le0-a/database_d3iw"
+db_uri = "postgresql://database_oqez_user:E6kxwquZQTeuIzZ79BU1LataShc1fri8@dpg-d9hmmbreo5us73ega920-a/database_oqez"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 280,
