@@ -14,22 +14,24 @@
     }
     .typewriter-text,
     .typing-text {
-      background: linear-gradient(90deg, #10b981, #3b82f6);
+      background: linear-gradient(90deg, #f6efe3, #c7b178, #f6efe3);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
       font-weight: 800;
       display: inline-block;
+      text-shadow: 0 0 24px rgba(199, 177, 120, 0.18);
     }
     .typing-text::after {
       content: "";
       display: inline-block;
       width: 6px;
-      height: 1.1em;
-      background: #3b82f6;
+      height: 1.05em;
+      background: #c7b178;
       margin-left: 6px;
       animation: caretBlink 0.9s infinite;
       border-radius: 2px;
+      box-shadow: 0 0 12px rgba(199, 177, 120, 0.5);
     }
     @keyframes caretBlink {
       0%, 100% { opacity: 1; }
@@ -43,9 +45,10 @@
     }
     .section h2 {
       margin-bottom: 14px;
+      color: #f4f0ea;
     }
     .section p.lead {
-      color: #64748b;
+      color: #c9c0b1;
       font-size: 1.05rem;
       margin: 0 0 30px 0;
     }
@@ -57,20 +60,20 @@
       margin-top: 30px;
     }
     .stat-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: rgba(18,18,20,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px;
       padding: 18px 20px;
       text-align: center;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.2);
     }
     .stat-card strong {
       display: block;
       font-size: 1.5rem;
-      color: #0f172a;
+      color: #f2efe9;
     }
     .stat-card span {
-      color: #64748b;
+      color: #c9c0b1;
       font-size: 0.9rem;
     }
 
@@ -81,34 +84,37 @@
       margin-top: 30px;
     }
     .feature-card {
-      background: white;
-      border: 1px solid #e2e8f0;
+      background: rgba(18,18,20,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 18px;
       padding: 24px;
-      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 18px 28px rgba(0,0,0,0.24);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
     .feature-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 22px 36px rgba(15, 23, 42, 0.12);
+      border-color: rgba(199,177,120,0.32);
+      box-shadow: 0 22px 36px rgba(0,0,0,0.32);
     }
     .feature-card h3 {
       margin-top: 10px;
-      color: #0f172a;
+      color: #f2efe9;
     }
     .feature-card p {
-      color: #64748b;
+      color: #c9c0b1;
       margin: 10px 0 0 0;
     }
     .feature-pill {
       display: inline-block;
       padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(16, 185, 129, 0.12);
-      color: #059669;
+      background: rgba(199,177,120,0.12);
+      border: 1px solid rgba(199,177,120,0.18);
+      color: #e7d7aa;
       font-size: 12px;
       font-weight: 600;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
     .tiers {
@@ -118,23 +124,23 @@
       margin-top: 26px;
     }
     .tier {
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 18px;
       padding: 20px;
-      background: #ffffff;
+      background: rgba(18,18,20,0.82);
     }
     .tier h4 {
       margin: 0 0 6px 0;
-      color: #0f172a;
+      color: #f2efe9;
     }
     .tier p {
       margin: 0;
-      color: #64748b;
+      color: #c9c0b1;
     }
 
     .cta-band {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
-      border: 1px solid rgba(59, 130, 246, 0.2);
+      background: linear-gradient(135deg, rgba(199,177,120,0.1), rgba(255,255,255,0.02));
+      border: 1px solid rgba(199,177,120,0.22);
       border-radius: 24px;
       padding: 32px;
       display: flex;
@@ -154,18 +160,20 @@
       border-radius: 12px;
       font-weight: 700;
       text-decoration: none;
-      border: 1px solid transparent;
+      border: 1px solid rgba(199,177,120,0.3);
       font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
     .btn-green {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: #0b1a12;
-      box-shadow: 0 12px 22px rgba(16, 185, 129, 0.25);
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(199,177,120,0.18));
+      color: #f5efe3;
+      box-shadow: 0 12px 22px rgba(0,0,0,0.22);
     }
     .btn-outline {
-      background: white;
-      color: #0f172a;
-      border-color: #cbd5f5;
+      background: transparent;
+      color: #f2efe9;
+      border-color: rgba(255,255,255,0.12);
     }
 
     @media (max-width: 768px) {
