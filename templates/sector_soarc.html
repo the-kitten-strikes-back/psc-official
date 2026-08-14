@@ -181,9 +181,14 @@
       <h1>{{ config.name }}</h1>
       <div class="subtitle">{{ config.full }} — {{ config.summary }}</div>
     </div>
-    <form method="POST" action="{{ url_for('sector_lock', sector='soarc') }}">
-      <button class="btn" type="submit">Lock Sector</button>
-    </form>
+    <div>
+      {% if authed %}
+      <a class="btn" href="{{ url_for('soarc_print') }}" style="margin-right:10px;">Print Manifest</a>
+      {% endif %}
+      <form method="POST" action="{{ url_for('sector_lock', sector='soarc') }}" style="display:inline;">
+        <button class="btn" type="submit">Lock Sector</button>
+      </form>
+    </div>
   </header>
 
   {% if not authed %}

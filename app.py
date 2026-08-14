@@ -1684,6 +1684,20 @@ def sector_page(sector):
 
     return redirect(url_for("sectors"))
 
+@app.route("/sector/soarc/print")
+@login_required
+@require_sector("soarc")
+def soarc_print():
+    if not current_user.is_admin:
+        return render_template("access_denied.html"), 403
+    pens = Pens.query.filter_by(retired=False).order_by(Pens.id.asc()).all()
+    return render_template(
+        "soarc_print.html",
+        pens=pens,
+        generated_at=datetime.datetime.now(),
+        config=SECTOR_CONFIG["soarc"],
+    )
+
 @app.route("/sector/<sector>/lock", methods=["POST"])
 @login_required
 def sector_lock(sector):
