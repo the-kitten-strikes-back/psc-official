@@ -2020,9 +2020,10 @@ def famous_pens():
 def entertainment_system():
     pens = Pens.query.order_by(Pens.prs.desc()).limit(8).all()
     return render_template("entertainmentsystem.html", pens=pens)
-
-#THIS WAS THE PLACE WHERE DOOM ONCE STOOD.
-
+@app.route("/entertainmentsystem/doom")
+def doom():
+    return render_template("doom.html")
+#yes, I can run doom :D
 @app.route("/loans/<int:loan_id>/thread", methods=["GET", "POST"])
 @login_required
 def loan_thread(loan_id):
