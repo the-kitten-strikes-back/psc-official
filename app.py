@@ -33,7 +33,7 @@ socketio = SocketIO(
     async_mode=os.environ.get("SOCKETIO_ASYNC_MODE"),
     cors_allowed_origins="*",
 )
-db_uri = "postgresql://database_nkit_user:Y4bGZ8QUEBuy0drjURhgdcmokFdcqE97@dpg-daho0rfqj5pc739quui0-a/database_nkit"
+db_uri = "postgresql://database_2pmg_user:y8um3M7AGD6LU5AmEmcQOav5fHMm9KHa@dpg-dbgvprjbc2fs73bnr0dg-a/database_2pmg"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", db_uri)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 280,
